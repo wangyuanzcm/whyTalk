@@ -440,6 +440,7 @@ export class PluginManager {
    */
   public async listPlugins() {
     try {
+      console.log('Listing plugins, total count:', this.plugins.size)
       const plugins = Array.from(this.plugins.values()).map(plugin => ({
         id: plugin.id,
         type: plugin.type,
@@ -450,8 +451,10 @@ export class PluginManager {
         enabled: plugin.enabled,
         permissions: plugin.config.permissions || []
       }))
+      console.log('Plugins mapped successfully, count:', plugins.length)
       return { success: true, plugins }
     } catch (error: any) {
+      console.error('Error in listPlugins:', error)
       return { success: false, error: error.message }
     }
   }

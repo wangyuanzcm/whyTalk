@@ -46,23 +46,20 @@ onMounted(() => {
     :hljs="hljs"
   >
     <n-message-provider :max="3">
-      <message-api />
+      <n-notification-provider :max="3">
+        <n-dialog-provider>
+          <n-modal-provider>
+            <message-api />
+            <notification-api />
+            <dialog-api />
+            <modal-api />
+            
+            <n-layout-content>
+              <slot></slot>
+            </n-layout-content>
+          </n-modal-provider>
+        </n-dialog-provider>
+      </n-notification-provider>
     </n-message-provider>
-
-    <n-notification-provider :max="3">
-      <notification-api />
-    </n-notification-provider>
-
-    <n-dialog-provider>
-      <dialog-api />
-    </n-dialog-provider>
-
-    <n-modal-provider>
-      <modal-api />
-    </n-modal-provider>
-
-    <n-layout-content>
-      <slot></slot>
-    </n-layout-content>
   </n-config-provider>
 </template>

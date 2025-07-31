@@ -1,8 +1,17 @@
-import { contextBridge } from 'electron'
-import { electronAPI } from '@electron-toolkit/preload'
+import { contextBridge, ipcRenderer } from 'electron'
 
 // Custom APIs for renderer
 const api = {}
+
+// 自定义的 electronAPI，包含我们需要的 ipcRenderer 方法
+const electronAPI = {
+  ipcRenderer: {
+    invoke: ipcRenderer.invoke.bind(ipcRenderer),
+    send: ipcRenderer.send.bind(ipcRenderer),
+    on: ipcRenderer.on.bind(ipcRenderer),
+    removeAllListeners: ipcRenderer.removeAllListeners.bind(ipcRenderer)
+  }
+}
 
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise

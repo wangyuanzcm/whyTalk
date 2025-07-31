@@ -1,4 +1,13 @@
-import { ipcRenderer } from 'electron'
+// 使用预加载脚本暴露的 API，而不是直接导入 electron
+declare global {
+  interface Window {
+    electron: {
+      ipcRenderer: {
+        invoke: (channel: string, ...args: any[]) => Promise<any>
+      }
+    }
+  }
+}
 
 export interface PluginInfo {
   id: string
@@ -43,7 +52,8 @@ export class PluginAPI {
    */
   static async listPlugins(): Promise<{ success: boolean; plugins?: PluginInfo[]; error?: string }> {
     try {
-      const result = await ipcRenderer.invoke('plugin:manager:list')
+      console.log(window.electron,'window.electron')
+      const result = await window.electron.ipcRenderer.invoke('plugin:manager:list')
       return result
     } catch (error: any) {
       return { success: false, error: error.message }
@@ -55,7 +65,7 @@ export class PluginAPI {
    */
   static async installLocalPlugin(zipPath: string): Promise<PluginInstallResult> {
     try {
-      const result = await ipcRenderer.invoke('plugin:manager:install-local', zipPath)
+      const result = await window.electron.ipcRenderer.invoke('plugin:manager:install-local', zipPath)
       return result
     } catch (error: any) {
       return { success: false, error: error.message }
@@ -67,7 +77,7 @@ export class PluginAPI {
    */
   static async installRemotePlugin(url: string): Promise<PluginInstallResult> {
     try {
-      const result = await ipcRenderer.invoke('plugin:manager:install-remote', url)
+      const result = await window.electron.ipcRenderer.invoke('plugin:manager:install-remote', url)
       return result
     } catch (error: any) {
       return { success: false, error: error.message }
@@ -79,7 +89,7 @@ export class PluginAPI {
    */
   static async uninstallPlugin(pluginId: string): Promise<PluginOperationResult> {
     try {
-      const result = await ipcRenderer.invoke('plugin:manager:uninstall', pluginId)
+      const result = await window.electron.ipcRenderer.invoke('plugin:manager:uninstall', pluginId)
       return result
     } catch (error: any) {
       return { success: false, error: error.message }
@@ -91,7 +101,7 @@ export class PluginAPI {
    */
   static async enablePlugin(pluginId: string): Promise<PluginOperationResult> {
     try {
-      const result = await ipcRenderer.invoke('plugin:manager:enable', pluginId)
+      const result = await window.electron.ipcRenderer.invoke('plugin:manager:enable', pluginId)
       return result
     } catch (error: any) {
       return { success: false, error: error.message }
@@ -103,7 +113,7 @@ export class PluginAPI {
    */
   static async disablePlugin(pluginId: string): Promise<PluginOperationResult> {
     try {
-      const result = await ipcRenderer.invoke('plugin:manager:disable', pluginId)
+      const result = await window.electron.ipcRenderer.invoke('plugin:manager:disable', pluginId)
       return result
     } catch (error: any) {
       return { success: false, error: error.message }
@@ -115,7 +125,7 @@ export class PluginAPI {
    */
   static async getPluginConfig(pluginId: string): Promise<PluginConfigResult> {
     try {
-      const result = await ipcRenderer.invoke('plugin:manager:get-config', pluginId)
+      const result = await window.electron.ipcRenderer.invoke('plugin:manager:get-config', pluginId)
       return result
     } catch (error: any) {
       return { success: false, error: error.message }
@@ -127,7 +137,7 @@ export class PluginAPI {
    */
   static async setPluginConfig(pluginId: string, config: any): Promise<PluginOperationResult> {
     try {
-      const result = await ipcRenderer.invoke('plugin:manager:set-config', pluginId, config)
+      const result = await window.electron.ipcRenderer.invoke('plugin:manager:set-config', pluginId, config)
       return result
     } catch (error: any) {
       return { success: false, error: error.message }
@@ -139,7 +149,7 @@ export class PluginAPI {
    */
   static async selectLocalFile(): Promise<{ success: boolean; filePath?: string; error?: string }> {
     try {
-      const result = await ipcRenderer.invoke('plugin:files:select-file', {
+      const result = await window.electron.ipcRenderer.invoke('plugin:files:select-file', {
         title: '选择插件文件',
         filters: [
           { name: 'ZIP文件', extensions: ['zip'] },

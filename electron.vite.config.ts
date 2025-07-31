@@ -38,7 +38,16 @@ export default defineConfig({
     ],
     build: {
       emptyOutDir: true,
-      chunkSizeWarningLimit: 1000
+      chunkSizeWarningLimit: 1000,
+      rollupOptions: {
+        external: ['path', 'fs', 'os', 'crypto', 'util', 'stream', 'buffer']
+      }
+    },
+    define: {
+      __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: 'false'
+    },
+    optimizeDeps: {
+      exclude: ['path', 'fs', 'os', 'crypto', 'util', 'stream', 'buffer']
     }
   }
 })

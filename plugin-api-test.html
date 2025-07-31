@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>插件API测试</title>
+</head>
+<body>
+    <h1>插件API测试</h1>
+    <button id="testBtn">测试 PluginAPI.listPlugins()</button>
+    <div id="result"></div>
+
+    <script>
+        // 模拟 ipcRenderer
+        const { ipcRenderer } = require('electron')
+        
+        document.getElementById('testBtn').addEventListener('click', async () => {
+            const resultDiv = document.getElementById('result')
+            resultDiv.innerHTML = '正在测试...'
+            
+            try {
+                console.log('开始调用 plugin:manager:list')
+                const result = await ipcRenderer.invoke('plugin:manager:list')
+                console.log('返回结果:', result)
+                
+                resultDiv.innerHTML = `<pre>${JSON.stringify(result, null, 2)}</pre>`
+            } catch (error) {
+                console.error('测试失败:', error)
+                resultDiv.innerHTML = `<div style="color: red;">错误: ${error.message}</div>`
+            }
+        })
+    </script>
+</body>
+</html>
