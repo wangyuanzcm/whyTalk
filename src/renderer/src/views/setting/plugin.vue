@@ -90,159 +90,159 @@ const loadInstalledPlugins = async () => {
 }
 
 // 处理本地文件上传
-// const handleFileUpload = async () => {
-//   uploadLoading.value = true
-//   try {
-//     // 选择本地文件
-//     const fileResult = await PluginAPI.selectLocalFile()
-//     if (!fileResult.success || !fileResult.filePath) {
-//       if (fileResult.error !== '用户取消选择') {
-//         message.error(fileResult.error || '选择文件失败')
-//       }
-//       return
-//     }
+const handleFileUpload = async () => {
+  uploadLoading.value = true
+  try {
+    // 选择本地文件
+    const fileResult = await PluginAPI.selectLocalFile()
+    if (!fileResult.success || !fileResult.filePath) {
+      if (fileResult.error !== '用户取消选择') {
+        message.error(fileResult.error || '选择文件失败')
+      }
+      return
+    }
 
-//     const result = await PluginAPI.installLocalPlugin(fileResult.filePath)
+    const result = await PluginAPI.installLocalPlugin(fileResult.filePath)
 
-//     if (result.success) {
-//       message.success('插件安装成功')
-//       showUploadModal.value = false
-//       await loadInstalledPlugins()
-//     } else {
-//       message.error(result.error || '插件安装失败')
-//     }
-//   } catch (error: any) {
-//     console.error('安装插件失败:', error)
-//     message.error('安装插件失败')
-//   } finally {
-//     uploadLoading.value = false
-//   }
-// }
+    if (result.success) {
+      message.success('插件安装成功')
+      showUploadModal.value = false
+      await loadInstalledPlugins()
+    } else {
+      message.error(result.error || '插件安装失败')
+    }
+  } catch (error: any) {
+    console.error('安装插件失败:', error)
+    message.error('安装插件失败')
+  } finally {
+    uploadLoading.value = false
+  }
+}
 
 // 从远程URL安装插件
-// const installFromRemote = async () => {
-//   if (!remoteForm.url.trim()) {
-//     message.error('请输入插件下载地址')
-//     return
-//   }
+const installFromRemote = async () => {
+  if (!remoteForm.url.trim()) {
+    message.error('请输入插件下载地址')
+    return
+  }
 
-//   uploadLoading.value = true
-//   try {
-//     const result = await PluginAPI.installRemotePlugin(remoteForm.url.trim())
+  uploadLoading.value = true
+  try {
+    const result = await PluginAPI.installRemotePlugin(remoteForm.url.trim())
 
-//     if (result.success) {
-//       message.success('插件安装成功')
-//       showRemoteModal.value = false
-//       remoteForm.url = ''
-//       remoteForm.name = ''
-//       remoteForm.description = ''
-//       await loadInstalledPlugins()
-//     } else {
-//       message.error(result.error || '插件安装失败')
-//     }
-//   } catch (error: any) {
-//     console.error('安装插件失败:', error)
-//     message.error('安装插件失败')
-//   } finally {
-//     uploadLoading.value = false
-//   }
-// }
+    if (result.success) {
+      message.success('插件安装成功')
+      showRemoteModal.value = false
+      remoteForm.url = ''
+      remoteForm.name = ''
+      remoteForm.description = ''
+      await loadInstalledPlugins()
+    } else {
+      message.error(result.error || '插件安装失败')
+    }
+  } catch (error: any) {
+    console.error('安装插件失败:', error)
+    message.error('安装插件失败')
+  } finally {
+    uploadLoading.value = false
+  }
+}
 
 // 从市场安装插件
-// const installFromMarket = async (plugin: any) => {
-//   uploadLoading.value = true
-//   try {
-//     const result = await PluginAPI.installRemotePlugin(plugin.downloadUrl)
+const installFromMarket = async (plugin: any) => {
+  uploadLoading.value = true
+  try {
+    const result = await PluginAPI.installRemotePlugin(plugin.downloadUrl)
 
-//     if (result.success) {
-//       message.success(`插件 "${plugin.name}" 安装成功`)
-//       await loadInstalledPlugins()
-//     } else {
-//       message.error(result.error || '插件安装失败')
-//     }
-//   } catch (error: any) {
-//     console.error('安装插件失败:', error)
-//     message.error('安装插件失败')
-//   } finally {
-//     uploadLoading.value = false
-//   }
-// }
+    if (result.success) {
+      message.success(`插件 "${plugin.name}" 安装成功`)
+      await loadInstalledPlugins()
+    } else {
+      message.error(result.error || '插件安装失败')
+    }
+  } catch (error: any) {
+    console.error('安装插件失败:', error)
+    message.error('安装插件失败')
+  } finally {
+    uploadLoading.value = false
+  }
+}
 
 // 卸载插件
-// const uninstallPlugin = async (plugin: PluginInfo) => {
-//   try {
-//     const result = await PluginAPI.uninstallPlugin(plugin.id)
+const uninstallPlugin = async (plugin: PluginInfo) => {
+  try {
+    const result = await PluginAPI.uninstallPlugin(plugin.id)
 
-//     if (result.success) {
-//       message.success('插件卸载成功')
-//       await loadInstalledPlugins()
-//     } else {
-//       message.error(result.error || '插件卸载失败')
-//     }
-//   } catch (error: any) {
-//     console.error('卸载插件失败:', error)
-//     message.error('卸载插件失败')
-//   }
-// }
+    if (result.success) {
+      message.success('插件卸载成功')
+      await loadInstalledPlugins()
+    } else {
+      message.error(result.error || '插件卸载失败')
+    }
+  } catch (error: any) {
+    console.error('卸载插件失败:', error)
+    message.error('卸载插件失败')
+  }
+}
 
 // 切换插件启用状态
-// const togglePlugin = async (plugin: PluginInfo) => {
-//   const newEnabled = !plugin.enabled
-//   try {
-//     const result = newEnabled
-//       ? await PluginAPI.enablePlugin(plugin.id)
-//       : await PluginAPI.disablePlugin(plugin.id)
+const togglePlugin = async (plugin: PluginInfo) => {
+  const newEnabled = !plugin.enabled
+  try {
+    const result = newEnabled
+      ? await PluginAPI.enablePlugin(plugin.id)
+      : await PluginAPI.disablePlugin(plugin.id)
 
-//     if (result.success) {
-//       plugin.enabled = newEnabled
-//       message.success(`插件已${newEnabled ? '启用' : '禁用'}`)
-//     } else {
-//       message.error(result.error || `${newEnabled ? '启用' : '禁用'}插件失败`)
-//     }
-//   } catch (error: any) {
-//     console.error('切换插件状态失败:', error)
-//     message.error('操作失败')
-//   }
-// }
+    if (result.success) {
+      plugin.enabled = newEnabled
+      message.success(`插件已${newEnabled ? '启用' : '禁用'}`)
+    } else {
+      message.error(result.error || `${newEnabled ? '启用' : '禁用'}插件失败`)
+    }
+  } catch (error: any) {
+    console.error('切换插件状态失败:', error)
+    message.error('操作失败')
+  }
+}
 
 // 配置插件
-// const configurePlugin = async (plugin: PluginInfo) => {
-//   try {
-//     currentPlugin.value = plugin
+const configurePlugin = async (plugin: PluginInfo) => {
+  try {
+    currentPlugin.value = plugin
 
-//     // 获取插件配置
-//     const result = await PluginAPI.getPluginConfig(plugin.id)
-//     if (result.success && result.config) {
-//       Object.assign(pluginConfig, result.config)
-//     } else {
-//       Object.assign(pluginConfig, {})
-//     }
+    // 获取插件配置
+    const result = await PluginAPI.getPluginConfig(plugin.id)
+    if (result.success && result.config) {
+      Object.assign(pluginConfig, result.config)
+    } else {
+      Object.assign(pluginConfig, {})
+    }
 
-//     showConfigModal.value = true
-//   } catch (error: any) {
-//     console.error('获取插件配置失败:', error)
-//     message.error('获取插件配置失败')
-//   }
-// }
+    showConfigModal.value = true
+  } catch (error: any) {
+    console.error('获取插件配置失败:', error)
+    message.error('获取插件配置失败')
+  }
+}
 
 // 保存插件配置
-// const savePluginConfig = async () => {
-//   try {
-//     if (!currentPlugin.value) return
+const savePluginConfig = async () => {
+  try {
+    if (!currentPlugin.value) return
 
-//     const result = await PluginAPI.setPluginConfig(currentPlugin.value.id, pluginConfig)
+    const result = await PluginAPI.setPluginConfig(currentPlugin.value.id, pluginConfig)
 
-//     if (result.success) {
-//       message.success('配置保存成功')
-//       showConfigModal.value = false
-//     } else {
-//       message.error(result.error || '保存配置失败')
-//     }
-//   } catch (error: any) {
-//     console.error('保存配置失败:', error)
-//     message.error('保存配置失败')
-//   }
-// }
+    if (result.success) {
+      message.success('配置保存成功')
+      showConfigModal.value = false
+    } else {
+      message.error(result.error || '保存配置失败')
+    }
+  } catch (error: any) {
+    console.error('保存配置失败:', error)
+    message.error('保存配置失败')
+  }
+}
 
 // 获取插件状态颜色
 const getStatusColor = (enabled) => {
