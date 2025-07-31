@@ -224,12 +224,12 @@ export function getPluginDatabase(): PluginDatabase {
         pluginDatabase = new PluginDatabase()
         console.log('SQLite database initialized successfully')
       } catch (error) {
-        console.warn('Failed to initialize SQLite database, falling back to mock database:', error.message)
+        console.warn('Failed to initialize SQLite database, falling back to mock database:', (error as Error).message)
         pluginDatabase = new MockPluginDatabase() as any
       }
     }
   }
-  return pluginDatabase
+  return pluginDatabase!
 }
 
 export function closePluginDatabase(): void {

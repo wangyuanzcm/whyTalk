@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, h } from 'vue'
-import { NButton, NCard, NUpload, NInput, NTag, NModal, NForm, NFormItem, NSelect, NSwitch, NSpace, NPopconfirm, NTable, useMessage } from 'naive-ui'
-import { Plugin, Download, Delete, Setting } from '@icon-park/vue-next'
+import { ref, reactive, onMounted } from 'vue'
+import { NButton, NCard, NInput, NTag, NModal, NForm, NFormItem, NSwitch, NSpace, NPopconfirm, useMessage } from 'naive-ui'
+import { Download, Delete, Setting } from '@icon-park/vue-next'
 import PluginAPI, { type PluginInfo } from '@/api/plugin'
 
 const message = useMessage()
@@ -13,7 +13,7 @@ const loading = ref(false)
 // 上传相关
 const showUploadModal = ref(false)
 const uploadLoading = ref(false)
-const installing = ref(false)
+// const installing = ref(false) // 暂时注释掉未使用的变量
 
 // 远程下载相关
 const showRemoteModal = ref(false)
@@ -451,7 +451,7 @@ onMounted(() => {
         <n-form :model="pluginConfig" label-placement="left" label-width="120px">
           <!-- 这里可以根据插件的UI配置动态生成表单 -->
           <n-form-item
-            v-for="(value, key) in pluginConfig"
+            v-for="(_, key) in pluginConfig"
             :key="key"
             :label="key"
           >

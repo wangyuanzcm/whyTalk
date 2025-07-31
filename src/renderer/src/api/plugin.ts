@@ -9,6 +9,15 @@ export interface PluginInfo {
   author?: string
   enabled: boolean
   permissions: string[]
+  config?: {
+    name?: string
+    version?: string
+    description?: string
+    author?: string
+    ui?: {
+      settings?: any
+    }
+  }
 }
 
 export interface PluginInstallResult {
