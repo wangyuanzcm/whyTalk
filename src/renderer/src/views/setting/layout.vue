@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import SubViewLayout from '@/layout/SubViewLayout.vue'
-import { Tool, Protect, Remind, LinkThree, User } from '@icon-park/vue-next'
+import { Tool, Protect, Remind, LinkThree, User, Plugin } from '@icon-park/vue-next'
 
 const menus = [
   {
@@ -27,6 +27,11 @@ const menus = [
     name: '通知设置',
     path: '/settings/notification',
     icon: Remind
+  },
+  {
+    name: '插件管理',
+    path: '/settings/plugin',
+    icon: Plugin
   }
 ]
 </script>

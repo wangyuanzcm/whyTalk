@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>前端插件示例</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <header class="plugin-header">
+            <h1>🚀 前端插件示例</h1>
+            <p class="plugin-description">展示 Why-Talk 插件系统的基本功能</p>
+        </header>
+        
+        <main class="plugin-content">
+            <section class="feature-section">
+                <h2>📋 插件信息</h2>
+                <div id="plugin-info" class="info-card">
+                    <p>加载中...</p>
+                </div>
+            </section>
+            
+            <section class="feature-section">
+                <h2>🔔 通知功能</h2>
+                <div class="button-group">
+                    <button id="notify-btn" class="action-btn primary">发送通知</button>
+                    <button id="request-notification-permission" class="action-btn secondary">请求通知权限</button>
+                </div>
+            </section>
+            
+            <section class="feature-section">
+                <h2>💾 存储功能</h2>
+                <div class="storage-controls">
+                    <div class="input-group">
+                        <input type="text" id="storage-key" placeholder="存储键" value="test-key">
+                        <input type="text" id="storage-value" placeholder="存储值" value="Hello World!">
+                    </div>
+                    <div class="button-group">
+                        <button id="storage-set" class="action-btn primary">设置</button>
+                        <button id="storage-get" class="action-btn secondary">获取</button>
+                        <button id="storage-remove" class="action-btn danger">删除</button>
+                        <button id="storage-clear" class="action-btn danger">清空</button>
+                    </div>
+                </div>
+                <div id="storage-result" class="result-display"></div>
+            </section>
+            
+            <section class="feature-section">
+                <h2>💬 消息通信</h2>
+                <div class="message-controls">
+                    <textarea id="message-input" placeholder="输入要发送给主应用的消息...">{
+  "type": "greeting",
+  "content": "Hello from plugin!",
+  "timestamp": "${new Date().toISOString()}"
+}</textarea>
+                    <button id="send-message" class="action-btn primary">发送消息</button>
+                </div>
+                <div id="message-result" class="result-display"></div>
+            </section>
+            
+            <section class="feature-section">
+                <h2>🪟 窗口控制</h2>
+                <div class="button-group">
+                    <button id="window-minimize" class="action-btn secondary">最小化</button>
+                    <button id="window-maximize" class="action-btn secondary">最大化/恢复</button>
+                    <button id="window-set-title" class="action-btn secondary">设置标题</button>
+                    <button id="window-close" class="action-btn danger">关闭窗口</button>
+                </div>
+            </section>
+            
+            <section class="feature-section">
+                <h2>🔧 权限测试</h2>
+                <div id="permissions-list" class="permissions-grid">
+                    <!-- 权限列表将通过 JavaScript 动态生成 -->
+                </div>
+            </section>
+        </main>
+        
+        <footer class="plugin-footer">
+            <p>© 2024 Why-Talk Plugin System</p>
+        </footer>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

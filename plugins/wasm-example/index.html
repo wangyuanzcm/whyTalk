@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WASM插件示例</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        #app {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .plugin-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .plugin-header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .plugin-description {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .plugin-content {
+            padding: 30px;
+        }
+
+        .feature-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .feature-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .info-card {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #4facfe;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn.primary {
+            background: #4facfe;
+            color: white;
+        }
+
+        .action-btn.primary:hover {
+            background: #3d8bfe;
+            transform: translateY(-2px);
+        }
+
+        .action-btn.secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .action-btn.secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            min-width: 200px;
+        }
+
+        .result-display {
+            margin-top: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            min-height: 40px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+
+        .wasm-output {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <header class="plugin-header">
+            <h1>⚡ WASM插件示例</h1>
+            <p class="plugin-description">展示 WebAssembly 在 Why-Talk 插件系统中的应用</p>
+        </header>
+        
+        <main class="plugin-content">
+            <section class="feature-section">
+                <h2>📋 插件信息</h2>
+                <div id="plugin-info" class="info-card">
+                    <p>加载中...</p>
+                </div>
+            </section>
+            
+            <section class="feature-section">
+                <h2>🔧 WASM 功能测试</h2>
+                <div class="input-group">
+                    <input type="number" id="input-a" placeholder="输入数字 A" value="10">
+                    <input type="number" id="input-b" placeholder="输入数字 B" value="20">
+                </div>
+                <div class="button-group">
+                    <button id="wasm-add" class="action-btn primary">WASM 加法</button>
+                    <button id="wasm-multiply" class="action-btn primary">WASM 乘法</button>
+                    <button id="load-wasm" class="action-btn secondary">加载 WASM 模块</button>
+                </div>
+                <div id="wasm-result" class="result-display">等待 WASM 操作...</div>
+            </section>
+            
+            <section class="feature-section">
+                <h2>💬 消息通信</h2>
+                <div class="input-group">
+                    <input type="text" id="message-input" placeholder="输入消息" value="Hello from WASM Plugin!">
+                </div>
+                <div class="button-group">
+                    <button id="send-message" class="action-btn primary">发送消息</button>
+                    <button id="get-config" class="action-btn secondary">获取配置</button>
+                </div>
+                <div id="message-result" class="result-display">等待消息操作...</div>
+            </section>
+            
+            <section class="feature-section">
+                <h2>📊 WASM 性能测试</h2>
+                <div class="button-group">
+                    <button id="performance-test" class="action-btn primary">运行性能测试</button>
+                    <button id="memory-test" class="action-btn secondary">内存使用测试</button>
+                </div>
+                <div id="performance-result" class="wasm-output">等待性能测试...</div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // 插件API初始化
+        let wasmModule = null;
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', async () => {
+            // 等待pluginAPI加载
+            if (window.pluginAPI) {
+                await initializePlugin();
+                setupEventListeners();
+            } else {
+                window.addEventListener('pluginAPIReady', async () => {
+                    console.log('Plugin API is ready, initializing plugin...');
+                    await initializePlugin();
+                    setupEventListeners();
+                });
+            }
+        });
+        
+        // 等待pluginAPI加载
+        function waitForPluginAPI() {
+            return new Promise((resolve) => {
+                if (window.pluginAPI) {
+                    resolve();
+                    return;
+                }
+                
+                const checkInterval = setInterval(() => {
+                    if (window.pluginAPI) {
+                        clearInterval(checkInterval);
+                        resolve();
+                    }
+                }, 100);
+                
+                // 5秒超时
+                setTimeout(() => {
+                    clearInterval(checkInterval);
+                    resolve();
+                }, 5000);
+            });
+        }
+        
+        // 初始化插件
+        async function initializePlugin() {
+            try {
+                // 显示插件信息
+                if (window.pluginAPI) {
+                    const config = window.pluginAPI.getConfig();
+                    document.getElementById('plugin-info').innerHTML = `
+                        <strong>插件ID:</strong> ${window.pluginAPI.id}<br>
+                        <strong>插件名称:</strong> ${config.name}<br>
+                        <strong>版本:</strong> ${config.version}<br>
+                        <strong>类型:</strong> ${config.type}<br>
+                        <strong>描述:</strong> ${config.description || '无描述'}
+                    `;
+                } else {
+                    document.getElementById('plugin-info').innerHTML = '插件API未加载';
+                }
+            } catch (error) {
+                console.error('初始化插件失败:', error);
+                document.getElementById('plugin-info').innerHTML = '初始化失败: ' + error.message;
+            }
+        }
+        
+        // 设置事件监听器
+        function setupEventListeners() {
+            // WASM 功能按钮
+            document.getElementById('load-wasm').addEventListener('click', loadWasmModule);
+            document.getElementById('wasm-add').addEventListener('click', () => performWasmOperation('add'));
+            document.getElementById('wasm-multiply').addEventListener('click', () => performWasmOperation('multiply'));
+            
+            // 消息通信按钮
+            document.getElementById('send-message').addEventListener('click', sendMessage);
+            document.getElementById('get-config').addEventListener('click', getPluginConfig);
+            
+            // 性能测试按钮
+            document.getElementById('performance-test').addEventListener('click', runPerformanceTest);
+            document.getElementById('memory-test').addEventListener('click', runMemoryTest);
+        }
+        
+        // 加载 WASM 模块
+        async function loadWasmModule() {
+            const resultDiv = document.getElementById('wasm-result');
+            try {
+                resultDiv.textContent = '正在加载 WASM 模块...';
+                
+                // 这里应该加载实际的 WASM 文件
+                // 由于这是演示，我们模拟加载过程
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // 模拟 WASM 模块
+                wasmModule = {
+                    add: (a, b) => a + b,
+                    multiply: (a, b) => a * b
+                };
+                
+                resultDiv.textContent = 'WASM 模块加载成功！';
+            } catch (error) {
+                resultDiv.textContent = 'WASM 模块加载失败: ' + error.message;
+            }
+        }
+        
+        // 执行 WASM 操作
+        async function performWasmOperation(operation) {
+            const resultDiv = document.getElementById('wasm-result');
+            const inputA = parseFloat(document.getElementById('input-a').value) || 0;
+            const inputB = parseFloat(document.getElementById('input-b').value) || 0;
+            
+            try {
+                if (!wasmModule) {
+                    await loadWasmModule();
+                }
+                
+                let result;
+                const startTime = performance.now();
+                
+                switch (operation) {
+                    case 'add':
+                        result = wasmModule.add(inputA, inputB);
+                        break;
+                    case 'multiply':
+                        result = wasmModule.multiply(inputA, inputB);
+                        break;
+                    default:
+                        throw new Error('未知操作');
+                }
+                
+                const endTime = performance.now();
+                const executionTime = (endTime - startTime).toFixed(3);
+                
+                resultDiv.innerHTML = `
+                    <strong>操作:</strong> ${operation}<br>
+                    <strong>输入:</strong> ${inputA}, ${inputB}<br>
+                    <strong>结果:</strong> ${result}<br>
+                    <strong>执行时间:</strong> ${executionTime} ms
+                `;
+            } catch (error) {
+                resultDiv.textContent = '操作失败: ' + error.message;
+            }
+        }
+        
+        // 发送消息
+        async function sendMessage() {
+            const resultDiv = document.getElementById('message-result');
+            const message = document.getElementById('message-input').value;
+            
+            try {
+                if (window.pluginAPI && window.pluginAPI.sendMessage) {
+                    await window.pluginAPI.sendMessage(message);
+                    resultDiv.textContent = `消息已发送: ${message}`;
+                } else {
+                    resultDiv.textContent = '插件API不可用，无法发送消息';
+                }
+            } catch (error) {
+                resultDiv.textContent = '发送消息失败: ' + error.message;
+            }
+        }
+        
+        // 获取插件配置
+        function getPluginConfig() {
+            const resultDiv = document.getElementById('message-result');
+            
+            try {
+                if (window.pluginAPI) {
+                    const config = window.pluginAPI.getConfig();
+                    resultDiv.textContent = JSON.stringify(config, null, 2);
+                } else {
+                    resultDiv.textContent = '插件API不可用';
+                }
+            } catch (error) {
+                resultDiv.textContent = '获取配置失败: ' + error.message;
+            }
+        }
+        
+        // 运行性能测试
+        async function runPerformanceTest() {
+            const resultDiv = document.getElementById('performance-result');
+            
+            try {
+                resultDiv.textContent = '正在运行性能测试...';
+                
+                if (!wasmModule) {
+                    await loadWasmModule();
+                }
+                
+                const iterations = 100000;
+                const startTime = performance.now();
+                
+                for (let i = 0; i < iterations; i++) {
+                    wasmModule.add(i, i + 1);
+                }
+                
+                const endTime = performance.now();
+                const totalTime = (endTime - startTime).toFixed(3);
+                const avgTime = (totalTime / iterations * 1000).toFixed(6);
+                
+                resultDiv.textContent = `
+性能测试结果:
+- 迭代次数: ${iterations.toLocaleString()}
+- 总时间: ${totalTime} ms
+- 平均时间: ${avgTime} μs/操作
+- 操作/秒: ${(iterations / (totalTime / 1000)).toLocaleString()}`;
+            } catch (error) {
+                resultDiv.textContent = '性能测试失败: ' + error.message;
+            }
+        }
+        
+        // 运行内存测试
+        function runMemoryTest() {
+            const resultDiv = document.getElementById('performance-result');
+            
+            try {
+                if (performance.memory) {
+                    const memory = performance.memory;
+                    resultDiv.textContent = `
+内存使用情况:
+- 已使用堆内存: ${(memory.usedJSHeapSize / 1024 / 1024).toFixed(2)} MB
+- 总堆内存: ${(memory.totalJSHeapSize / 1024 / 1024).toFixed(2)} MB
+- 堆内存限制: ${(memory.jsHeapSizeLimit / 1024 / 1024).toFixed(2)} MB`;
+                } else {
+                    resultDiv.textContent = '浏览器不支持内存监控';
+                }
+            } catch (error) {
+                resultDiv.textContent = '内存测试失败: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

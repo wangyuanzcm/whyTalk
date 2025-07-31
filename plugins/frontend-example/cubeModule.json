@@ -1,0 +1,12 @@
+{
+  "name": "frontend-example",
+  "version": "1.0.0",
+  "description": "一个示例前端插件，展示基本的插件功能",
+  "author": "Why-Talk Team",
+  "main": "index.html",
+  "permissions": [
+    "storage",
+    "notifications"
+  ],
+  "dependencies": {}
+}

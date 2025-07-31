@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { useUserStore, useSettingsStore, useTalkStore } from '@/store'
 import AccountCard from './AccountCard.vue'
-import { GithubOne, SettingTwo, Message, People, BookmarkOne } from '@icon-park/vue-next'
+import { SettingTwo, Message, People, BookmarkOne, Application } from '@icon-park/vue-next'
 
 const userStore = useUserStore()
 const talkStore = useTalkStore()
@@ -30,6 +30,11 @@ const menus = reactive([
     link: '/note',
     icon: markRaw(BookmarkOne),
     title: '笔记'
+  },
+  {
+    link: '/workspace',
+    icon: markRaw(Application),
+    title: '工作台'
   },
   {
     link: '/settings',
@@ -108,11 +113,6 @@ const isActive = (menu) => {
     </main>
 
     <footer class="menu-footer">
-      <div>
-        <a class="pointer" href="https://github.com/gzydong/LumenIM" target="_blank">
-          <github-one theme="outline" size="22" :fill="color" :strokeWidth="2" />
-        </a>
-      </div>
       <div @click="onLogout" class="pointer">退出</div>
     </footer>
   </section>

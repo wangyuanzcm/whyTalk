@@ -1,0 +1,101 @@
+{
+  "name": "system-example",
+  "version": "1.0.0",
+  "description": "一个示例系统插件，展示WASM插件的系统调用能力",
+  "author": "Why-Talk Team",
+  "type": "system",
+  "main": "plugin.wasm",
+  "permissions": [
+    "filesystem.read",
+    "filesystem.write",
+    "system",
+    "network"
+  ],
+  "exports": [
+    "process_message",
+    "get_system_info",
+    "file_operations",
+    "network_request"
+  ],
+  "config": {
+    "memory_limit": "10MB",
+    "timeout": 30000,
+    "allowed_hosts": [
+      "api.github.com",
+      "httpbin.org"
+    ]
+  },
+  "ui": {
+    "components": [
+      {
+        "id": "process-btn",
+        "type": "button",
+        "label": "处理消息",
+        "description": "调用WASM函数处理消息",
+        "action": "process_message",
+        "position": "toolbar"
+      },
+      {
+        "id": "message-input",
+        "type": "textarea",
+        "label": "输入消息",
+        "description": "要处理的消息内容",
+        "defaultValue": "Hello, WASM Plugin!",
+        "validation": {
+          "required": true,
+          "max": 1000
+        },
+        "position": "sidebar"
+      },
+      {
+        "id": "timeout-slider",
+        "type": "slider",
+        "label": "超时时间 (秒)",
+        "description": "设置函数执行超时时间",
+        "defaultValue": 30,
+        "validation": {
+          "min": 1,
+          "max": 300
+        },
+        "position": "settings"
+      },
+      {
+        "id": "host-select",
+        "type": "select",
+        "label": "允许的主机",
+        "description": "选择允许访问的主机",
+        "defaultValue": "api.github.com",
+        "options": [
+          { "label": "GitHub API", "value": "api.github.com" },
+          { "label": "HTTPBin", "value": "httpbin.org" },
+          { "label": "自定义", "value": "custom" }
+        ],
+        "position": "settings"
+      },
+      {
+        "id": "enable-logging",
+        "type": "checkbox",
+        "label": "启用日志记录",
+        "description": "是否记录插件执行日志",
+        "defaultValue": true,
+        "position": "settings"
+      }
+    ],
+    "settings": {
+      "title": "系统插件设置",
+      "description": "配置系统插件的行为和参数",
+      "sections": [
+        {
+          "title": "执行配置",
+          "description": "控制插件执行的基本参数",
+          "components": ["timeout-slider", "enable-logging"]
+        },
+        {
+          "title": "网络配置",
+          "description": "配置网络访问权限",
+          "components": ["host-select"]
+        }
+      ]
+    }
+  }
+}

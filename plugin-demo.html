@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Why-Talk 插件系统演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.2em;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feature-card .icon {
+            font-size: 1.5em;
+        }
+
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .feature-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .feature-card li {
+            color: #555;
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .feature-card li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .demo-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .demo-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .plugin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .plugin-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .plugin-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .plugin-card h4 {
+            color: #333;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .plugin-card .version {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+        }
+
+        .plugin-card p {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .commands {
+            background: #2d3748;
+            color: #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            margin-top: 20px;
+        }
+
+        .commands h3 {
+            color: #4fd1c7;
+            margin-bottom: 15px;
+        }
+
+        .command {
+            background: #1a202c;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            border-left: 3px solid #4fd1c7;
+        }
+
+        .command code {
+            color: #68d391;
+        }
+
+        .status {
+            text-align: center;
+            padding: 20px;
+            background: #e8f5e8;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .status.success {
+            background: #e8f5e8;
+            color: #2d5a2d;
+        }
+
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Why-Talk 插件系统</h1>
+            <p>强大的 Electron 应用插件架构，支持前端和系统插件</p>
+        </div>
+
+        <div class="features">
+            <div class="feature-card">
+                <h3><span class="icon">🎨</span>前端插件</h3>
+                <p>使用 HTML、CSS 和 JavaScript 构建的插件，运行在独立的浏览器窗口中。</p>
+                <ul>
+                    <li>独立的浏览器窗口</li>
+                    <li>丰富的 API 接口</li>
+                    <li>安全的沙箱环境</li>
+                    <li>权限管理系统</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <h3><span class="icon">⚙️</span>系统插件</h3>
+                <p>使用 Rust 编译为 WebAssembly 的插件，具有直接的系统访问能力。</p>
+                <ul>
+                    <li>Rust + WebAssembly</li>
+                    <li>Extism 运行时</li>
+                    <li>系统级权限</li>
+                    <li>高性能执行</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <h3><span class="icon">🔒</span>安全特性</h3>
+                <p>完善的安全机制确保插件的安全运行。</p>
+                <ul>
+                    <li>细粒度权限控制</li>
+                    <li>内容安全策略</li>
+                    <li>资源限制</li>
+                    <li>主机验证</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>📦 已安装的插件</h2>
+            <div class="plugin-grid">
+                <div class="plugin-card">
+                    <h4>🎨 frontend-example <span class="version">v1.0.0</span></h4>
+                    <p>一个示例前端插件，展示基本的插件功能，包括存储、通知、消息通信等。</p>
+                    <button class="btn" onclick="alert('前端插件演示功能')">查看演示</button>
+                </div>
+
+                <div class="plugin-card">
+                    <h4>⚙️ system-example <span class="version">v1.0.0</span></h4>
+                    <p>一个示例系统插件，展示 WASM 插件的系统调用能力。</p>
+                    <button class="btn" onclick="alert('系统插件当前在 Electron 环境中不可用')">查看演示</button>
+                </div>
+
+                <div class="plugin-card">
+                    <h4>🎨 test-plugin <span class="version">v1.0.0</span></h4>
+                    <p>新创建的测试插件，用于验证插件开发工具的功能。</p>
+                    <button class="btn" onclick="alert('测试插件已就绪')">查看演示</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>🛠️ 开发工具</h2>
+            <p>使用插件开发工具快速创建和管理插件：</p>
+            
+            <div class="commands">
+                <h3>常用命令</h3>
+                <div class="command">
+                    <code># 创建前端插件</code><br>
+                    <code>node plugin-dev-tools.js create-frontend my-plugin</code>
+                </div>
+                <div class="command">
+                    <code># 创建系统插件</code><br>
+                    <code>node plugin-dev-tools.js create-system my-system-plugin</code>
+                </div>
+                <div class="command">
+                    <code># 构建系统插件</code><br>
+                    <code>node plugin-dev-tools.js build my-system-plugin</code>
+                </div>
+                <div class="command">
+                    <code># 验证插件</code><br>
+                    <code>node plugin-dev-tools.js validate my-plugin</code>
+                </div>
+                <div class="command">
+                    <code># 列出所有插件</code><br>
+                    <code>node plugin-dev-tools.js list</code>
+                </div>
+            </div>
+        </div>
+
+        <div class="status success">
+            <h3>✅ 插件系统状态</h3>
+            <p><strong>前端插件：</strong> 正常运行</p>
+            <p><strong>系统插件：</strong> 在 Electron 环境中暂时禁用（Extism 兼容性问题）</p>
+            <p><strong>开发工具：</strong> 完全可用</p>
+        </div>
+    </div>
+
+    <script>
+        // 添加一些交互效果
+        document.addEventListener('DOMContentLoaded', function() {
+            // 为所有卡片添加点击效果
+            const cards = document.querySelectorAll('.feature-card, .plugin-card');
+            cards.forEach(card => {
+                card.addEventListener('click', function() {
+                    this.style.transform = 'scale(0.98)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 150);
+                });
+            });
+
+            // 添加滚动动画
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            });
+
+            // 初始化动画
+            const animatedElements = document.querySelectorAll('.feature-card, .demo-section');
+            animatedElements.forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(el);
+            });
+        });
+    </script>
+</body>
+</html>

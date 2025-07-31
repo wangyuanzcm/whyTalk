@@ -31,6 +31,12 @@ const routes = [
         name: 'example',
         component: () => import('@/views/example/index.vue')
       },
+      {
+        path: '/workspace',
+        name: 'workspace',
+        meta: { auth: true },
+        component: () => import('@/views/workspace/index.vue')
+      },
       SettingRouter,
       ContactRouter
     ]

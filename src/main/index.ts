@@ -2,6 +2,7 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { pluginSystem } from './plugin'
 
 function createWindow(): void {
   // Create the browser window.
@@ -38,7 +39,7 @@ function createWindow(): void {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
@@ -51,6 +52,14 @@ app.whenReady().then(() => {
 
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
+
+  // 初始化插件系统
+  try {
+    await pluginSystem.initialize()
+    console.log('Plugin system initialized')
+  } catch (error) {
+    console.error('Failed to initialize plugin system:', error)
+  }
 
   createWindow()
 
@@ -68,6 +77,11 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
+})
+
+// 应用退出时清理插件系统
+app.on('before-quit', async () => {
+  await pluginSystem.cleanup()
 })
 
 // In this file you can include the rest of your app's specific main process

@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>插件UI配置演示</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            padding: 25px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        
+        .section h2 {
+            margin: 0 0 20px 0;
+            color: #333;
+            font-size: 1.5em;
+            border-bottom: 2px solid #4facfe;
+            padding-bottom: 10px;
+        }
+        
+        .plugin-selector {
+            margin-bottom: 20px;
+        }
+        
+        .plugin-selector select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            background: white;
+        }
+        
+        .ui-components {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .component-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .component-card h3 {
+            margin: 0 0 10px 0;
+            color: #4facfe;
+            font-size: 1.2em;
+        }
+        
+        .component-card p {
+            margin: 0 0 15px 0;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .component-card .meta {
+            font-size: 0.8em;
+            color: #999;
+            margin-bottom: 15px;
+        }
+        
+        .component-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .component-button {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: transform 0.2s;
+        }
+        
+        .component-button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .component-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result-area {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        
+        .success {
+            color: #155724;
+            background: #d4edda;
+            border-color: #c3e6cb;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4facfe;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .settings-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .settings-section h4 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 1.1em;
+        }
+        
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .checkbox-wrapper input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+        
+        .slider-wrapper {
+            margin-bottom: 15px;
+        }
+        
+        .slider-wrapper input[type="range"] {
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        .slider-value {
+            text-align: center;
+            font-weight: bold;
+            color: #4facfe;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 插件UI配置演示</h1>
+            <p>展示系统插件的前端组件配置功能</p>
+        </div>
+        
+        <div class="content">
+            <div class="section">
+                <h2>📋 插件选择</h2>
+                <div class="plugin-selector">
+                    <select id="pluginSelect">
+                        <option value="">请选择一个系统插件...</option>
+                    </select>
+                </div>
+                <button class="component-button" onclick="loadPluginConfig()">加载插件配置</button>
+            </div>
+            
+            <div class="section">
+                <h2>🎛️ UI组件</h2>
+                <div id="componentsContainer">
+                    <p style="color: #666; text-align: center; padding: 40px;">请先选择一个插件并加载配置</p>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>⚙️ 设置页面</h2>
+                <div id="settingsContainer">
+                    <p style="color: #666; text-align: center; padding: 40px;">设置配置将在加载插件后显示</p>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>📊 执行结果</h2>
+                <div id="resultArea" class="result-area">
+                    等待操作...
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentPluginId = '';
+        let currentConfig = null;
+        
+        // 页面加载时获取插件列表
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // 检查是否在Electron环境中
+                if (typeof window.electronAPI === 'undefined') {
+                    showResult('错误：此页面需要在Electron环境中运行', 'error');
+                    return;
+                }
+                
+                await loadPluginList();
+            } catch (error) {
+                showResult(`初始化失败: ${error.message}`, 'error');
+            }
+        });
+        
+        // 加载插件列表
+        async function loadPluginList() {
+            try {
+                const plugins = await window.electronAPI.invoke('plugin:list');
+                const select = document.getElementById('pluginSelect');
+                
+                // 清空现有选项
+                select.innerHTML = '<option value="">请选择一个系统插件...</option>';
+                
+                // 添加系统插件
+                plugins.forEach(plugin => {
+                    if (plugin.type === 'system') {
+                        const option = document.createElement('option');
+                        option.value = plugin.id;
+                        option.textContent = `${plugin.config.name} (${plugin.config.version})`;
+                        select.appendChild(option);
+                    }
+                });
+                
+                showResult('插件列表加载完成', 'success');
+            } catch (error) {
+                showResult(`加载插件列表失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 加载插件配置
+        async function loadPluginConfig() {
+            const select = document.getElementById('pluginSelect');
+            const pluginId = select.value;
+            
+            if (!pluginId) {
+                showResult('请先选择一个插件', 'error');
+                return;
+            }
+            
+            try {
+                showResult('正在加载插件配置...', '');
+                
+                // 使用preload中定义的API
+                const config = await window.pluginAPI.ui.getConfig(pluginId);
+                
+                currentPluginId = pluginId;
+                currentConfig = config;
+                
+                renderComponents(config.components || []);
+                renderSettings(config.settings);
+                
+                showResult(`插件 "${pluginId}" 配置加载成功`, 'success');
+            } catch (error) {
+                showResult(`加载插件配置失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 渲染UI组件
+        function renderComponents(components) {
+            const container = document.getElementById('componentsContainer');
+            
+            if (components.length === 0) {
+                container.innerHTML = '<p style="color: #666; text-align: center; padding: 40px;">此插件没有定义UI组件</p>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            components.forEach(component => {
+                const card = createComponentCard(component);
+                container.appendChild(card);
+            });
+        }
+        
+        // 创建组件卡片
+        function createComponentCard(component) {
+            const card = document.createElement('div');
+            card.className = 'component-card';
+            
+            const title = document.createElement('h3');
+            title.textContent = component.label;
+            card.appendChild(title);
+            
+            if (component.description) {
+                const desc = document.createElement('p');
+                desc.textContent = component.description;
+                card.appendChild(desc);
+            }
+            
+            const meta = document.createElement('div');
+            meta.className = 'meta';
+            meta.textContent = `类型: ${component.type} | 位置: ${component.position || 'default'}`;
+            card.appendChild(meta);
+            
+            // 根据组件类型创建不同的输入控件
+            const inputElement = createInputElement(component);
+            if (inputElement) {
+                card.appendChild(inputElement);
+            }
+            
+            // 如果有关联的动作，添加执行按钮
+            if (component.action) {
+                const button = document.createElement('button');
+                button.className = 'component-button';
+                button.textContent = '执行动作';
+                button.onclick = () => executeAction(component);
+                card.appendChild(button);
+            }
+            
+            return card;
+        }
+        
+        // 创建输入元素
+        function createInputElement(component) {
+            const wrapper = document.createElement('div');
+            
+            switch (component.type) {
+                case 'input':
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.className = 'component-input';
+                    input.value = component.defaultValue || '';
+                    input.placeholder = component.label;
+                    input.id = `input-${component.id}`;
+                    wrapper.appendChild(input);
+                    break;
+                    
+                case 'textarea':
+                    const textarea = document.createElement('textarea');
+                    textarea.className = 'component-input';
+                    textarea.value = component.defaultValue || '';
+                    textarea.placeholder = component.label;
+                    textarea.rows = 3;
+                    textarea.id = `input-${component.id}`;
+                    wrapper.appendChild(textarea);
+                    break;
+                    
+                case 'select':
+                    const select = document.createElement('select');
+                    select.className = 'component-input';
+                    select.id = `input-${component.id}`;
+                    
+                    if (component.options) {
+                        component.options.forEach(option => {
+                            const optionElement = document.createElement('option');
+                            optionElement.value = option.value;
+                            optionElement.textContent = option.label;
+                            if (option.value === component.defaultValue) {
+                                optionElement.selected = true;
+                            }
+                            select.appendChild(optionElement);
+                        });
+                    }
+                    wrapper.appendChild(select);
+                    break;
+                    
+                case 'checkbox':
+                    const checkboxWrapper = document.createElement('div');
+                    checkboxWrapper.className = 'checkbox-wrapper';
+                    
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.checked = component.defaultValue || false;
+                    checkbox.id = `input-${component.id}`;
+                    
+                    const label = document.createElement('label');
+                    label.textContent = component.label;
+                    label.htmlFor = checkbox.id;
+                    
+                    checkboxWrapper.appendChild(checkbox);
+                    checkboxWrapper.appendChild(label);
+                    wrapper.appendChild(checkboxWrapper);
+                    break;
+                    
+                case 'slider':
+                    const sliderWrapper = document.createElement('div');
+                    sliderWrapper.className = 'slider-wrapper';
+                    
+                    const slider = document.createElement('input');
+                    slider.type = 'range';
+                    slider.min = component.validation?.min || 0;
+                    slider.max = component.validation?.max || 100;
+                    slider.value = component.defaultValue || 0;
+                    slider.id = `input-${component.id}`;
+                    
+                    const valueDisplay = document.createElement('div');
+                    valueDisplay.className = 'slider-value';
+                    valueDisplay.textContent = slider.value;
+                    
+                    slider.oninput = () => {
+                        valueDisplay.textContent = slider.value;
+                    };
+                    
+                    sliderWrapper.appendChild(slider);
+                    sliderWrapper.appendChild(valueDisplay);
+                    wrapper.appendChild(sliderWrapper);
+                    break;
+                    
+                case 'button':
+                    // 按钮类型不需要输入元素
+                    return null;
+                    
+                default:
+                    const defaultInput = document.createElement('input');
+                    defaultInput.type = 'text';
+                    defaultInput.className = 'component-input';
+                    defaultInput.value = component.defaultValue || '';
+                    defaultInput.placeholder = `${component.type} input`;
+                    defaultInput.id = `input-${component.id}`;
+                    wrapper.appendChild(defaultInput);
+            }
+            
+            return wrapper;
+        }
+        
+        // 渲染设置页面
+        function renderSettings(settings) {
+            const container = document.getElementById('settingsContainer');
+            
+            if (!settings || !settings.sections) {
+                container.innerHTML = '<p style="color: #666; text-align: center; padding: 40px;">此插件没有定义设置页面</p>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            if (settings.title) {
+                const title = document.createElement('h3');
+                title.textContent = settings.title;
+                container.appendChild(title);
+            }
+            
+            if (settings.description) {
+                const desc = document.createElement('p');
+                desc.textContent = settings.description;
+                container.appendChild(desc);
+            }
+            
+            settings.sections.forEach(section => {
+                const sectionDiv = document.createElement('div');
+                sectionDiv.className = 'settings-section';
+                
+                const sectionTitle = document.createElement('h4');
+                sectionTitle.textContent = section.title;
+                sectionDiv.appendChild(sectionTitle);
+                
+                if (section.description) {
+                    const sectionDesc = document.createElement('p');
+                    sectionDesc.textContent = section.description;
+                    sectionDiv.appendChild(sectionDesc);
+                }
+                
+                // 显示该section中的组件
+                section.components.forEach(componentId => {
+                    const component = currentConfig.components.find(c => c.id === componentId);
+                    if (component) {
+                        const componentInfo = document.createElement('div');
+                        componentInfo.innerHTML = `<strong>${component.label}</strong>: ${component.description || '无描述'}`;
+                        componentInfo.style.marginBottom = '10px';
+                        componentInfo.style.padding = '10px';
+                        componentInfo.style.background = '#f8f9fa';
+                        componentInfo.style.borderRadius = '4px';
+                        sectionDiv.appendChild(componentInfo);
+                    }
+                });
+                
+                container.appendChild(sectionDiv);
+            });
+        }
+        
+        // 执行组件动作
+        async function executeAction(component) {
+            if (!component.action) {
+                showResult('此组件没有关联的动作', 'error');
+                return;
+            }
+            
+            try {
+                showResult(`正在执行动作: ${component.action}...`, '');
+                
+                // 获取组件的输入值
+                let inputValue = null;
+                const inputElement = document.getElementById(`input-${component.id}`);
+                
+                if (inputElement) {
+                    switch (component.type) {
+                        case 'checkbox':
+                            inputValue = inputElement.checked;
+                            break;
+                        case 'slider':
+                            inputValue = parseInt(inputElement.value);
+                            break;
+                        default:
+                            inputValue = inputElement.value;
+                    }
+                }
+                
+                // 执行动作
+                const result = await window.pluginAPI.ui.executeAction(
+                    currentPluginId, 
+                    component.action, 
+                    inputValue
+                );
+                
+                showResult(`动作执行成功:\n${JSON.stringify(result, null, 2)}`, 'success');
+            } catch (error) {
+                showResult(`执行动作失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 显示结果
+        function showResult(message, type) {
+            const resultArea = document.getElementById('resultArea');
+            resultArea.textContent = message;
+            resultArea.className = 'result-area';
+            
+            if (type === 'error') {
+                resultArea.classList.add('error');
+            } else if (type === 'success') {
+                resultArea.classList.add('success');
+            }
+        }
+    </script>
+</body>
+</html>
