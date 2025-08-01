@@ -91,6 +91,7 @@ export interface PluginInstance {
 export class PluginManager {
   private plugins: Map<string, PluginInstance> = new Map()
   private pluginsDir: string
+  private builtinPluginsDir: string // 应用程序包内的插件目录
   private database: PluginDatabase
   // private extism: any // 暂时未使用
 
@@ -100,12 +101,16 @@ export class PluginManager {
     if (process.env.NODE_ENV === 'development' || !app.isPackaged) {
       // 开发环境：使用项目根目录的 plugins 文件夹
       this.pluginsDir = join(process.cwd(), 'plugins')
+      this.builtinPluginsDir = this.pluginsDir
     } else {
       // 生产环境：使用用户数据目录的 plugins 文件夹
       this.pluginsDir = join(app.getPath('userData'), 'plugins')
+      // 应用程序包内的插件目录
+      this.builtinPluginsDir = join(process.resourcesPath, 'app.asar.unpacked', 'plugins')
     }
     
     console.log(`Plugin directory: ${this.pluginsDir}`)
+    console.log(`Builtin plugin directory: ${this.builtinPluginsDir}`)
     this.database = getPluginDatabase()
     this.initializeExtism()
     this.setupIpcHandlers()
@@ -190,19 +195,33 @@ export class PluginManager {
    * 扫描并加载所有插件
    */
   public async loadAllPlugins() {
-    if (!existsSync(this.pluginsDir)) {
-      console.log('Plugins directory does not exist, creating...')
-      require('fs').mkdirSync(this.pluginsDir, { recursive: true })
-      return
+    // 首先加载内置插件
+    if (existsSync(this.builtinPluginsDir)) {
+      console.log('Loading builtin plugins...')
+      const builtinPluginDirs = readdirSync(this.builtinPluginsDir).filter(dir => {
+        const fullPath = join(this.builtinPluginsDir, dir)
+        return statSync(fullPath).isDirectory()
+      })
+
+      for (const dir of builtinPluginDirs) {
+        await this.loadPlugin(join(this.builtinPluginsDir, dir))
+      }
     }
 
-    const pluginDirs = readdirSync(this.pluginsDir).filter(dir => {
-      const fullPath = join(this.pluginsDir, dir)
-      return statSync(fullPath).isDirectory()
-    })
+    // 然后加载用户插件目录的插件
+    if (!existsSync(this.pluginsDir)) {
+      console.log('User plugins directory does not exist, creating...')
+      require('fs').mkdirSync(this.pluginsDir, { recursive: true })
+    } else {
+      console.log('Loading user plugins...')
+      const userPluginDirs = readdirSync(this.pluginsDir).filter(dir => {
+        const fullPath = join(this.pluginsDir, dir)
+        return statSync(fullPath).isDirectory()
+      })
 
-    for (const dir of pluginDirs) {
-      await this.loadPlugin(join(this.pluginsDir, dir))
+      for (const dir of userPluginDirs) {
+        await this.loadPlugin(join(this.pluginsDir, dir))
+      }
     }
 
     console.log(`Loaded ${this.plugins.size} plugins`)
