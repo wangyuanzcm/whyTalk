@@ -742,8 +742,55 @@ export class PluginManager {
               throw new Error('插件配置文件不存在')
             }
             
-            // 移动到插件目录
+            // 检查插件是否已存在
             const finalPluginPath = join(this.pluginsDir, pluginId)
+            const isAlreadyInstalled = existsSync(finalPluginPath)
+            
+            if (isAlreadyInstalled) {
+              // 检查是否为相同版本
+              try {
+                const existingConfigPath = join(finalPluginPath, 'cubeModule.json')
+                const fallbackConfigPath = join(finalPluginPath, 'plugin.json')
+                let existingConfig
+                
+                if (existsSync(existingConfigPath)) {
+                  existingConfig = JSON.parse(readFileSync(existingConfigPath, 'utf-8'))
+                } else if (existsSync(fallbackConfigPath)) {
+                  existingConfig = JSON.parse(readFileSync(fallbackConfigPath, 'utf-8'))
+                }
+                
+                if (existingConfig) {
+                  // 读取新插件的配置
+                  const newConfigPath = join(tempDir, 'cubeModule.json')
+                  const newFallbackConfigPath = join(tempDir, 'plugin.json')
+                  let newConfig
+                  
+                  if (existsSync(newConfigPath)) {
+                    newConfig = JSON.parse(readFileSync(newConfigPath, 'utf-8'))
+                  } else if (existsSync(newFallbackConfigPath)) {
+                    newConfig = JSON.parse(readFileSync(newFallbackConfigPath, 'utf-8'))
+                  }
+                  
+                  if (newConfig && existingConfig.version === newConfig.version) {
+                    // 清理临时目录
+                    rmSync(tempDir, { recursive: true, force: true })
+                    throw new Error(`插件 "${pluginId}" (版本 ${existingConfig.version}) 已经安装，无需重复安装`)
+                  }
+                } else {
+                  // 如果无法读取现有配置文件，说明插件目录可能损坏，直接删除重新安装
+                  console.warn(`Plugin directory exists but config file not found, removing: ${finalPluginPath}`)
+                  rmSync(finalPluginPath, { recursive: true, force: true })
+                }
+              } catch (configError) {
+                // 如果读取配置失败，说明插件目录可能损坏，删除重新安装
+                console.warn('Failed to read existing plugin config, removing corrupted plugin directory:', configError)
+                if (existsSync(finalPluginPath)) {
+                  rmSync(finalPluginPath, { recursive: true, force: true })
+                }
+              }
+            }
+            
+            // 删除旧版本（如果仍然存在）
             if (existsSync(finalPluginPath)) {
               rmSync(finalPluginPath, { recursive: true, force: true })
             }

@@ -13,7 +13,9 @@ const loading = ref(false)
 // 上传相关
 const showUploadModal = ref(false)
 const uploadLoading = ref(false)
-// const installing = ref(false) // 暂时注释掉未使用的变量
+const installProgress = ref(0)
+const installStep = ref('')
+const installResult = ref<{success: boolean, message: string} | null>(null)
 
 // 远程下载相关
 const showRemoteModal = ref(false)
@@ -92,31 +94,72 @@ const loadInstalledPlugins = async () => {
 // 处理本地文件上传
 const handleFileUpload = async () => {
   uploadLoading.value = true
+  installProgress.value = 0
+  installStep.value = ''
+  installResult.value = null
+  
   try {
-    // 选择本地文件
+    // 步骤1: 选择文件
+    installStep.value = '选择插件文件...'
+    installProgress.value = 20
+    
     const fileResult = await PluginAPI.selectLocalFile()
     if (!fileResult.success || !fileResult.filePath) {
       if (fileResult.error !== '用户取消选择') {
-        message.error(fileResult.error || '选择文件失败')
+        installResult.value = { success: false, message: fileResult.error || '选择文件失败' }
+      } else {
+        // 用户取消，重置状态
+        installStep.value = ''
+        installProgress.value = 0
       }
       return
     }
 
+    // 步骤2: 验证文件
+    installStep.value = '验证插件文件...'
+    installProgress.value = 40
+    await new Promise(resolve => setTimeout(resolve, 500)) // 模拟验证过程
+
+    // 步骤3: 安装插件
+    installStep.value = '正在安装插件...'
+    installProgress.value = 70
+    
     const result = await PluginAPI.installLocalPlugin(fileResult.filePath)
 
+    // 步骤4: 完成安装
+    installProgress.value = 100
+    
     if (result.success) {
-      message.success('插件安装成功')
-      showUploadModal.value = false
+      installStep.value = '安装完成'
+      installResult.value = { success: true, message: '插件安装成功！' }
       await loadInstalledPlugins()
+      
+      // 3秒后自动关闭模态框
+      setTimeout(() => {
+        showUploadModal.value = false
+        resetInstallState()
+      }, 3000)
     } else {
-      message.error(result.error || '插件安装失败')
+      installStep.value = '安装失败'
+      installResult.value = { success: false, message: result.error || '插件安装失败' }
     }
   } catch (error: any) {
     console.error('安装插件失败:', error)
-    message.error('安装插件失败')
+    installStep.value = '安装失败'
+    // 显示具体的错误信息
+    const errorMessage = error?.message || error?.toString() || '安装插件时发生错误'
+    installResult.value = { success: false, message: errorMessage }
   } finally {
+    // 确保uploadLoading状态被重置
     uploadLoading.value = false
   }
+}
+
+// 重置安装状态
+const resetInstallState = () => {
+  installProgress.value = 0
+  installStep.value = ''
+  installResult.value = null
 }
 
 // 从远程URL安装插件
@@ -372,12 +415,63 @@ onMounted(() => {
     </div>
 
     <!-- 本地上传模态框 -->
-    <n-modal v-model:show="showUploadModal" preset="dialog" title="本地安装插件">
+    <n-modal v-model:show="showUploadModal" preset="dialog" title="本地安装插件" :mask-closable="!uploadLoading">
       <div class="upload-content">
-        <p>请选择插件zip文件进行安装：</p>
-        <n-button :loading="uploadLoading" @click="handleFileUpload">
-          选择插件文件
-        </n-button>
+        <div v-if="!uploadLoading && !installResult">
+          <p>请选择插件zip文件进行安装：</p>
+          <n-button @click="handleFileUpload" type="primary">
+            选择插件文件
+          </n-button>
+        </div>
+        
+        <!-- 安装进度 -->
+        <div v-if="uploadLoading" class="install-progress">
+          <div class="progress-info">
+            <n-icon size="20" class="progress-icon">
+              <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="62.83" stroke-dashoffset="62.83" stroke-linecap="round">
+                  <animate attributeName="stroke-dashoffset" values="62.83;0;62.83" dur="2s" repeatCount="indefinite"/>
+                </circle>
+              </svg>
+            </n-icon>
+            <span class="step-text">{{ installStep }}</span>
+          </div>
+          <n-progress 
+            type="line" 
+            :percentage="installProgress" 
+            :show-indicator="true"
+            processing
+            class="progress-bar"
+          />
+        </div>
+        
+        <!-- 安装结果 -->
+        <div v-if="installResult" class="install-result">
+          <div class="result-icon">
+            <n-icon size="48" :color="installResult.success ? '#18a058' : '#d03050'">
+              <svg v-if="installResult.success" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+              <svg v-else viewBox="0 0 24 24">
+                <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+              </svg>
+            </n-icon>
+          </div>
+          <p class="result-message" :class="{ 'success': installResult.success, 'error': !installResult.success }">
+            {{ installResult.message }}
+          </p>
+          <div v-if="installResult.success" class="success-note">
+            <p>插件已成功安装到系统中，窗口将在几秒后自动关闭</p>
+          </div>
+          <div v-else class="error-actions">
+            <n-button @click="resetInstallState" type="primary">
+              重新安装
+            </n-button>
+            <n-button @click="showUploadModal = false; resetInstallState()" quaternary>
+              关闭
+            </n-button>
+          </div>
+        </div>
       </div>
     </n-modal>
 
@@ -428,5 +522,153 @@ onMounted(() => {
 <style lang="less" scoped>
 .plugin-container {
   padding: 20px;
+}
+
+.upload-content {
+  padding: 20px;
+  text-align: center;
+  
+  p {
+    margin-bottom: 16px;
+    color: #666;
+  }
+}
+
+.install-progress {
+  padding: 20px 0;
+  
+  .progress-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    
+    .progress-icon {
+      margin-right: 8px;
+      color: #18a058;
+    }
+    
+    .step-text {
+      font-size: 14px;
+      color: #333;
+      font-weight: 500;
+    }
+  }
+  
+  .progress-bar {
+    margin-top: 8px;
+  }
+}
+
+.install-result {
+  padding: 20px 0;
+  text-align: center;
+  
+  .result-icon {
+    margin-bottom: 16px;
+  }
+  
+  .result-message {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 12px;
+    
+    &.success {
+      color: #18a058;
+    }
+    
+    &.error {
+      color: #d03050;
+    }
+  }
+  
+  .success-note {
+    p {
+      font-size: 14px;
+      color: #666;
+      margin: 0;
+    }
+  }
+  
+  .error-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+}
+
+.plugin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.plugin-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: #18a058;
+  }
+  
+  .plugin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    
+    .plugin-info {
+      flex: 1;
+      
+      .plugin-name {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 4px;
+      }
+      
+      .plugin-version {
+        font-size: 12px;
+        color: #999;
+        background: #f5f5f5;
+        padding: 2px 6px;
+        border-radius: 4px;
+        display: inline-block;
+      }
+    }
+  }
+  
+  .plugin-description {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 16px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .plugin-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  
+  .search-input {
+    flex: 1;
+    max-width: 300px;
+  }
 }
 </style>

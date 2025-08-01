@@ -149,7 +149,8 @@ export class PluginAPIHandler {
     
     // 从session partition中提取插件ID
     if (session.partition && session.partition.startsWith('plugin-')) {
-      return session.partition.replace('plugin-', '')
+      const pluginId = session.partition.replace('plugin-', '')
+      return pluginId
     }
     
     return null

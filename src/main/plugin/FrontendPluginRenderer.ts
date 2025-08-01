@@ -85,26 +85,35 @@ export class FrontendPluginRenderer {
    */
   public async openPluginWindow(pluginId: string): Promise<{ success: boolean; error?: string }> {
     try {
+      console.log(`Opening frontend plugin window for: ${pluginId}`)
+      
       // 检查窗口是否已存在
       const existingWindow = this.pluginWindows.get(pluginId)
       if (existingWindow && !existingWindow.isDestroyed()) {
+        console.log(`Window already exists for ${pluginId}, focusing...`)
         existingWindow.focus()
         return { success: true }
       }
 
       // 获取插件信息（这里需要从PluginManager获取）
+      console.log(`Getting plugin info for: ${pluginId}`)
       const plugin = await this.getPluginInfo(pluginId)
+      console.log(`Plugin info retrieved:`, plugin ? { id: plugin.id, type: plugin.type, path: plugin.path } : 'null')
+      
       if (!plugin || plugin.type !== PluginType.FRONTEND) {
+        console.error(`Frontend plugin not found or wrong type: ${pluginId}`)
         return { success: false, error: 'Frontend plugin not found' }
       }
 
       // 创建插件窗口
+      console.log(`Creating plugin window for: ${pluginId}`)
       const window = await this.createPluginWindow(plugin)
       this.pluginWindows.set(pluginId, window)
 
       // 设置窗口事件监听
       this.setupWindowEvents(pluginId, window)
 
+      console.log(`Plugin window created successfully for: ${pluginId}`)
       return { success: true }
     } catch (error) {
       console.error(`Failed to open plugin window for ${pluginId}:`, error)
@@ -187,9 +196,13 @@ export class FrontendPluginRenderer {
     const sandboxConfig = this.securityManager.createSandboxConfig(plugin)
 
     // 创建独立的session用于插件隔离
-    const pluginSession = session.fromPartition(`plugin-${plugin.id}`, {
+    const partitionName = `plugin-${plugin.id}`
+    const pluginSession = session.fromPartition(partitionName, {
       cache: false
     })
+    
+    // 确保partition属性被正确设置
+    ;(pluginSession as any).partition = partitionName
 
     // 设置安全策略
     await this.setupPluginSecurity(pluginSession, plugin)
@@ -210,10 +223,9 @@ export class FrontendPluginRenderer {
     // 加载插件内容
     await this.loadPluginContent(window, plugin)
 
-    // 窗口准备好后显示
-    window.once('ready-to-show', () => {
-      window.show()
-    })
+    // 内容加载完成后直接显示窗口
+    console.log(`Showing plugin window for: ${plugin.id}`)
+    window.show()
 
     return window
   }
@@ -296,36 +308,50 @@ export class FrontendPluginRenderer {
             })
           `)
           
-          // 注入插件API
-          await window.webContents.executeJavaScript(`
-            try {
-              window.pluginAPI = {
-                id: ${JSON.stringify(plugin.id)},
-                name: ${JSON.stringify(config.name)},
-                version: ${JSON.stringify(config.version)},
-                // 添加插件可用的API方法
-                sendMessage: (message) => {
-                  if (window.electronAPI?.ipcRenderer?.invoke) {
-                    return window.electronAPI.ipcRenderer.invoke('plugin:message', ${JSON.stringify(plugin.id)}, message)
+          // 检查插件API是否已经通过preload脚本注入
+          const apiAvailable = await window.webContents.executeJavaScript(`
+            typeof window.pluginAPI !== 'undefined'
+          `)
+          
+          if (apiAvailable) {
+            console.log(`Plugin API already available for ${plugin.id} via preload script`)
+          } else {
+            console.log(`Plugin API not found for ${plugin.id}, this should not happen with proper preload script`)
+            // 作为后备方案，手动注入基础API
+            await window.webContents.executeJavaScript(`
+              try {
+                window.pluginAPI = {
+                  id: ${JSON.stringify(plugin.id)},
+                  name: ${JSON.stringify(config.name)},
+                  version: ${JSON.stringify(config.version)},
+                  getPluginInfo: () => ({
+                    id: ${JSON.stringify(plugin.id)},
+                    name: ${JSON.stringify(config.name)},
+                    version: ${JSON.stringify(config.version)},
+                    description: ${JSON.stringify(config.description || '')},
+                    author: ${JSON.stringify(config.author || '')},
+                    path: ${JSON.stringify(plugin.path)}
+                  }),
+                  sendMessage: (message) => {
+                    console.warn('Plugin API not properly loaded - sendMessage not available')
+                    return Promise.reject(new Error('Plugin API not properly loaded'))
+                  },
+                  requestPermission: (permission) => {
+                    console.warn('Plugin API not properly loaded - requestPermission not available')
+                    return Promise.reject(new Error('Plugin API not properly loaded'))
                   }
-                  console.warn('electronAPI not available')
-                },
-                getConfig: () => (${JSON.stringify(config)}),
-                requestPermission: (permission) => {
-                  if (window.electronAPI?.ipcRenderer?.invoke) {
-                    return window.electronAPI.ipcRenderer.invoke('plugin:permission:request', ${JSON.stringify(plugin.id)}, permission)
-                  }
-                  console.warn('electronAPI not available')
                 }
+                console.log('Fallback Plugin API injected for:', ${JSON.stringify(plugin.id)})
+              } catch (error) {
+                console.error('Failed to inject fallback plugin API:', error)
+                throw error
               }
-              console.log('Plugin API injected successfully for:', ${JSON.stringify(plugin.id)})
-              
-              // 触发自定义事件，通知插件API已准备好
-              window.dispatchEvent(new CustomEvent('pluginAPIReady'))
-            } catch (error) {
-              console.error('Failed to inject plugin API:', error)
-              throw error
-            }
+            `)
+          }
+          
+          // 触发自定义事件，通知插件API已准备好
+          await window.webContents.executeJavaScript(`
+            window.dispatchEvent(new CustomEvent('pluginAPIReady'))
           `)
           
           console.log(`Plugin API injection completed for ${plugin.id}`)
@@ -405,8 +431,12 @@ export class FrontendPluginRenderer {
   private async getPluginInfo(pluginId: string): Promise<PluginInstance | null> {
     // 这里应该调用PluginManager的方法获取插件信息
     // 为了避免循环依赖，可以通过事件或依赖注入的方式实现
+    console.log(`Requesting plugin info via IPC for: ${pluginId}`)
     return new Promise((resolve) => {
-      ipcMain.emit('plugin:get-info', null, pluginId, resolve)
+      ipcMain.emit('plugin:get-info', null, pluginId, (plugin: PluginInstance | null) => {
+        console.log(`IPC response for plugin ${pluginId}:`, plugin ? { id: plugin.id, type: plugin.type } : 'null')
+        resolve(plugin)
+      })
     })
   }
 

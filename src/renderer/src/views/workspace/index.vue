@@ -35,7 +35,8 @@ const loadPlugins = async () => {
     }
 
     const pluginList = await window.electron.ipcRenderer.invoke('plugin:list')
-    plugins.value = pluginList.filter((plugin: Plugin) => plugin.type === 'system')
+    // 显示所有类型的插件，包括前端插件和系统插件
+    plugins.value = pluginList.filter((plugin: Plugin) => plugin.type === 'system' || plugin.type === 'frontend')
   } catch (err: any) {
     error.value = err.message || '加载插件失败'
     console.error('加载插件失败:', err)
@@ -47,30 +48,36 @@ const loadPlugins = async () => {
 // 打开插件应用
 const openPlugin = async (plugin: Plugin) => {
   try {
-    // 检查插件是否有UI配置
-    if (!plugin.config.ui || !plugin.config.ui.components) {
-      ;(window as any).$message?.warning('此插件暂无可用的UI界面')
-      return
-    }
-
-    console.log('打开插件:', plugin.id)
+    console.log('打开插件:', plugin.id, 'type:', plugin.type)
     ;(window as any).$message?.success(`正在打开 ${plugin.config.name}`)
 
     // 根据插件类型调用不同的IPC处理器
     let result
     if (plugin.type === 'frontend') {
-      // 前端插件使用专门的前端插件窗口
+      // 前端插件直接打开，不需要检查UI配置
+      console.log('Calling IPC: plugin:frontend:open for', plugin.id)
       result = await window.electron.ipcRenderer.invoke('plugin:frontend:open', plugin.id)
+      console.log('IPC result:', result)
     } else if (plugin.type === 'system') {
+      // 系统插件需要检查是否有UI配置
+      if (!plugin.config.ui || !plugin.config.ui.components) {
+        ;(window as any).$message?.warning('此系统插件暂无可用的UI界面')
+        return
+      }
       // 系统插件使用UI配置窗口
+      console.log('Calling IPC: plugin:system:open-ui for', plugin.id)
       result = await window.electron.ipcRenderer.invoke('plugin:system:open-ui', plugin.id)
+      console.log('IPC result:', result)
     } else {
       ;(window as any).$message?.error('不支持的插件类型')
       return
     }
 
     if (result && !result.success) {
+      console.error('Plugin open failed:', result.error)
       ;(window as any).$message?.error(`打开插件失败: ${result.error}`)
+    } else {
+      console.log('Plugin opened successfully')
     }
   } catch (err: any) {
     ;(window as any).$message?.error(
@@ -172,14 +179,14 @@ onMounted(() => {
                         @click="openPlugin(plugin)"
                         type="primary"
                         size="small"
-                        :disabled="!plugin.enabled || !plugin.config.ui"
+                        :disabled="!plugin.enabled || (plugin.type === 'system' && !plugin.config.ui)"
                       >
                         <Play :size="16" style="margin-right: 4px" />
                         打开
                       </NButton>
                     </template>
                     <span v-if="!plugin.enabled">插件已禁用</span>
-                    <span v-else-if="!plugin.config.ui">插件暂无UI界面</span>
+                    <span v-else-if="plugin.type === 'system' && !plugin.config.ui">系统插件暂无UI界面</span>
                     <span v-else>打开插件应用</span>
                   </NTooltip>
 

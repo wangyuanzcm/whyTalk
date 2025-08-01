@@ -1,0 +1,9 @@
+{
+  "name": "test-duplicate",
+  "version": "1.0.0",
+  "description": "测试重复安装的插件",
+  "author": "Test Author",
+  "type": "frontend",
+  "main": "index.html",
+  "permissions": []
+}
