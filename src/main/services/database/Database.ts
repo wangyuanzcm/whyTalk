@@ -54,22 +54,44 @@ export class DatabaseManager {
       // 如果文件不存在，尝试其他路径
       if (!existsSync(schemaPath)) {
         const alternativePaths = [
-          join(process.cwd(), 'src/main/services/database/schema.sql'),
-          join(process.cwd(), 'out/main/schema.sql'),
-          join(__dirname, '../../../src/main/services/database/schema.sql'),
-          join(__dirname, 'schema.sql')
-        ]
+      // 开发环境路径
+      join(process.cwd(), 'src/main/services/database/schema.sql'),
+      join(process.cwd(), 'out/main/schema.sql'),
+      join(__dirname, '../../../src/main/services/database/schema.sql'),
+      join(__dirname, 'schema.sql'),
+      // 基于__dirname的路径（适用于从任何目录启动）
+       join(__dirname, '..', '..', '..', '..', 'src', 'main', 'services', 'database', 'schema.sql'),
+       join(__dirname, '..', '..', '..', '..', 'out', 'main', 'schema.sql'),
+      // 生产环境路径 - 相对于可执行文件
+      join(process.resourcesPath || '', 'app.asar.unpacked', 'out', 'main', 'schema.sql'),
+      join(process.resourcesPath || '', 'app.asar.unpacked', 'src', 'main', 'services', 'database', 'schema.sql'),
+      // 如果是从不同目录启动，尝试相对于应用程序目录的路径
+      join(process.execPath, '..', 'resources', 'app.asar.unpacked', 'out', 'main', 'schema.sql'),
+      join(process.execPath, '..', 'resources', 'app.asar.unpacked', 'src', 'main', 'services', 'database', 'schema.sql')
+    ]
         
         for (const path of alternativePaths) {
           if (existsSync(path)) {
             schemaPath = path
+            console.log(`Found schema.sql at: ${path}`)
             break
           }
         }
       }
       
       if (!existsSync(schemaPath)) {
-        throw new Error(`Schema file not found. Tried paths: ${schemaPath}`)
+        const triedPaths = [
+          schemaPath,
+          join(process.cwd(), 'src/main/services/database/schema.sql'),
+          join(process.cwd(), 'out/main/schema.sql'),
+          join(__dirname, '../../../src/main/services/database/schema.sql'),
+          join(__dirname, 'schema.sql'),
+          join(process.resourcesPath, 'app.asar.unpacked', 'out', 'main', 'schema.sql'),
+          join(process.resourcesPath, 'app.asar.unpacked', 'src', 'main', 'services', 'database', 'schema.sql'),
+          join(process.execPath, '..', 'resources', 'app.asar.unpacked', 'out', 'main', 'schema.sql'),
+          join(process.execPath, '..', 'resources', 'app.asar.unpacked', 'src', 'main', 'services', 'database', 'schema.sql')
+        ]
+        throw new Error(`Schema file not found. Tried paths: ${triedPaths.join(', ')}`)
       }
       
       const schema = readFileSync(schemaPath, 'utf-8')

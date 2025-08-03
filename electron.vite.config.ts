@@ -6,10 +6,30 @@ import compressPlugin from 'vite-plugin-compression'
 import AutoImport from 'unplugin-auto-import/vite'
 import { NaiveUiResolver } from 'unplugin-vue-components/resolvers'
 import Components from 'unplugin-vue-components/vite'
+import { copyFileSync, mkdirSync } from 'fs'
+import { dirname } from 'path'
+
+// 创建复制文件的插件
+function copySchemaPlugin() {
+  return {
+    name: 'copy-schema',
+    writeBundle() {
+      const sourceFile = resolve(__dirname, 'src/main/services/database/schema.sql')
+      const targetFile = resolve(__dirname, 'out/main/schema.sql')
+      
+      // 确保目标目录存在
+      mkdirSync(dirname(targetFile), { recursive: true })
+      
+      // 复制文件
+      copyFileSync(sourceFile, targetFile)
+      console.log('Copied schema.sql to out/main/')
+    }
+  }
+}
 
 export default defineConfig({
   main: {
-    plugins: [externalizeDepsPlugin()],
+    plugins: [externalizeDepsPlugin(), copySchemaPlugin()],
     build: {
       copyPublicDir: false,
       assetsDir: '.',
