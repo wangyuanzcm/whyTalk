@@ -351,7 +351,24 @@ export class FrontendPluginRenderer {
           
           // 触发自定义事件，通知插件API已准备好
           await window.webContents.executeJavaScript(`
-            window.dispatchEvent(new CustomEvent('pluginAPIReady'))
+            try {
+              // 确保 CustomEvent 可用
+              if (typeof CustomEvent === 'undefined') {
+                window.CustomEvent = function(event, params) {
+                  params = params || { bubbles: false, cancelable: false, detail: undefined };
+                  var evt = document.createEvent('CustomEvent');
+                  evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
+                  return evt;
+                };
+                CustomEvent.prototype = window.Event.prototype;
+              }
+              
+              // 派发事件
+              const readyEvent = new CustomEvent('pluginAPIReady');
+              window.dispatchEvent(readyEvent);
+            } catch (error) {
+              console.error('Failed to dispatch pluginAPIReady event:', error)
+            }
           `)
           
           console.log(`Plugin API injection completed for ${plugin.id}`)

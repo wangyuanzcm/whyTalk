@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ServAuthLogin } from '@/api/auth'
 import { setToken } from '@/utils/auth.ts'
-import { rsaEncrypt } from '@/utils/rsa'
+
 import { playMusic } from '@/utils/talk'
 import { useInject } from '@/hooks'
 import ws from '@/connect'
@@ -36,7 +36,7 @@ const onLogin = async () => {
   const { code, data } = await ServAuthLogin(
     {
       mobile: model.username,
-      password: rsaEncrypt(model.password),
+      password: model.password, // 暂时禁用 RSA 加密
       platform: 'web'
     },
     {
@@ -67,12 +67,41 @@ const onValidate = (e: Event) => {
 }
 
 const onClickAccount = (type: number) => {
-  if (type == 1) {
-    model.username = '13800000001'
-    model.password = 'admin123'
-  } else {
-    model.username = '13800000002'
-    model.password = 'admin123'
+  // 调试：检查 window.electron 是否可用
+  console.log('onClickAccount called, type:', type)
+  console.log('window.electron:', window.electron)
+  console.log('window.electron?.ipcRenderer:', window.electron?.ipcRenderer)
+  
+  if (!window.electron || !window.electron.ipcRenderer) {
+    message.error('IPC API 不可用，请检查 Electron 预加载脚本')
+    return
+  }
+  
+  switch (type) {
+    case 0:
+      // 实际存在的测试用户
+      model.username = '13800138000'
+      model.password = '123456'
+      break
+    case 1:
+      model.username = '13800138001'
+      model.password = '123456'
+      break
+    case 2:
+      model.username = '13800138002'
+      model.password = '123456'
+      break
+    case 3:
+      model.username = '13800138003'
+      model.password = '123456'
+      break
+    case 4:
+      model.username = '13800138004'
+      model.password = '123456'
+      break
+    default:
+      model.username = '13800138000'
+      model.password = '123456'
   }
 
   onLogin()
@@ -125,13 +154,16 @@ const onClickAccount = (type: number) => {
       </div>
     </main>
 
-    <footer class="el-footer" style="height: 90px">
+    <footer class="el-footer" style="height: 140px">
       <n-divider style="height: 30px; margin: 0">
-        <span style="color: #ccc; font-weight: 300"> 预览账号</span>
+        <span style="color: #ccc; font-weight: 300"> 测试账号</span>
       </n-divider>
       <div class="preview-account">
-        <p @click="onClickAccount(1)">预览账号:187****0001 / 密码: admin123</p>
-        <p @click="onClickAccount(2)">预览账号:187****0002 / 密码: admin123</p>
+        <p @click="onClickAccount(0)" style="color: #67C23A; font-weight: bold;">✓ 测试用户: 138****8000 / 密码: 123456 (可用)</p>
+        <p @click="onClickAccount(1)" style="color: #67C23A; font-weight: bold;">✓ Alice: 138****8001 / 密码: 123456 (可用)</p>
+        <p @click="onClickAccount(2)" style="color: #67C23A; font-weight: bold;">✓ Bob: 138****8002 / 密码: 123456 (可用)</p>
+        <p @click="onClickAccount(3)" style="color: #67C23A; font-weight: bold;">✓ Charlie: 138****8003 / 密码: 123456 (可用)</p>
+        <p @click="onClickAccount(4)" style="color: #67C23A; font-weight: bold;">✓ Diana: 138****8004 / 密码: 123456 (可用)</p>
       </div>
     </footer>
   </section>

@@ -1,0 +1,28 @@
+.immsg-text[data-v-16442278] {
+  min-width: 30px;
+  min-height: 30px;
+  padding: 3px;
+  border-radius: 5px;
+  background: var(--chat-assistant-bg-color);
+}
+.immsg-text.user[data-v-16442278] {
+  background: var(--chat-user-bg-color);
+}
+.immsg-text pre[data-v-16442278] {
+  white-space: pre-wrap;
+  overflow: hidden;
+  word-break: break-word;
+  word-wrap: break-word;
+  font-size: 13px;
+  padding: 3px 5px;
+  font-family: system, -apple-system, BlinkMacSystemFont, PingFang SC, Segoe UI, Microsoft YaHei, wenquanyi micro hei, Hiragino Sans GB, Hiragino Sans GB W3, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, Helvetica, Arial, sans-serif;
+  line-height: 1.8;
+}
+.immsg-text pre[data-v-16442278] .emoji {
+  vertical-align: text-bottom;
+  margin: 0 3px;
+}
+.immsg-text pre[data-v-16442278] a {
+  color: var(--im-primary-color);
+  text-decoration: revert;
+}

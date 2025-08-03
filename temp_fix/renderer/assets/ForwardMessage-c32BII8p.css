@@ -1,0 +1,49 @@
+.section[data-v-3401a9f1] {
+  height: 600px;
+  width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.immsg-forward[data-v-d1e41d7b] {
+  width: 250px;
+  min-height: 50px;
+  border-radius: 5px;
+  padding: 8px 10px;
+  border: 1px solid var(--im-message-border-color);
+  user-select: none;
+}
+.immsg-forward .title[data-v-d1e41d7b] {
+  height: 30px;
+  line-height: 30px;
+  font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 400;
+  margin-bottom: 5px;
+}
+.immsg-forward .item p[data-v-d1e41d7b] {
+  height: 18px;
+  line-height: 18px;
+  font-size: 12px;
+  color: #a8a8a8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 5px;
+}
+.immsg-forward .describe[data-v-d1e41d7b] {
+  height: 32px;
+  line-height: 35px;
+  color: #8a8888;
+  border-top: 1px solid var(--border-color);
+  font-size: 12px;
+  margin-top: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+html[theme-mode='dark'] .immsg-forward[data-v-d1e41d7b] {
+  border: unset;
+  background: #2b2b2b;
+}

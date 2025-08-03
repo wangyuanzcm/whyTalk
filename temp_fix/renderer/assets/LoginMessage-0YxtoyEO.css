@@ -1,0 +1,25 @@
+.immsg-login[data-v-610b1f0e] {
+  width: inherit;
+  max-width: 300px;
+  border-radius: 5px;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+}
+.immsg-login h4[data-v-610b1f0e] {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
+}
+.immsg-login p[data-v-610b1f0e] {
+  font-size: 13px;
+  margin: 10px 0;
+}
+.immsg-login p span[data-v-610b1f0e] {
+  font-weight: 400;
+}
+.immsg-login p[data-v-610b1f0e]:last-child {
+  margin-bottom: 0;
+}
+html[theme-mode='dark'] .immsg-login[data-v-610b1f0e] {
+  border: unset;
+  background: #2b2b2b;
+}

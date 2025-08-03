@@ -1,7 +1,8 @@
 <script lang="ts" setup>
 import { useUserStore, useSettingsStore, useTalkStore } from '@/store'
 import AccountCard from './AccountCard.vue'
-import { SettingTwo, Message, People, BookmarkOne, Application } from '@icon-park/vue-next'
+import P2PStatusIndicator from '@/components/P2PStatusIndicator.vue'
+import { SettingTwo, Message, People, BookmarkOne, Application, Connection } from '@icon-park/vue-next'
 
 const userStore = useUserStore()
 const talkStore = useTalkStore()
@@ -35,6 +36,11 @@ const menus = reactive([
     link: '/workspace',
     icon: markRaw(Application),
     title: '工作台'
+  },
+  {
+    link: '/p2p',
+    icon: markRaw(Connection),
+    title: 'P2P网络'
   },
   {
     link: '/settings',
@@ -83,6 +89,11 @@ const isActive = (menu) => {
       <span class="online-status" :class="{ online: userStore.online }">
         {{ userStore.online ? '在线' : '连接中...' }}
       </span>
+      
+      <!-- P2P状态指示器 -->
+      <div class="p2p-status-container">
+        <P2PStatusIndicator />
+      </div>
     </header>
 
     <main class="menu-main">
@@ -127,7 +138,7 @@ const isActive = (menu) => {
   box-sizing: border-box;
 
   .menu-header {
-    height: 90px;
+    height: 120px;
     width: 100%;
     flex-shrink: 0;
     display: flex;
@@ -146,6 +157,13 @@ const isActive = (menu) => {
       &.online {
         color: #65c468;
       }
+    }
+
+    .p2p-status-container {
+      margin-top: 8px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
     }
   }
 

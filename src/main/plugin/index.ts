@@ -211,6 +211,11 @@ export class PluginSystem {
 // 导出单例实例
 export const pluginSystem = new PluginSystem()
 
+// 导出初始化函数
+export async function initPlugins(): Promise<void> {
+  await pluginSystem.initialize()
+}
+
 // 导出所有组件类型
 export * from './PluginManager'
 export * from './SecurityManager'

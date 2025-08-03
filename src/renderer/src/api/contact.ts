@@ -1,57 +1,57 @@
-import { createApi, EmptyRequest } from './request.ts'
+import { createIpcApi, EmptyRequest } from './ipc-request.ts'
 
 // 使用高阶函数生成具体的API调用函数
-export const ServContactList = createApi<EmptyRequest, ServContactListResponse>(
+export const ServContactList = createIpcApi<EmptyRequest, ServContactListResponse>(
   '/api/v1/contact/list'
 )
 
-export const ServContactDelete = createApi<{ user_id: number }, null>('/api/v1/contact/delete')
+export const ServContactDelete = createIpcApi<{ user_id: number }, null>('/api/v1/contact/delete')
 
-export const ServContactEditRemark = createApi<{ user_id: number; remark: string }, null>(
+export const ServContactEditRemark = createIpcApi<{ user_id: number; remark: string }, null>(
   '/api/v1/contact/edit-remark'
 )
 
-export const ServContactSearch = createApi<{ mobile: string }, ServContactSearchResponse>(
+export const ServContactSearch = createIpcApi<{ mobile: string }, ServContactSearchResponse>(
   '/api/v1/contact/search'
 )
 
-export const ServContactApplyCreate = createApi<{ user_id: number; remark: string }, null>(
+export const ServContactApplyCreate = createIpcApi<{ user_id: number; remark: string }, null>(
   '/api/v1/contact/apply/create'
 )
 
-export const ServContactApplyRecords = createApi<EmptyRequest, any>('/api/v1/contact/apply/records')
+export const ServContactApplyRecords = createIpcApi<EmptyRequest, any>('/api/v1/contact/apply/records')
 
-export const ServContactApplyAccept = createApi<{ apply_id: number; remark: string }, null>(
+export const ServContactApplyAccept = createIpcApi<{ apply_id: number; remark: string }, null>(
   '/api/v1/contact/apply/accept'
 )
 
-export const ServContactApplyDecline = createApi<{ apply_id: number; remark: string }, null>(
+export const ServContactApplyDecline = createIpcApi<{ apply_id: number; remark: string }, null>(
   '/api/v1/contact/apply/decline'
 )
 
-export const ServContactApplyUnreadNum = createApi<EmptyRequest, { unread_num: number }>(
+export const ServContactApplyUnreadNum = createIpcApi<EmptyRequest, { unread_num: number }>(
   '/api/v1/contact/apply/unread-num'
 )
 
-export const ServContactDetail = createApi<{ user_id: number }, ServContactDetailResponse>(
+export const ServContactDetail = createIpcApi<{ user_id: number }, ServContactDetailResponse>(
   '/api/v1/contact/detail'
 )
 
-export const ServContactGroupList = createApi<EmptyRequest, ServContactGroupListResponse>(
+export const ServContactGroupList = createIpcApi<EmptyRequest, ServContactGroupListResponse>(
   '/api/v1/contact/group/list'
 )
 
-export const ServContactMoveGroup = createApi<
+export const ServContactMoveGroup = createIpcApi<
   { user_id: number; group_id: number },
   ServContactGroupListResponse
 >('/api/v1/contact/move-group')
 
-export const ServContactGroupUpdate = createApi<
+export const ServContactGroupUpdate = createIpcApi<
   { items: { id: number; name: string; sort: number }[] },
   null
 >('/api/v1/contact/group/update')
 
-export const ServContactOnlineStatus = createApi<{ user_id: number }, { online_status: string }>(
+export const ServContactOnlineStatus = createIpcApi<{ user_id: number }, { online_status: string }>(
   '/api/v1/contact/online-status'
 )
 

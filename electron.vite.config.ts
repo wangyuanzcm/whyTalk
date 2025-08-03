@@ -9,7 +9,18 @@ import Components from 'unplugin-vue-components/vite'
 
 export default defineConfig({
   main: {
-    plugins: [externalizeDepsPlugin()]
+    plugins: [externalizeDepsPlugin()],
+    build: {
+      copyPublicDir: false,
+      assetsDir: '.',
+      rollupOptions: {
+        external: ['better-sqlite3'],
+        output: {
+          assetFileNames: '[name].[ext]'
+        }
+      }
+    },
+    assetsInclude: ['**/*.sql', '**/*.mjs']
   },
   preload: {
     plugins: [externalizeDepsPlugin()],

@@ -6,7 +6,7 @@ import {
   ServArticleDelete,
   ServArticleMoveClassify
 } from '@/api/article'
-import { ServUploadImage } from '@/api/upload'
+import { uploadFile } from '@/api/ipc-request'
 import { downloadBlobFile } from '@/utils/file'
 import { useInject } from '@/hooks'
 import { debounce } from '@/utils/common'
@@ -69,10 +69,7 @@ export function useNoteEditor() {
   const onUploadImage = async (files: File[], callback: any) => {
     if (!files.length) return
 
-    const form = new FormData()
-    form.append('file', files[0])
-
-    const { code, data } = await ServUploadImage(form)
+    const { code, data } = await uploadFile(files[0])
     if (code != 200) return
 
     callback([data.src])

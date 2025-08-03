@@ -4,7 +4,7 @@ import { MdEditor } from 'md-editor-v3'
 
 import { ref, onMounted } from 'vue'
 import { ServGroupDetail, ServGroupNoticeUpdate } from '@/api/group'
-import { ServUploadImage } from '@/api/upload'
+import { uploadFile } from '@/api/ipc-request'
 
 const props = defineProps({
   groupId: {
@@ -29,10 +29,7 @@ const onSave = async () => {
 const onUploadImage = async (files: File[], callback: any) => {
   if (!files.length) return
 
-  const form = new FormData()
-  form.append('file', files[0])
-
-  const { code, data } = await ServUploadImage(form)
+  const { code, data } = await uploadFile(files[0])
   if (code != 200) return
 
   callback([data.src])

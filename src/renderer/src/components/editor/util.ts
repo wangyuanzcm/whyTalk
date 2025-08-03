@@ -1,5 +1,5 @@
 import type { Delta } from 'quill/core'
-import { ServUploadImage } from '@/api/upload'
+import { uploadFile } from '@/api/ipc-request'
 
 interface Item {
   type: number
@@ -180,13 +180,8 @@ export function onUploadImage(file: File) {
     const image = new Image()
     image.src = URL.createObjectURL(file)
     image.onload = async () => {
-      const form = new FormData()
-      form.append('file', file)
-      form.append('width', image.width.toString())
-      form.append('height', image.height.toString())
-
-      const { code, data } = await ServUploadImage(form)
-      code == 200 && resolve(data.src)
+      const { code, data } = await uploadFile(file)
+      code == 200 && resolve(data.url)
 
       URL.revokeObjectURL(image.src)
     }

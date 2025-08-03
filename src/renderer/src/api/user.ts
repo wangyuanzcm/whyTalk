@@ -1,4 +1,4 @@
-import { createApi, EmptyRequest } from './request.ts'
+import { createIpcApi, EmptyRequest } from './ipc-request.ts'
 
 interface ServUserPasswordUpdateRequest {
   old_password: string
@@ -6,44 +6,45 @@ interface ServUserPasswordUpdateRequest {
 }
 
 // 修改密码服务接口
-export const ServUserPasswordUpdate = createApi<ServUserPasswordUpdateRequest, null>(
-  '/api/v1/user/password/update'
+export const ServUserPasswordUpdate = createIpcApi<ServUserPasswordUpdateRequest, null>(
+  '/api/v1/user/password'
 )
 
 interface ServUserMobileUpdateRequest {
   mobile: string
-  password: string
   sms_code: string
+  password: string
 }
 
 // 修改手机号服务接口
-export const ServUserMobileUpdate = createApi<ServUserMobileUpdateRequest, null>(
-  '/api/v1/user/mobile/update'
+export const ServUserMobileUpdate = createIpcApi<ServUserMobileUpdateRequest, null>(
+  '/api/v1/user/mobile'
 )
 
 interface ServUserEmailUpdateRequest {
   email: string
+  email_code: string
   password: string
-  code: string
 }
 
-// 修改手机号服务接口
-export const ServUserEmailUpdate = createApi<ServUserEmailUpdateRequest, null>(
-  '/api/v1/user/email/update'
+// 修改邮箱服务接口
+export const ServUserEmailUpdate = createIpcApi<ServUserEmailUpdateRequest, null>(
+  '/api/v1/user/email'
 )
 
 interface ServUserUpdateRequest {
-  nickname: string
-  avatar: string
-  motto: string
-  gender: number
-  birthday: string
+  nickname?: string
+  avatar?: string
+  motto?: string
+  gender?: number
+  birthday?: string
 }
 
 // 修改个人信息服务接口
-export const ServUserUpdate = createApi<ServUserUpdateRequest, null>('/api/v1/user/update')
+export const ServUserUpdate = createIpcApi<ServUserUpdateRequest, null>('/api/v1/user/update')
 
 interface ServUserDetailResponse {
+  id: number
   mobile: string
   nickname: string
   avatar: string
@@ -51,10 +52,13 @@ interface ServUserDetailResponse {
   email: string
   gender: number
   birthday: string
+  is_robot: number
+  created_at: string
+  updated_at: string
 }
 
 // 查询用户信息服务接口
-export const ServUserDetail = createApi<EmptyRequest, ServUserDetailResponse>('/api/v1/user/detail')
+export const ServUserDetail = createIpcApi<EmptyRequest, ServUserDetailResponse>('/api/v1/user/detail')
 
-// 获取用户相关设置信息
-export const ServeUserSetting = createApi<EmptyRequest, any>('/api/v1/user/setting')
+// 获取用户设置信息服务接口
+export const ServeUserSetting = createIpcApi<EmptyRequest, any>('/api/v1/user/setting')

@@ -1,0 +1,68 @@
+.immsg-code[data-v-feadac86] {
+  border-radius: 5px;
+  overflow-x: auto;
+  border: 1px solid var(--border-color);
+  padding: 5px 10px;
+  max-width: fit-content;
+  min-width: 250px;
+  width: 100%;
+  background-color: #ffffff;
+}
+.immsg-code .header[data-v-feadac86] {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  height: 38px;
+  cursor: pointer;
+  font-size: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+.immsg-code .header .icon[data-v-feadac86] {
+  margin-left: 8px;
+}
+.immsg-code .main[data-v-feadac86] {
+  overflow-y: hidden;
+  padding: 10px 0;
+  overflow: auto;
+  max-height: 300px;
+}
+.immsg-code .main[data-v-feadac86] .n-code pre {
+  overflow: auto;
+}
+.immsg-code .footer[data-v-feadac86] {
+  width: 100%;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0.03);
+  border-radius: 20px;
+  margin: 10px 0;
+}
+.immsg-code.full[data-v-feadac86] {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  width: 100%;
+  height: 100%;
+  border: unset;
+  box-sizing: border-box;
+  max-width: unset;
+  max-height: unset;
+  border-radius: unset;
+}
+.immsg-code.full .header[data-v-feadac86] {
+  height: 60px;
+}
+.immsg-code.full .main[data-v-feadac86] {
+  overflow-y: unset;
+  max-height: unset;
+}
+html[theme-mode='dark'] .immsg-code[data-v-feadac86] {
+  border: unset;
+  background: #2b2b2b;
+}
+html[theme-mode='dark'] .immsg-code .footer[data-v-feadac86] {
+  background-color: rgba(255, 255, 255, 0.05);
+}

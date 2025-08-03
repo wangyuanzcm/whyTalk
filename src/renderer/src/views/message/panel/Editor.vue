@@ -1,20 +1,21 @@
 <script lang="ts" setup>
+import { ref } from 'vue'
 import {
   useTalkStore,
   useDialogueStore,
   useSettingsStore,
   useUploadsStore,
-  useEditorStore,
-  useAsyncMessageStore
+  useEditorStore
 } from '@/store'
-import ws from '@/connect'
-import { ServTalkMessageSend } from '@/api/chat.ts'
+import p2pConnect from '@/p2p/P2PConnect'
+import { P2PMessageService } from '@/services/P2PMessageService'
+
 import { ServGroupVoteCreate } from '@/api/group.ts'
 import { throttle } from '@/utils/common'
 import { getVideoImage } from '@/utils/file'
 import Editor from '@/components/editor/Editor.vue'
 import HistoryRecord from '@/components/mechat/HistoryRecord.vue'
-import { ServUploadImage } from '@/api/upload.ts'
+import { uploadFile } from '@/api/ipc-request'
 import { bus } from '@/utils'
 import { useInject } from '@/hooks'
 
@@ -24,7 +25,7 @@ const editorStore = useEditorStore()
 const settingsStore = useSettingsStore()
 const uploadsStore = useUploadsStore()
 const dialogueStore = useDialogueStore()
-const { addAsyncMessage } = useAsyncMessageStore()
+
 const props = defineProps({
   uid: {
     type: Number,
@@ -54,8 +55,8 @@ const props = defineProps({
 const isShowHistory = ref(false)
 
 const onSendMessage = async (data: any = {}): Promise<boolean> => {
-  if (!ws.isConnect()) {
-    message.error('网络连接已中断，请稍后再试!')
+  if (!p2pConnect.isConnect()) {
+    message.error('P2P网络连接已中断，请稍后再试!')
     return Promise.resolve(false)
   }
 
@@ -65,15 +66,28 @@ const onSendMessage = async (data: any = {}): Promise<boolean> => {
     to_from_id: props.toFromId
   }
 
-  // 异步发送
-  if (['text', 'mixed', 'image', 'video', 'code'].includes(params.type)) {
-    addAsyncMessage(params)
-    return true
+  try {
+    if (props.talkMode === 2) {
+      // 群组消息
+      const result = await P2PMessageService.sendGroupMessage(
+        props.toFromId.toString(),
+        params.body,
+        params.type || 'text'
+      )
+      return result.success
+    } else {
+      // 直接消息
+      const result = await P2PMessageService.sendTextMessage(
+        props.toFromId.toString(),
+        params.body
+      )
+      return result.success
+    }
+  } catch (error) {
+    console.error('发送消息失败:', error)
+    message.error('发送消息失败')
+    return false
   }
-
-  // 同步发送
-  const { code } = await ServTalkMessageSend(params)
-  return code == 200
 }
 
 // 发送文本消息
@@ -97,20 +111,14 @@ const onSendImageEvent = (data: any): Promise<boolean> => {
   })
 }
 
-// 发送图片消息
+// 发送视频消息
 const onSendVideoEvent = async (data: any) => {
   const resp = await getVideoImage(data)
 
-  const coverForm = new FormData()
-  coverForm.append('file', resp.file)
-
-  const cover = await ServUploadImage(coverForm)
+  const cover = await uploadFile(resp.file)
   if (cover.code != 200) return false
 
-  const form = new FormData()
-  form.append('file', data)
-
-  const video = await ServUploadImage(form)
+  const video = await uploadFile(data)
   if (video.code != 200) return false
 
   return await onSendMessage({
@@ -181,8 +189,10 @@ const onSendMixedEvent = (data: any): Promise<boolean> => {
 }
 
 const onKeyboardPush = throttle(() => {
-  ws.emit('im.message.keyboard', {
-    to_from_id: props.toFromId
+  // P2P模式下的键盘输入状态推送
+  p2pConnect.sendTypingStatus({
+    to_from_id: props.toFromId,
+    talk_mode: props.talkMode
   })
 }, 3000)
 

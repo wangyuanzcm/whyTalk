@@ -5,6 +5,7 @@ import MainLayout from '@/layout/MainLayout.vue'
 import SettingRouter from './modules/setting.js'
 import ContactRouter from './modules/contact.js'
 import AuthRouter from './modules/auth.js'
+import P2PRouter from './modules/p2p.js'
 
 const routes = [
   {
@@ -38,7 +39,8 @@ const routes = [
         component: () => import('@/views/workspace/index.vue')
       },
       SettingRouter,
-      ContactRouter
+      ContactRouter,
+      P2PRouter
     ]
   },
   AuthRouter,

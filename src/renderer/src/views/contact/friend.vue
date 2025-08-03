@@ -7,6 +7,7 @@ import {
   ServContactGroupList,
   ServContactListResponseItem
 } from '@/api/contact.ts'
+import { P2PContactService } from '@/services/P2PMessageService'
 import { useEventBus, useContact } from '@/hooks'
 import { ContactConst } from '@/constant/event-bus'
 import { useTalkStore } from '@/store'
@@ -39,10 +40,29 @@ const filter: any = computed(() => {
 })
 
 const loadContactList = async () => {
-  const { code, data } = await ServContactList({}, { loading })
-  if (code != 200) return
-
-  items.value = data?.items || []
+  try {
+    loading.value = true
+    const result = await P2PContactService.getContactList()
+    
+    if (result.success) {
+      items.value = result.data?.list || []
+    } else {
+      // 如果P2P服务失败，回退到传统API
+      const { code, data } = await ServContactList({}, { loading })
+      if (code == 200) {
+        items.value = data?.items || []
+      }
+    }
+  } catch (error) {
+    console.error('加载联系人列表失败:', error)
+    // 回退到传统API
+    const { code, data } = await ServContactList({}, { loading })
+    if (code == 200) {
+      items.value = data?.items || []
+    }
+  } finally {
+    loading.value = false
+  }
 }
 
 const loadContactGroupList = async () => {

@@ -3,7 +3,7 @@ import { reactive, ref } from 'vue'
 import { Close, UploadOne, RefreshOne, Redo, Undo } from '@icon-park/vue-next'
 import 'vue-cropper/dist/index.css'
 import { VueCropper } from 'vue-cropper'
-import { ServUploadImage } from '@/api/upload'
+import { uploadFile } from '@/api/ipc-request'
 
 const emit = defineEmits(['close', 'success'])
 const state = reactive({
@@ -81,10 +81,7 @@ const onSubmit = () => {
       lastModified: Date.now()
     })
 
-    const form = new FormData()
-    form.append('file', file)
-
-    const { code, data } = await ServUploadImage(form)
+    const { code, data } = await uploadFile(file)
 
     code == 200 && emit('success', data.src)
   })

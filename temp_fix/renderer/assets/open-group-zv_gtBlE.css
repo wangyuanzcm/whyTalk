@@ -1,0 +1,15 @@
+.cards[data-v-056a2a47] {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-gap: 12px;
+  gap: 12px;
+}
+.cards .more[data-v-056a2a47] {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  cursor: pointer;
+  min-height: 97px;
+}
+.cards .more[data-v-056a2a47]:hover {
+  border-color: #508afe;
+}

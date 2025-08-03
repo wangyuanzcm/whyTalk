@@ -380,7 +380,7 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld('pluginAPI', wrapAPIWithErrorHandling(pluginAPI))
     
     // 暴露一些基础的Electron API（受限版本）
-    contextBridge.exposeInMainWorld('electronAPI', {
+    contextBridge.exposeInMainWorld('electron', {
       ipcRenderer: {
         invoke: ipcRenderer.invoke.bind(ipcRenderer),
         send: ipcRenderer.send.bind(ipcRenderer),
@@ -396,7 +396,7 @@ if (process.contextIsolated) {
 } else {
   // 非隔离上下文（不推荐，但作为后备）
   ;(window as any).pluginAPI = wrapAPIWithErrorHandling(pluginAPI)
-  ;(window as any).electronAPI = {
+  ;(window as any).electron = {
     ipcRenderer: {
       invoke: ipcRenderer.invoke.bind(ipcRenderer),
       send: ipcRenderer.send.bind(ipcRenderer),

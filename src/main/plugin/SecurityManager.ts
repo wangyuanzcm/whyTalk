@@ -53,7 +53,7 @@ export class SecurityManager {
         Permission.STORAGE,
         Permission.NOTIFICATIONS
       ],
-      sandboxed: true,
+      sandboxed: false, // 禁用沙盒以允许preload脚本访问ipcRenderer
       maxMemoryUsage: 100, // 100MB
       maxExecutionTime: 5000 // 5秒
     }

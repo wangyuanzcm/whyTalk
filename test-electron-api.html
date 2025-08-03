@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Electron API</title>
+</head>
+<body>
+    <h1>Electron API Test</h1>
+    <div id="result"></div>
+    
+    <script>
+        function testElectronAPI() {
+            const resultDiv = document.getElementById('result');
+            
+            console.log('Testing window.electron...');
+            console.log('window.electron:', window.electron);
+            
+            if (window.electron) {
+                resultDiv.innerHTML += '<p style="color: green;">✓ window.electron is available</p>';
+                
+                if (window.electron.ipcRenderer) {
+                    resultDiv.innerHTML += '<p style="color: green;">✓ window.electron.ipcRenderer is available</p>';
+                    
+                    // Test ping
+                    window.electron.ipcRenderer.invoke('ping')
+                        .then(result => {
+                            resultDiv.innerHTML += `<p style="color: green;">✓ IPC ping test successful: ${result}</p>`;
+                        })
+                        .catch(error => {
+                            resultDiv.innerHTML += `<p style="color: red;">✗ IPC ping test failed: ${error.message}</p>`;
+                        });
+                } else {
+                    resultDiv.innerHTML += '<p style="color: red;">✗ window.electron.ipcRenderer is NOT available</p>';
+                }
+            } else {
+                resultDiv.innerHTML += '<p style="color: red;">✗ window.electron is NOT available</p>';
+            }
+        }
+        
+        // Run test when page loads
+        window.addEventListener('DOMContentLoaded', testElectronAPI);
+    </script>
+</body>
+</html>

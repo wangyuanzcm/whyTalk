@@ -1,13 +1,4 @@
 // 使用预加载脚本暴露的 API，而不是直接导入 electron
-declare global {
-  interface Window {
-    electron: {
-      ipcRenderer: {
-        invoke: (channel: string, ...args: any[]) => Promise<any>
-      }
-    }
-  }
-}
 
 export interface PluginInfo {
   id: string

@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia'
 import {
   ServCustomizeEmoticonList,
-  ServCustomizeEmoticonUpload,
   ServCustomizeEmoticonDelete
 } from '@/api/emoticon'
+import { uploadFile } from '@/api/ipc-request'
 
 export const useEditorStore = defineStore('editor', {
   state: () => {
@@ -40,10 +40,7 @@ export const useEditorStore = defineStore('editor', {
 
     // 自定义上传用户表情包
     async uploadUserEmoticon(file: File) {
-      const params = new FormData()
-      params.append('file', file)
-
-      const { code, data } = await ServCustomizeEmoticonUpload(params)
+      const { code, data } = await uploadFile(file)
 
       if (code != 200) return
 

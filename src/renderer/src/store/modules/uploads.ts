@@ -1,24 +1,24 @@
 import { defineStore } from 'pinia'
-import { ServUploadInitMultipart, ServUploadMultipart } from '@/api/upload'
+import { ServUploadInitMultipart } from '@/api/upload'
+import { uploadMultipart } from '@/api/ipc-request'
 import { ServTalkMessageSend } from '@/api/chat'
 
 // 处理拆分上传文件
 function fileSlice(file: File, uploadId: string, eachSize: number) {
   const splitNum = Math.ceil(file.size / eachSize) // 分片总数
-  const items: FormData[] = []
+  const items: { blob: Blob; uploadId: string; splitIndex: number; splitNum: number }[] = []
 
   // 处理每个分片的上传操作
   for (let i = 0; i < splitNum; i++) {
     const start = i * eachSize
     const end = Math.min(file.size, start + eachSize)
 
-    const form = new FormData()
-    form.append('file', file.slice(start, end))
-    form.append('upload_id', uploadId)
-    form.append('split_index', `${i + 1}`)
-    form.append('split_num', `${splitNum}`)
-
-    items.push(form)
+    items.push({
+      blob: file.slice(start, end),
+      uploadId: uploadId,
+      splitIndex: i + 1,
+      splitNum: splitNum
+    })
   }
 
   return items
@@ -84,7 +84,13 @@ export const useUploadsStore = defineStore('uploads', {
       if (!item) return
 
       item.status = 1
-      const { code } = await ServUploadMultipart(item.files[item.uploadIndex])
+      const fileSlice = item.files[item.uploadIndex]
+      const { code } = await uploadMultipart(
+        fileSlice.blob,
+        fileSlice.uploadId,
+        fileSlice.splitIndex,
+        fileSlice.splitNum
+      )
       item.status = 3
 
       if (code !== 200) throw new Error('Failed to find file split info.')

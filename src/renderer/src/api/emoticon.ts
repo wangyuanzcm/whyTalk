@@ -1,9 +1,9 @@
-import { createApi } from './request.ts'
+import { createIpcApi } from './ipc-request.ts'
 
-export const ServCustomizeEmoticonList = createApi('/api/v1/emoticon/customize/list')
+export const ServCustomizeEmoticonList = createIpcApi('/api/v1/emoticon/customize/list')
 
-export const ServCustomizeEmoticonUpload = createApi('/api/v1/emoticon/customize/upload')
+export const ServCustomizeEmoticonUpload = createIpcApi('/api/v1/emoticon/customize/upload')
 
-export const ServCustomizeEmoticonDelete = createApi('/api/v1/emoticon/customize/delete')
+export const ServCustomizeEmoticonDelete = createIpcApi('/api/v1/emoticon/customize/delete')
 
-export const ServCustomizeEmoticonCreate = createApi('/api/v1/emoticon/customize/create')
+export const ServCustomizeEmoticonCreate = createIpcApi('/api/v1/emoticon/customize/create')

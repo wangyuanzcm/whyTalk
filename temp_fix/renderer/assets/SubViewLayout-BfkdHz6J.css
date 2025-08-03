@@ -1,0 +1,56 @@
+.section[data-v-c763af6e] {
+  height: 100%;
+}
+.section .el-header[data-v-c763af6e] {
+  height: 60px;
+  line-height: 60px;
+  padding-left: 15px;
+  font-size: 18px;
+  -webkit-app-region: drag;
+}
+.section .el-aside[data-v-c763af6e] {
+  width: 180px;
+  padding: 8px;
+  padding-top: 3px;
+}
+.section .el-aside a[data-v-c763af6e] {
+  text-decoration: none;
+  color: var(--im-text-color);
+}
+.section .el-aside .menu[data-v-c763af6e] {
+  height: 36px;
+  padding: 0 5px;
+  font-size: 14px;
+  border-radius: 5px;
+  margin: 6px 0px;
+  display: flex;
+  align-items: center;
+  color: var(--im-text-color);
+  padding-left: 10px;
+}
+.section .el-aside .menu > div[data-v-c763af6e] {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.section .el-aside .menu .icon[data-v-c763af6e] {
+  width: 26px;
+  height: 26px;
+}
+.section .el-aside .menu .name[data-v-c763af6e] {
+  flex: auto;
+  justify-content: flex-start;
+  padding-left: 6px;
+}
+.section .el-aside .menu .tips[data-v-c763af6e] {
+  width: 30px;
+}
+.section .el-aside .menu .tips .badge[data-v-c763af6e] {
+  background-color: #ff4d4f;
+  color: white;
+}
+.section .el-aside .menu[data-v-c763af6e]:hover,
+.section .el-aside .menu.selectd[data-v-c763af6e] {
+  background-color: var(--im-hover-bg-color);
+}

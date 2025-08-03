@@ -62,7 +62,13 @@ class WsSocket {
   }
 
   loadSocket(): void {
-    this.connect = new WebSocket(this.urlCallBack())
+    const url = this.urlCallBack()
+    if (!url) {
+      console.log('WebSocket URL is null, skipping connection')
+      return
+    }
+    
+    this.connect = new WebSocket(url)
     this.connect.onerror = this.onError.bind(this)
     this.connect.onopen = this.onOpen.bind(this)
     this.connect.onmessage = this.onMessage.bind(this)

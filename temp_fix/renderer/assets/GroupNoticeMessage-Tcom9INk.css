@@ -1,0 +1,19 @@
+.immsg-group-notice[data-v-6db4f0d0] {
+  width: inherit;
+  max-width: 300px;
+  border-radius: 5px;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+}
+.immsg-group-notice h4[data-v-6db4f0d0] {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
+}
+.immsg-group-notice p[data-v-6db4f0d0] {
+  font-size: 13px;
+  margin: 10px 0;
+}
+html[theme-mode='dark'] .immsg-group-notice[data-v-6db4f0d0] {
+  border: unset;
+  background: #2b2b2b;
+}

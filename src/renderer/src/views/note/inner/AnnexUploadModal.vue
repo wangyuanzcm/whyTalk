@@ -2,10 +2,10 @@
 import { fileFormatSize } from '@/utils/string'
 import { getFileNameSuffix } from '@/utils/file'
 import {
-  ServArticleAnnexUpload,
   ServeDownloadAnnex as onDownload,
   ServArticleAnnexDelete
 } from '@/api/article.ts'
+import { uploadAnnex } from '@/api/ipc-request'
 import { useNoteStore, NoteFileItem } from '@/store'
 import { UploadOne } from '@icon-park/vue-next'
 import { useInject } from '@/hooks'
@@ -29,11 +29,7 @@ const onUpload = async (e: any) => {
     return message.info('笔记附件不能大于5M!')
   }
 
-  const from = new FormData()
-  from.append('annex', file)
-  from.append('article_id', `${detail.value.article_id}`)
-
-  const { code, data } = await ServArticleAnnexUpload(from, { loading })
+  const { code, data } = await uploadAnnex(file, detail.value.article_id, { loading })
   if (code == 200) {
     store.detail.annex_list.push(data)
   }

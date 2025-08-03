@@ -1,0 +1,124 @@
+.plugin-container[data-v-1e5a044d] {
+  padding: 20px;
+}
+.upload-content[data-v-1e5a044d] {
+  padding: 20px;
+  text-align: center;
+}
+.upload-content p[data-v-1e5a044d] {
+  margin-bottom: 16px;
+  color: #666;
+}
+.install-progress[data-v-1e5a044d] {
+  padding: 20px 0;
+}
+.install-progress .progress-info[data-v-1e5a044d] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+.install-progress .progress-info .progress-icon[data-v-1e5a044d] {
+  margin-right: 8px;
+  color: #18a058;
+}
+.install-progress .progress-info .step-text[data-v-1e5a044d] {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+.install-progress .progress-bar[data-v-1e5a044d] {
+  margin-top: 8px;
+}
+.install-result[data-v-1e5a044d] {
+  padding: 20px 0;
+  text-align: center;
+}
+.install-result .result-icon[data-v-1e5a044d] {
+  margin-bottom: 16px;
+}
+.install-result .result-message[data-v-1e5a044d] {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+.install-result .result-message.success[data-v-1e5a044d] {
+  color: #18a058;
+}
+.install-result .result-message.error[data-v-1e5a044d] {
+  color: #d03050;
+}
+.install-result .success-note p[data-v-1e5a044d] {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+.install-result .error-actions[data-v-1e5a044d] {
+  margin-top: 20px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+.plugin-grid[data-v-1e5a044d] {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+.plugin-card[data-v-1e5a044d] {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.3s ease;
+}
+.plugin-card[data-v-1e5a044d]:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: #18a058;
+}
+.plugin-card .plugin-header[data-v-1e5a044d] {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+.plugin-card .plugin-header .plugin-info[data-v-1e5a044d] {
+  flex: 1;
+}
+.plugin-card .plugin-header .plugin-info .plugin-name[data-v-1e5a044d] {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+.plugin-card .plugin-header .plugin-info .plugin-version[data-v-1e5a044d] {
+  font-size: 12px;
+  color: #999;
+  background: #f5f5f5;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+}
+.plugin-card .plugin-description[data-v-1e5a044d] {
+  color: #666;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.plugin-card .plugin-actions[data-v-1e5a044d] {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.header-actions[data-v-1e5a044d] {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.header-actions .search-input[data-v-1e5a044d] {
+  flex: 1;
+  max-width: 300px;
+}

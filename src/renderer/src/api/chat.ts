@@ -1,44 +1,44 @@
-import { createApi } from './request.ts'
+import { createIpcApi } from './ipc-request.ts'
 
 // 获取聊天列表服务接口
-export const ServTalkList = createApi('/api/v1/talk/list')
+export const ServTalkList = createIpcApi('/api/v1/talk/list')
 
 // 聊天列表创建服务接口
-export const ServTalkCreate = createApi<any, null>('/api/v1/talk/create')
+export const ServTalkCreate = createIpcApi<any, null>('/api/v1/talk/create')
 
 // 删除聊天列表服务接口
-export const ServTalkDelete = createApi<ServTalkDeleteRequest, null>('/api/v1/talk/delete')
+export const ServTalkDelete = createIpcApi<ServTalkDeleteRequest, null>('/api/v1/talk/delete')
 
 // 对话列表置顶服务接口
-export const ServTalkTopping = createApi<ServTalkToppingRequest, null>('/api/v1/talk/topping')
+export const ServTalkTopping = createIpcApi<ServTalkToppingRequest, null>('/api/v1/talk/topping')
 
 // 清除聊天消息未读数服务接口
-export const ServTalkClearUnread = createApi('/api/v1/talk/clear-unread')
+export const ServTalkClearUnread = createIpcApi('/api/v1/talk/clear-unread')
 
 // 获取聊天记录服务接口
-export const ServTalkRecords = createApi<ServTalkRecordsRequest, any>('/api/v1/talk/records')
+export const ServTalkRecords = createIpcApi<ServTalkRecordsRequest, any>('/api/v1/talk/records')
 
 // 查找用户聊天记录服务接口
-export const ServTalkHistoryRecords = createApi('/api/v1/talk/history-records')
+export const ServTalkHistoryRecords = createIpcApi('/api/v1/talk/history-records')
 
 // 获取转发会话记录详情列表服务接口
-export const ServTalkForwardRecords = createApi('/api/v1/talk/forward-records')
+export const ServTalkForwardRecords = createIpcApi('/api/v1/talk/forward-records')
 
 // 对话列表置顶服务接口
-export const ServTalkDisturb = createApi('/api/v1/talk/disturb')
+export const ServTalkDisturb = createIpcApi('/api/v1/talk/disturb')
 
 // 发送代码块消息服务接口
-export const ServTalkMessageSend = createApi<ServTalkMessageSendRequest, null>(
+export const ServTalkMessageSend = createIpcApi<ServTalkMessageSendRequest, null>(
   '/api/v1/talk/message/send'
 )
 
 // 撤回消息服务接口
-export const ServTalkMessageRevoke = createApi<ServTalkMessageRevokeRequest, null>(
+export const ServTalkMessageRevoke = createIpcApi<ServTalkMessageRevokeRequest, null>(
   '/api/v1/talk/message/revoke'
 )
 
 // 删除消息服务接口
-export const ServTalkMessageDelete = createApi<ServTalkMessageDeleteRequest, any>(
+export const ServTalkMessageDelete = createIpcApi<ServTalkMessageDeleteRequest, any>(
   '/api/v1/talk/message/delete'
 )
 

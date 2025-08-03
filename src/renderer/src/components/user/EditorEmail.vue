@@ -62,7 +62,7 @@ const onSubmit = async () => {
 
   const params = {
     email: state.email,
-    code: state.code,
+    email_code: state.code,
     password: rsaEncrypt(state.password)
   }
 

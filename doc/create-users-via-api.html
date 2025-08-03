@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>创建测试用户</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .user-card {
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 10px 0;
+            background: #f9f9f9;
+        }
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: white;
+            font-size: 12px;
+        }
+        .status.success { background-color: #4CAF50; }
+        .status.error { background-color: #f44336; }
+        .status.exists { background-color: #2196F3; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>WhyTalk 测试用户创建工具</h1>
+        
+        <div id="users-container">
+            <div class="user-card">
+                <div class="user-info">
+                    <div>
+                        <strong>Alice</strong><br>
+                        手机号: 13800138001<br>
+                        密码: 123456
+                    </div>
+                    <div class="status" id="status-1">待创建</div>
+                </div>
+            </div>
+            
+            <div class="user-card">
+                <div class="user-info">
+                    <div>
+                        <strong>Bob</strong><br>
+                        手机号: 13800138002<br>
+                        密码: 123456
+                    </div>
+                    <div class="status" id="status-2">待创建</div>
+                </div>
+            </div>
+            
+            <div class="user-card">
+                <div class="user-info">
+                    <div>
+                        <strong>Charlie</strong><br>
+                        手机号: 13800138003<br>
+                        密码: 123456
+                    </div>
+                    <div class="status" id="status-3">待创建</div>
+                </div>
+            </div>
+            
+            <div class="user-card">
+                <div class="user-info">
+                    <div>
+                        <strong>Diana</strong><br>
+                        手机号: 13800138004<br>
+                        密码: 123456
+                    </div>
+                    <div class="status" id="status-4">待创建</div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center;">
+            <button onclick="createAllUsers()" id="createBtn">创建所有用户</button>
+            <button onclick="clearLog()">清空日志</button>
+        </div>
+        
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+        // 测试用户配置
+        const TEST_USERS = [
+            { nickname: 'Alice', mobile: '13800138001', password: '123456' },
+            { nickname: 'Bob', mobile: '13800138002', password: '123456' },
+            { nickname: 'Charlie', mobile: '13800138003', password: '123456' },
+            { nickname: 'Diana', mobile: '13800138004', password: '123456' }
+        ];
+
+        function log(message) {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.innerHTML += `[${timestamp}] ${message}<br>`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        function updateStatus(index, status, className) {
+            const statusElement = document.getElementById(`status-${index + 1}`);
+            statusElement.textContent = status;
+            statusElement.className = `status ${className}`;
+        }
+
+        async function createUser(userConfig, index) {
+            const { nickname, mobile, password } = userConfig;
+            
+            log(`开始创建用户: ${nickname} (${mobile})`);
+            updateStatus(index, '创建中...', '');
+            
+            try {
+                // 检查 window.electron 是否可用
+                if (!window.electron || !window.electron.ipcRenderer) {
+                    throw new Error('Electron IPC API 不可用');
+                }
+
+                // 创建注册请求
+                const registerRequest = {
+                    nickname: nickname,
+                    mobile: mobile,
+                    password: password,
+                    platform: 'desktop',
+                    sms_code: '123456' // 这个会被跳过验证
+                };
+
+                // 调用注册 API
+                const result = await window.electron.ipcRenderer.invoke('auth:register', registerRequest);
+                
+                if (result.success) {
+                    log(`✓ 用户 ${nickname} 创建成功 (ID: ${result.user.id})`);
+                    updateStatus(index, '创建成功', 'success');
+                    return { success: true, user: result.user };
+                } else {
+                    throw new Error(result.error || '注册失败');
+                }
+                
+            } catch (error) {
+                // 检查是否是用户已存在的错误
+                if (error.message && error.message.includes('已存在')) {
+                    log(`ℹ 用户 ${nickname} 已存在`);
+                    updateStatus(index, '已存在', 'exists');
+                    return { success: true, existed: true };
+                } else {
+                    log(`✗ 创建用户 ${nickname} 失败: ${error.message}`);
+                    updateStatus(index, '创建失败', 'error');
+                    return { success: false, error: error.message };
+                }
+            }
+        }
+
+        async function createAllUsers() {
+            const createBtn = document.getElementById('createBtn');
+            createBtn.disabled = true;
+            createBtn.textContent = '创建中...';
+            
+            log('========================================');
+            log('开始创建所有测试用户');
+            log('========================================');
+            
+            const results = [];
+            
+            for (let i = 0; i < TEST_USERS.length; i++) {
+                const result = await createUser(TEST_USERS[i], i);
+                results.push(result);
+                
+                // 添加延迟避免过快的请求
+                if (i < TEST_USERS.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            }
+            
+            // 输出总结
+            log('========================================');
+            log('用户创建总结');
+            log('========================================');
+            
+            const successCount = results.filter(r => r.success).length;
+            const newCount = results.filter(r => r.success && !r.existed).length;
+            const existedCount = results.filter(r => r.existed).length;
+            const failedCount = results.filter(r => !r.success).length;
+            
+            log(`总计: ${TEST_USERS.length} 个用户`);
+            log(`成功: ${successCount} 个 (新创建: ${newCount}, 已存在: ${existedCount})`);
+            log(`失败: ${failedCount} 个`);
+            
+            if (successCount > 0) {
+                log('');
+                log('可用的登录账号:');
+                TEST_USERS.forEach((user, index) => {
+                    if (results[index].success) {
+                        log(`  ${user.nickname}: ${user.mobile} / 密码: ${user.password}`);
+                    }
+                });
+            }
+            
+            createBtn.disabled = false;
+            createBtn.textContent = '创建所有用户';
+            
+            log('========================================');
+            log('用户创建完成！');
+        }
+
+        // 页面加载时的初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            log('页面已加载，准备创建用户');
+            
+            // 检查 Electron API 可用性
+            if (window.electron && window.electron.ipcRenderer) {
+                log('✓ Electron IPC API 可用');
+            } else {
+                log('✗ Electron IPC API 不可用，请在 Electron 环境中运行此页面');
+            }
+        });
+    </script>
+</body>
+</html>

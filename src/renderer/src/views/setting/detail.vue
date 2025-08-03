@@ -18,7 +18,7 @@ const detail = reactive({
   email: '',
   gender: '0',
   motto: '0',
-  birthday: ref()
+  birthday: ''
 })
 
 const loadDetail = async () => {
@@ -33,7 +33,7 @@ const loadDetail = async () => {
   detail.avatar = data.avatar
 
   if (data.birthday) {
-    detail.birthday = ref(data.birthday)
+    detail.birthday = data.birthday
   }
 }
 

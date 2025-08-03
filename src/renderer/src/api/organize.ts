@@ -1,5 +1,5 @@
-import { createApi } from './request.ts'
+import { createIpcApi } from './ipc-request.ts'
 
-export const ServOrganizeDepartmentList = createApi<any, any>('/api/v1/organize/department/all')
+export const ServOrganizeDepartmentList = createIpcApi<any, any>('/api/v1/organize/department/all')
 
-export const ServOrganizePersonnelAll = createApi<any, any>('/api/v1/organize/personnel/all')
+export const ServOrganizePersonnelAll = createIpcApi<any, any>('/api/v1/organize/personnel/all')

@@ -1,15 +1,15 @@
 // 授权相关接口
-import { createApi, EmptyRequest } from './request.ts'
+import { createIpcApi, EmptyRequest } from './ipc-request.ts'
 
-export const ServAuthLogin = createApi<ServAuthLoginRequest, ServAuthLoginResponse>(
+export const ServAuthLogin = createIpcApi<ServAuthLoginRequest, ServAuthLoginResponse>(
   '/api/v1/auth/login'
 )
 
-export const ServAuthRegister = createApi<ServAuthRegisterRequest, null>('/api/v1/auth/register')
+export const ServAuthRegister = createIpcApi<ServAuthRegisterRequest, null>('/api/v1/auth/register')
 
-export const ServAuthLogout = createApi<EmptyRequest, null>('/api/v1/auth/logout')
+export const ServAuthLogout = createIpcApi<EmptyRequest, null>('/api/v1/auth/logout')
 
-export const ServAuthForget = createApi<ServAuthForgetRequest, null>('/api/v1/auth/forget')
+export const ServAuthForget = createIpcApi<ServAuthForgetRequest, null>('/api/v1/auth/forget')
 
 export interface ServAuthLoginRequest {
   mobile: string

@@ -1,0 +1,18 @@
+.immsg-image[data-v-ec5c8e4d] {
+  padding: 3px;
+  border-radius: 5px;
+  background: var(--im-message-left-bg-color);
+  min-width: 30px;
+  min-height: 30px;
+  max-width: min(500px, 60%);
+  width: 100%;
+  display: flex;
+}
+.immsg-image.right[data-v-ec5c8e4d] {
+  background: var(--im-message-right-bg-color);
+}
+.immsg-image[data-v-ec5c8e4d] .n-image img {
+  width: 100%;
+  height: 100%;
+  border-radius: 3px;
+}

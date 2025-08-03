@@ -1,0 +1,120 @@
+.workspace-container[data-v-d029d215] {
+  padding: 24px;
+  height: 100%;
+  overflow-y: auto;
+}
+.workspace-header[data-v-d029d215] {
+  margin-bottom: 24px;
+}
+.workspace-header h2[data-v-d029d215] {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-color-1);
+  display: flex;
+  align-items: center;
+}
+.workspace-header .workspace-description[data-v-d029d215] {
+  margin: 0;
+  color: var(--text-color-3);
+  font-size: 14px;
+}
+.workspace-content[data-v-d029d215] {
+  min-height: 400px;
+}
+.error-container[data-v-d029d215],
+.empty-container[data-v-d029d215] {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+.plugin-grid[data-v-d029d215] {
+  margin-top: 16px;
+}
+.plugin-card[data-v-d029d215] {
+  height: 280px;
+  transition: all 0.3s ease;
+}
+.plugin-card[data-v-d029d215]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+.plugin-card.plugin-disabled[data-v-d029d215] {
+  opacity: 0.6;
+}
+.plugin-card.plugin-disabled[data-v-d029d215]:hover {
+  transform: none;
+  box-shadow: none;
+}
+.plugin-header[data-v-d029d215] {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.plugin-header .plugin-info[data-v-d029d215] {
+  flex: 1;
+}
+.plugin-header .plugin-info .plugin-name[data-v-d029d215] {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-color-1);
+  line-height: 1.2;
+}
+.plugin-header .plugin-info .plugin-version[data-v-d029d215] {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-color-3);
+}
+.plugin-content .plugin-description[data-v-d029d215] {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: var(--text-color-2);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.plugin-content .plugin-author[data-v-d029d215] {
+  margin: 0 0 16px 0;
+  font-size: 12px;
+  color: var(--text-color-3);
+}
+.plugin-content .plugin-features .feature-item[data-v-d029d215] {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  font-size: 12px;
+}
+.plugin-content .plugin-features .feature-item .feature-label[data-v-d029d215] {
+  color: var(--text-color-3);
+}
+.plugin-content .plugin-features .feature-item .feature-value[data-v-d029d215] {
+  color: var(--text-color-2);
+  font-weight: 500;
+}
+.plugin-actions[data-v-d029d215] {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+/* 响应式设计 */
+@media (max-width: 1200px) {
+.plugin-grid[data-v-d029d215] .n-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+}
+}
+@media (max-width: 768px) {
+.workspace-container[data-v-d029d215] {
+    padding: 16px;
+}
+.plugin-grid[data-v-d029d215] .n-grid {
+    grid-template-columns: 1fr !important;
+}
+.plugin-card[data-v-d029d215] {
+    height: auto;
+    min-height: 240px;
+}
+}
