@@ -1,0 +1,14 @@
+packages:
+  # 主项目
+  - '.'
+  # 插件工作空间
+  - 'plugins'
+  # 所有插件
+  - 'plugins/*'
+  # 排除某些目录
+  - '!**/node_modules/**'
+  - '!**/dist/**'
+  - '!**/out/**'
+  - '!**/temp_*/**'
+  - '!**/userData/**'
+  - '!**/tests/**'

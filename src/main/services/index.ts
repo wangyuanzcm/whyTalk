@@ -1,11 +1,17 @@
 import { BrowserWindow } from 'electron'
 import { databaseManager } from './database/Database'
 import { authService } from './auth/AuthService'
-import { chatService } from './chat/ChatService'
 import { userService } from './user/UserService'
-import { contactService } from './contact/ContactService'
-import { groupService } from './group/GroupService'
 import { uploadService } from './upload/UploadService'
+// settingsService removed - functionality moved to user preferences
+// pluginManager removed - functionality integrated into plugin services
+import { p2pManager } from './p2p/P2PManager'
+import { pluginDataService } from './plugin/PluginDataService'
+import { pluginDataIPC } from './plugin/PluginDataIPC'
+import { PluginPermissionManager } from './plugin/PluginPermissionManager'
+// import { p2pIPCHandler } from './p2p/P2PIPCHandler' // 不再使用，已被P2PIPCBridge替代
+import { pluginAPIHandler } from './plugin/PluginAPIHandler'
+import { pluginCommunicationService } from './plugin/PluginCommunicationService'
 import { ipcHandler } from './ipc/IPCHandler'
 import { P2PServiceClient } from './p2p/P2PServiceClient'
 import { P2PIPCBridge } from './p2p/P2PIPCBridge'
@@ -44,16 +50,30 @@ export class ServiceManager {
       this.startScheduledTasks()
       console.log('Scheduled tasks started')
       
+      // 初始化所有服务
+      await authService.initialize()
+      await userService.initialize()
+      await uploadService.initialize()
+      
+      // 初始化插件权限管理器（必须在pluginDataService之前）
+      await PluginPermissionManager.getInstance().initialize()
+      console.log('Plugin permission manager initialized')
+      
+      await pluginDataService.initialize()
+      await pluginDataIPC.initialize()
+      await pluginAPIHandler.initialize()
+      await pluginCommunicationService.initialize()
+      await p2pManager.start()
+      console.log('P2P Manager started')
+      
       // 初始化IPC处理器
       console.log('IPC handler initialized')
       
-      // 初始化P2P服务客户端
-    this.p2pServiceClient = new P2PServiceClient()
-    
-    // 初始化P2P IPC桥接器
-    this.p2pIPCBridge = new P2PIPCBridge(this.p2pServiceClient)
+      // 启动P2P服务客户端
+      this.p2pServiceClient = new P2PServiceClient()
+      this.p2pIPCBridge = new P2PIPCBridge(this.p2pServiceClient)
       await this.p2pServiceClient.start()
-      console.log('P2P service client initialized')
+      console.log('P2P services initialized')
       
       this.isInitialized = true
       console.log('All services initialized successfully')
@@ -86,8 +106,18 @@ export class ServiceManager {
         console.log('P2P IPC bridge cleaned up')
       }
       
+      // 清理所有服务
+      await p2pManager.cleanup()
+      await pluginCommunicationService.cleanup()
+      await pluginAPIHandler.cleanup()
+      await pluginDataIPC.cleanup()
+      await pluginDataService.cleanup()
+      await uploadService.cleanup()
+      await userService.cleanup()
+      await authService.cleanup()
+      
       // 关闭数据库连接
-      await databaseManager.close()
+      await databaseManager.cleanup()
       
       this.isInitialized = false
       console.log('All services shut down successfully')
@@ -126,20 +156,8 @@ export class ServiceManager {
     return authService
   }
 
-  public getChatService() {
-    return chatService
-  }
-
   public getUserService() {
     return userService
-  }
-
-  public getContactService() {
-    return contactService
-  }
-
-  public getGroupService() {
-    return groupService
   }
 
   public getUploadService() {
@@ -167,10 +185,15 @@ export const serviceManager = ServiceManager.getInstance()
 export {
   databaseManager,
   authService,
-  chatService,
   userService,
-  contactService,
-  groupService,
   uploadService,
+  // settingsService removed
+  // pluginManager removed
+  p2pManager,
+  pluginDataService,
+  pluginDataIPC,
+  // p2pIPCHandler, // 不再使用，已被P2PIPCBridge替代
+  pluginAPIHandler,
+  pluginCommunicationService,
   ipcHandler
 }

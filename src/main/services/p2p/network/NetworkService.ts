@@ -1,7 +1,6 @@
 import { Libp2p } from 'libp2p'
 import { EventEmitter } from 'events'
 import { Discovery } from './Discovery'
-import { peerIdFromString } from '@libp2p/peer-id'
 
 export class NetworkService extends EventEmitter {
   private node: Libp2p | null = null
@@ -46,6 +45,11 @@ export class NetworkService extends EventEmitter {
     }
 
     try {
+      // 动态导入peerIdFromString
+      const { peerIdFromString } = await import('@libp2p/peer-id').catch(() => ({
+        peerIdFromString: (id: string) => ({ toString: () => id })
+      })) as any
+      
       const peerIdObj = peerIdFromString(peerId)
       await this.node.dial(peerIdObj)
       console.log('Connected to peer:', peerId)
@@ -62,7 +66,12 @@ export class NetworkService extends EventEmitter {
     }
 
     try {
-      const peerIdObj = peerIdFromString(peerId)
+      // 动态导入peerIdFromString
+      const { peerIdFromString } = await import('@libp2p/peer-id').catch(() => ({
+        peerIdFromString: (id: string) => ({ toString: () => id })
+      }))
+      
+      const peerIdObj = peerIdFromString(peerId) as any
       await this.node.hangUp(peerIdObj)
       console.log('Disconnected from peer:', peerId)
     } catch (error) {
@@ -76,12 +85,33 @@ export class NetworkService extends EventEmitter {
     if (!this.node) return 'unknown'
     
     try {
+      // 动态导入peerIdFromString (同步版本)
+      const peerIdFromString = (() => {
+        try {
+          return require('@libp2p/peer-id').peerIdFromString
+        } catch {
+          return (id: string) => ({ toString: () => id })
+        }
+      })()
+      
       const peerIdObj = peerIdFromString(peerId)
       const connections = this.node.getConnections(peerIdObj)
       return connections.length > 0 ? 'connected' : 'disconnected'
     } catch (error) {
       console.error('Failed to get peer connection status:', peerId, error)
       return 'unknown'
+    }
+  }
+
+  public async cleanup(): Promise<void> {
+    try {
+      await this.stop()
+      this.node = null
+      this.discovery = null
+      console.log('NetworkService cleanup completed')
+    } catch (error) {
+      console.error('Error during NetworkService cleanup:', error)
+      throw error
     }
   }
 }

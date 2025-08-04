@@ -1,0 +1,36 @@
+{
+  "name": "@whytalk/contact-plugin",
+  "version": "1.0.0",
+  "description": "联系人管理插件",
+  "author": "WhyTalk Team",
+  "main": "index.html",
+  "type": "module",
+  "scripts": {
+    "dev": "echo \"Plugin development mode\"",
+    "build": "echo \"Building plugin\"",
+    "test": "echo \"Testing plugin\""
+  },
+  "dependencies": {
+    "vue": "^3.5.17",
+    "naive-ui": "^2.41.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.16.5",
+    "typescript": "^5.8.3"
+  },
+  "peerDependencies": {
+    "electron": ">=22.0.0"
+  },
+  "keywords": [
+    "whytalk",
+    "plugin",
+    "contact",
+    "electron"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/whytalk/why-talk",
+    "directory": "plugins/contact-plugin"
+  }
+}

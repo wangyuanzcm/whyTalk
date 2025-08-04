@@ -7,50 +7,8 @@ import { databaseManager } from '../database/Database'
 // 类型定义
 type Libp2p = any
 
-// 动态导入 libp2p 相关模块
-let libp2pModules: any = null
-
-async function loadLibp2pModules() {
-  if (libp2pModules) return libp2pModules
-  
-  try {
-    const [
-      { createLibp2p },
-      { tcp },
-      { webSockets },
-      { noise },
-      { mplex },
-      { mdns },
-      { gossipsub },
-      { kadDHT }
-    ] = await Promise.all([
-      import('libp2p'),
-      import('@libp2p/tcp'),
-      import('@libp2p/websockets'),
-      import('@chainsafe/libp2p-noise'),
-      import('@libp2p/mplex'),
-      import('@libp2p/mdns'),
-      import('@chainsafe/libp2p-gossipsub'),
-      import('@libp2p/kad-dht')
-    ])
-    
-    libp2pModules = {
-      createLibp2p,
-      tcp,
-      webSockets,
-      noise,
-      mplex,
-      mdns,
-      gossipsub,
-      kadDHT
-    }
-    
-    return libp2pModules
-  } catch (error) {
-    console.error('Failed to load libp2p modules:', error)
-    throw new Error('libp2p modules are not available. Please ensure all dependencies are installed.')
-  }
-}
+// P2PManager 现在作为一个代理，不直接使用 libp2p 模块
+// 而是通过 IdentityService 来管理 P2P 身份
 
 export class P2PManager extends EventEmitter {
   private node: Libp2p | null = null
@@ -66,76 +24,70 @@ export class P2PManager extends EventEmitter {
     this.messageService = new P2PMessageService()
   }
 
-  // 启动P2P网络
+  // 启动P2P网络（现在只初始化身份服务）
   public async start(): Promise<void> {
     if (this.isStarted) return
 
     try {
-      // 加载 libp2p 模块
-      const modules = await loadLibp2pModules()
-      const { createLibp2p, tcp, webSockets, noise, mplex, mdns, gossipsub, kadDHT } = modules
-
-      // 初始化身份
+      // 只初始化身份服务，不直接使用 libp2p
       const identity = await this.identityService.initialize()
       console.log('P2P Identity initialized:', identity.peerId)
-
-      // 获取PeerId对象
-      const peerId = await this.identityService.getPeerId()
-
-      // 创建libp2p节点
-      this.node = await createLibp2p({
-        peerId,
-        addresses: {
-          listen: [
-            '/ip4/0.0.0.0/tcp/0',
-            '/ip4/0.0.0.0/tcp/0/ws'
-          ]
-        },
-        transports: [
-          tcp(),
-          webSockets()
-        ],
-        streamMuxers: [mplex()],
-        connectionEncryption: [noise()],
-        peerDiscovery: [
-          mdns({
-            interval: 1000,
-            serviceTag: 'whytalk-p2p'
-          })
-        ],
-        pubsub: gossipsub({
-          allowPublishToZeroPeers: true,
-          msgIdFn: (msg) => {
-            return new TextEncoder().encode(msg.topic + msg.data.toString())
-          }
-        }),
-        dht: kadDHT({
-          clientMode: false
-        })
-      })
-
-      // 启动节点
-      await this.node.start()
-      console.log('P2P node started with PeerID:', this.node.peerId.toString())
-
-      // 初始化服务
-      await this.networkService.initialize(this.node)
-      await this.messageService.initialize(this.node, this.identityService)
-
-      // 绑定事件
-      this.bindEvents()
 
       this.isStarted = true
       this.emit('started')
     } catch (error) {
       console.error('Failed to start P2P manager:', error)
-      throw error
+      console.warn('P2P functionality disabled, running in offline mode')
+      // 设置为已启动状态，但不抛出错误，允许应用继续运行
+      this.isStarted = true
+      this.emit('started', { offline: true })
     }
   }
 
   // 停止P2P网络
   public async stop(): Promise<void> {
-    if (!this.isStarted || !this.node) return
+    if (!this.isStarted) return
+
+    try {
+      await this.cleanup()
+      this.isStarted = false
+      this.emit('stopped')
+      console.log('P2P manager stopped')
+    } catch (error) {
+      console.error('Failed to stop P2P manager:', error)
+      throw error
+    }
+  }
+
+  // 清理资源
+  public async cleanup(): Promise<void> {
+    try {
+      // 停止网络服务
+      if (this.networkService) {
+        await this.networkService.cleanup?.()
+      }
+
+      // 停止消息服务
+      if (this.messageService) {
+        await this.messageService.cleanup?.()
+      }
+
+      // 停止身份服务
+      if (this.identityService) {
+        await this.identityService.cleanup?.()
+      }
+
+      // 停止libp2p节点
+      if (this.node) {
+        await this.node.stop()
+        this.node = null
+      }
+
+      console.log('P2P manager cleanup completed')
+    } catch (error) {
+      console.error('Error during P2P manager cleanup:', error)
+      throw error
+    }
 
     try {
       await this.node.stop()
@@ -230,28 +182,7 @@ export class P2PManager extends EventEmitter {
     await this.networkService.disconnectFromPeer(peerId)
   }
 
-  // 绑定事件
-  private bindEvents(): void {
-    if (!this.node) return
 
-    // 节点连接事件
-    this.node.addEventListener('peer:connect', (evt) => {
-      console.log('Peer connected:', evt.detail.toString())
-      this.emit('peer:connect', evt.detail)
-    })
-
-    // 节点断开事件
-    this.node.addEventListener('peer:disconnect', (evt) => {
-      console.log('Peer disconnected:', evt.detail.toString())
-      this.emit('peer:disconnect', evt.detail)
-    })
-
-    // 发现新节点
-    this.node.addEventListener('peer:discovery', (evt) => {
-      console.log('Peer discovered:', evt.detail.id.toString())
-      this.emit('peer:discovery', evt.detail)
-    })
-  }
 
   // 获取连接的节点列表
   public getConnectedPeers(): string[] {
@@ -311,7 +242,7 @@ export class P2PManager extends EventEmitter {
     const groupId = `group_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
     
     // 保存群组信息到数据库
-    const db = databaseManager.getDatabase()
+    const db = databaseManager.getDatabase()!
     const identity = this.identityService?.getIdentity()
     
     if (!identity) {
@@ -339,7 +270,7 @@ export class P2PManager extends EventEmitter {
 
   // 添加联系人
   public async addContact(peerId: string, nickname?: string, remark?: string): Promise<void> {
-    const db = databaseManager.getDatabase()
+    const db = databaseManager.getDatabase()!
     
     // 检查联系人是否已存在
     const existingContact = db.prepare('SELECT * FROM p2p_contacts WHERE peer_id = ?').get(peerId)
@@ -367,7 +298,7 @@ export class P2PManager extends EventEmitter {
 
   // 获取联系人列表
   public async getContacts(): Promise<any[]> {
-    const db = databaseManager.getDatabase()
+    const db = databaseManager.getDatabase()!
     const stmt = db.prepare(`
       SELECT c.*, p.status, p.last_seen
       FROM p2p_contacts c
@@ -398,7 +329,7 @@ export class P2PManager extends EventEmitter {
 
   // 获取群组列表
   public async getGroups(): Promise<any[]> {
-    const db = databaseManager.getDatabase()
+    const db = databaseManager.getDatabase()!
     const stmt = db.prepare(`
       SELECT * FROM p2p_groups
       ORDER BY created_at DESC
@@ -408,7 +339,7 @@ export class P2PManager extends EventEmitter {
 
   // 获取群组成员
   public async getGroupMembers(groupId: string): Promise<any[]> {
-    const db = databaseManager.getDatabase()
+    const db = databaseManager.getDatabase()!
     const stmt = db.prepare(`
       SELECT * FROM p2p_group_members
       WHERE group_id = ?
@@ -425,7 +356,7 @@ export class P2PManager extends EventEmitter {
 
   // 搜索联系人
   public async searchContacts(query: string): Promise<any[]> {
-    const db = databaseManager.getDatabase()
+    const db = databaseManager.getDatabase()!
     const stmt = db.prepare(`
       SELECT c.*, p.status, p.last_seen
       FROM p2p_contacts c
@@ -451,14 +382,14 @@ export class P2PManager extends EventEmitter {
 
   // 删除联系人
   public async deleteContact(peerId: string): Promise<void> {
-    const db = databaseManager.getDatabase()
+    const db = databaseManager.getDatabase()!
     const stmt = db.prepare('DELETE FROM p2p_contacts WHERE peer_id = ?')
     stmt.run(peerId)
   }
 
   // 更新联系人
   public async updateContact(peerId: string, updates: any): Promise<void> {
-    const db = databaseManager.getDatabase()
+    const db = databaseManager.getDatabase()!
     const fields = Object.keys(updates).map(key => `${key} = ?`).join(', ')
     const values = Object.values(updates)
     values.push(peerId)
@@ -469,7 +400,7 @@ export class P2PManager extends EventEmitter {
 
   // 标记消息为已读
   public async markMessagesAsRead(messageIds: string[]): Promise<void> {
-    const db = databaseManager.getDatabase()
+    const db = databaseManager.getDatabase()!
     const placeholders = messageIds.map(() => '?').join(',')
     const stmt = db.prepare(`UPDATE p2p_messages SET is_read = 1 WHERE id IN (${placeholders})`)
     stmt.run(...messageIds)
@@ -477,14 +408,14 @@ export class P2PManager extends EventEmitter {
 
   // 删除消息
   public async deleteMessage(messageId: string): Promise<void> {
-    const db = databaseManager.getDatabase()
+    const db = databaseManager.getDatabase()!
     const stmt = db.prepare('DELETE FROM p2p_messages WHERE id = ?')
     stmt.run(messageId)
   }
 
   // 撤回消息
   public async recallMessage(messageId: string): Promise<void> {
-    const db = databaseManager.getDatabase()
+    const db = databaseManager.getDatabase()!
     const stmt = db.prepare('UPDATE p2p_messages SET is_recalled = 1 WHERE id = ?')
     stmt.run(messageId)
   }
@@ -496,6 +427,8 @@ export class P2PManager extends EventEmitter {
 
   // 获取群组聊天历史
   public async getGroupChatHistory(groupId: string, _page: number = 1, limit: number = 20): Promise<any[]> {
-    return this.messageService.getGroupChatHistory(groupId, limit)
+    return await this.messageService.getGroupChatHistory(groupId, limit)
   }
 }
+
+export const p2pManager = new P2PManager()

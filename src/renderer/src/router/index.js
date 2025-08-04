@@ -13,7 +13,7 @@ const routes = [
     name: 'home',
     meta: { auth: true },
     component: MainLayout,
-    redirect: '/message',
+    redirect: '/workspace',
     children: [
       {
         path: '/message',
@@ -75,6 +75,18 @@ router.beforeEach((to) => {
       path: '/auth/login',
       query: { redirect: to.fullPath }
     }
+  }
+  
+  // 处理根路径重定向到用户设置的默认页面
+  if (to.path === '/') {
+    // 延迟导入store以避免初始化顺序问题
+    import('@/store').then(({ useSettingsStore }) => {
+      const settingsStore = useSettingsStore()
+      const defaultPage = settingsStore.defaultPage || '/workspace'
+      if (defaultPage !== '/workspace') {
+        router.replace(defaultPage)
+      }
+    })
   }
 })
 

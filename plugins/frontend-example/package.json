@@ -1,0 +1,37 @@
+{
+  "name": "@whytalk/frontend-example",
+  "version": "1.0.0",
+  "description": "前端示例插件",
+  "author": "WhyTalk Team",
+  "main": "index.html",
+  "type": "module",
+  "scripts": {
+    "dev": "echo \"Plugin development mode\"",
+    "build": "echo \"Building plugin\"",
+    "test": "echo \"Testing plugin\""
+  },
+  "dependencies": {
+    "vue": "^3.5.17",
+    "naive-ui": "^2.41.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.16.5",
+    "typescript": "^5.8.3"
+  },
+  "peerDependencies": {
+    "electron": ">=22.0.0"
+  },
+  "keywords": [
+    "whytalk",
+    "plugin",
+    "frontend",
+    "example",
+    "electron"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/whytalk/why-talk",
+    "directory": "plugins/frontend-example"
+  }
+}

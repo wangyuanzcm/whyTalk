@@ -12,14 +12,14 @@ export interface PluginPermission {
 
 export class PluginPermissionManager {
   private static instance: PluginPermissionManager
-  private db: Database.Database
+  private db: Database.Database | null = null
   private permissionCache: Map<string, Set<string>> = new Map()
   private cacheExpiry: Map<string, number> = new Map()
   private readonly CACHE_TTL = 300000 // 5分钟缓存
+  private isInitialized = false
 
   private constructor() {
-    this.db = DatabaseManager.getInstance().getDatabase()
-    this.loadPermissions()
+    // 延迟初始化数据库连接
   }
 
   static getInstance(): PluginPermissionManager {
@@ -30,14 +30,30 @@ export class PluginPermissionManager {
   }
 
   async initialize(): Promise<void> {
-    // 初始化逻辑已在构造函数中完成
-    console.log('PluginPermissionManager initialized')
+    if (this.isInitialized) {
+      return
+    }
+    
+    try {
+      this.db = DatabaseManager.getInstance().getDatabase()
+      this.loadPermissions()
+      this.initializeDefaultPermissions()
+      this.isInitialized = true
+    } catch (error) {
+      console.error('Failed to initialize PluginPermissionManager:', error)
+      throw error
+    }
   }
 
   /**
    * 加载所有插件权限到缓存
    */
   private loadPermissions(): void {
+    if (!this.db) {
+      console.error('Database not initialized')
+      return
+    }
+    
     try {
       const stmt = this.db.prepare(`
         SELECT plugin_id, permission FROM plugin_permissions WHERE granted = 1
@@ -83,16 +99,21 @@ export class PluginPermissionManager {
    * 设置插件权限
    */
   setPermissions(pluginId: string, permissions: string[], grantedBy: string = 'system'): boolean {
+    if (!this.db) {
+      console.error('Database not initialized')
+      return false
+    }
+    
     try {
       const transaction = this.db.transaction(() => {
         // 先删除现有权限
-        const deleteStmt = this.db.prepare(`
+        const deleteStmt = this.db!.prepare(`
           DELETE FROM plugin_permissions WHERE plugin_id = ?
         `)
         deleteStmt.run(pluginId)
         
         // 插入新权限
-        const insertStmt = this.db.prepare(`
+        const insertStmt = this.db!.prepare(`
           INSERT INTO plugin_permissions (plugin_id, permission, granted, granted_by)
           VALUES (?, ?, 1, ?)
         `)
@@ -118,6 +139,11 @@ export class PluginPermissionManager {
    * 添加单个权限
    */
   grantPermission(pluginId: string, permission: string, grantedBy: string = 'system'): boolean {
+    if (!this.db) {
+      console.error('Database not initialized')
+      return false
+    }
+    
     try {
       const stmt = this.db.prepare(`
         INSERT OR REPLACE INTO plugin_permissions (plugin_id, permission, granted, granted_by)
@@ -143,6 +169,11 @@ export class PluginPermissionManager {
    * 撤销单个权限
    */
   revokePermission(pluginId: string, permission: string): boolean {
+    if (!this.db) {
+      console.error('Database not initialized')
+      return false
+    }
+    
     try {
       const stmt = this.db.prepare(`
         UPDATE plugin_permissions SET granted = 0 WHERE plugin_id = ? AND permission = ?
@@ -189,6 +220,11 @@ export class PluginPermissionManager {
    * 获取插件的所有权限
    */
   getPluginPermissions(pluginId: string): string[] {
+    if (!this.db) {
+      console.error('Database not initialized')
+      return []
+    }
+    
     try {
       const stmt = this.db.prepare(`
         SELECT permission FROM plugin_permissions 
@@ -207,6 +243,11 @@ export class PluginPermissionManager {
    * 获取所有插件权限
    */
   getAllPermissions(): PluginPermission[] {
+    if (!this.db) {
+      console.error('Database not initialized')
+      return []
+    }
+    
     try {
       const stmt = this.db.prepare(`
         SELECT id, plugin_id, permission, granted, granted_at, granted_by
@@ -274,6 +315,11 @@ export class PluginPermissionManager {
    * 刷新指定插件的权限缓存
    */
   private refreshPluginPermissions(pluginId: string): void {
+    if (!this.db) {
+      console.error('Database not initialized')
+      return
+    }
+    
     try {
       const stmt = this.db.prepare(`
         SELECT permission FROM plugin_permissions 
@@ -335,6 +381,11 @@ export class PluginPermissionManager {
    * 检查权限是否存在
    */
   permissionExists(pluginId: string, permission: string): boolean {
+    if (!this.db) {
+      console.error('Database not initialized')
+      return false
+    }
+    
     try {
       const stmt = this.db.prepare(`
         SELECT COUNT(*) as count FROM plugin_permissions 
@@ -353,6 +404,11 @@ export class PluginPermissionManager {
    * 获取权限统计信息
    */
   getPermissionStats(): { totalPlugins: number; totalPermissions: number; grantedPermissions: number } {
+    if (!this.db) {
+      console.error('Database not initialized')
+      return { totalPlugins: 0, totalPermissions: 0, grantedPermissions: 0 }
+    }
+    
     try {
       const pluginCountStmt = this.db.prepare(`
         SELECT COUNT(DISTINCT plugin_id) as count FROM plugin_permissions
@@ -372,6 +428,21 @@ export class PluginPermissionManager {
     } catch (error) {
       console.error('获取权限统计失败:', error)
       return { totalPlugins: 0, totalPermissions: 0, grantedPermissions: 0 }
+    }
+  }
+
+  /**
+   * 清理资源
+   */
+  async cleanup(): Promise<void> {
+    try {
+      this.clearCache()
+      this.db = null
+      this.isInitialized = false
+      console.log('PluginPermissionManager cleanup completed')
+    } catch (error) {
+      console.error('Error during PluginPermissionManager cleanup:', error)
+      throw error
     }
   }
 }

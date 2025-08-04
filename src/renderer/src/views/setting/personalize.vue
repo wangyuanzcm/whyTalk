@@ -10,6 +10,13 @@ const themeMode = computed({
   }
 })
 
+const defaultPage = computed({
+  get: () => settingsStore.defaultPage,
+  set: (value: string) => {
+    settingsStore.setDefaultPage(value)
+  }
+})
+
 const themes = [
   {
     label: '浅色',
@@ -22,6 +29,29 @@ const themes = [
   {
     label: '跟随系统',
     value: 'auto'
+  }
+]
+
+const defaultPages = [
+  {
+    label: '工作台',
+    value: '/workspace'
+  },
+  {
+    label: '消息',
+    value: '/message'
+  },
+  {
+    label: '通讯录',
+    value: '/contact'
+  },
+  {
+    label: '笔记',
+    value: '/note'
+  },
+  {
+    label: 'P2P网络',
+    value: '/p2p'
   }
 ]
 </script>
@@ -64,6 +94,16 @@ const themes = [
         </div>
         <div class="tools">
           <n-button type="primary" text> 修改 </n-button>
+        </div>
+      </div>
+
+      <div class="view-list">
+        <div class="content">
+          <div class="name">默认页面</div>
+          <div class="desc">设置应用启动后默认进入的页面</div>
+        </div>
+        <div class="tools">
+          <n-select v-model:value="defaultPage" :options="defaultPages" style="width: 120px" />
         </div>
       </div>
     </div>

@@ -16,8 +16,27 @@ export interface UserSetting {
 }
 
 export class UserService extends EventEmitter {
+  private isInitialized = false
+
   constructor() {
     super()
+  }
+
+  // 初始化用户服务
+  public async initialize(): Promise<void> {
+    if (this.isInitialized) {
+      return
+    }
+    
+    try {
+      // 清理离线用户状态
+      await this.cleanupOfflineUsers()
+      this.isInitialized = true
+      console.log('UserService initialized')
+    } catch (error) {
+      console.error('Failed to initialize UserService:', error)
+      throw error
+    }
   }
 
   // 获取用户详情
@@ -452,6 +471,19 @@ export class UserService extends EventEmitter {
       }
     } catch (error) {
       console.error('Failed to cleanup offline users:', error)
+    }
+  }
+
+  // 清理资源
+  public async cleanup(): Promise<void> {
+    try {
+      // 清理离线用户状态
+      await this.cleanupOfflineUsers()
+      this.isInitialized = false
+      console.log('UserService cleanup completed')
+    } catch (error) {
+      console.error('Error during UserService cleanup:', error)
+      throw error
     }
   }
 }

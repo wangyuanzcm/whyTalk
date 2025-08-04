@@ -99,10 +99,64 @@ export class DatabaseManager {
       // 直接执行整个 schema，让 SQLite 处理语句分割
       this.db!.exec(schema)
       
+      // 执行插件相关的schema
+      await this.executePluginSchema()
+      
       console.log('Database schema executed successfully')
     } catch (error) {
       console.error('Failed to execute database schema:', error)
       throw error
+    }
+  }
+
+  private async executePluginSchema(): Promise<void> {
+    try {
+      // 在开发环境和生产环境中使用不同的路径
+      let pluginSchemaPath: string
+      if (process.env.NODE_ENV === 'development') {
+        pluginSchemaPath = join(__dirname, '../../../src/main/services/database/plugin-schema.sql')
+      } else {
+        pluginSchemaPath = join(__dirname, 'plugin-schema.sql')
+      }
+      
+      // 如果文件不存在，尝试其他路径
+      if (!existsSync(pluginSchemaPath)) {
+        const alternativePaths = [
+          join(process.cwd(), 'src/main/services/database/plugin-schema.sql'),
+          join(process.cwd(), 'out/main/plugin-schema.sql'),
+          join(__dirname, '../../../src/main/services/database/plugin-schema.sql'),
+          join(__dirname, 'plugin-schema.sql'),
+          join(__dirname, '..', '..', '..', '..', 'src', 'main', 'services', 'database', 'plugin-schema.sql'),
+          join(__dirname, '..', '..', '..', '..', 'out', 'main', 'plugin-schema.sql'),
+          join(process.resourcesPath || '', 'app.asar.unpacked', 'out', 'main', 'plugin-schema.sql'),
+          join(process.resourcesPath || '', 'app.asar.unpacked', 'src', 'main', 'services', 'database', 'plugin-schema.sql'),
+          join(process.execPath, '..', 'resources', 'app.asar.unpacked', 'out', 'main', 'plugin-schema.sql'),
+          join(process.execPath, '..', 'resources', 'app.asar.unpacked', 'src', 'main', 'services', 'database', 'plugin-schema.sql')
+        ]
+        
+        for (const path of alternativePaths) {
+          if (existsSync(path)) {
+            pluginSchemaPath = path
+            console.log(`Found plugin-schema.sql at: ${path}`)
+            break
+          }
+        }
+      }
+      
+      if (!existsSync(pluginSchemaPath)) {
+        console.warn('Plugin schema file not found, skipping plugin schema initialization')
+        return
+      }
+      
+      const pluginSchema = readFileSync(pluginSchemaPath, 'utf-8')
+      
+      // 执行插件schema
+      this.db!.exec(pluginSchema)
+      
+      console.log('Plugin database schema executed successfully')
+    } catch (error) {
+      console.error('Failed to execute plugin database schema:', error)
+      // 不抛出错误，允许应用继续运行
     }
   }
 
@@ -203,6 +257,18 @@ export class DatabaseManager {
     } catch (error) {
       console.error('Failed to get database stats:', error)
       return null
+    }
+  }
+
+  // 清理资源
+  public async cleanup(): Promise<void> {
+    try {
+      this.clearPreparedStatements()
+      await this.close()
+      console.log('DatabaseManager cleanup completed')
+    } catch (error) {
+      console.error('Error during DatabaseManager cleanup:', error)
+      throw error
     }
   }
 }

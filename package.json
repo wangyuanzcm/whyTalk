@@ -10,20 +10,22 @@
     "lint": "eslint --cache .",
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
     "typecheck:web": "vue-tsc --noEmit -p tsconfig.web.json --composite false",
-    "typecheck": "npm run typecheck:node && npm run typecheck:web",
+    "typecheck": "pnpm run typecheck:node && pnpm run typecheck:web",
     "start": "electron-vite preview",
     "dev": "electron-vite dev",
-    "build": "npm run typecheck && electron-vite build --mode electron && npm run copy-p2p-service",
+    "build": "pnpm run typecheck && electron-vite build --mode electron && pnpm run copy-p2p-service",
     "copy-p2p-service": "node -e \"const fs = require('fs'); const path = require('path'); const srcDir = path.join(__dirname, 'src/p2p-service'); const destDir = path.join(__dirname, 'out/main/src/p2p-service'); fs.mkdirSync(destDir, { recursive: true }); fs.readdirSync(srcDir).forEach(file => { fs.copyFileSync(path.join(srcDir, file), path.join(destDir, file)); });\"",
     "postinstall": "electron-builder install-app-deps",
-    "build:unpack": "npm run build && electron-builder --dir",
-    "build:win": "npm run typecheck && electron-vite build --mode electron && electron-builder --win",
-    "build:mac": "npm run build && electron-builder --mac",
-    "build:linux": "npm run build && electron-builder --linux",
+    "build:unpack": "pnpm run build && electron-builder --dir",
+    "build:win": "pnpm run typecheck && electron-vite build --mode electron && electron-builder --win",
+    "build:mac": "pnpm run build && electron-builder --mac",
+    "build:linux": "pnpm run build && electron-builder --linux",
     "test:plugins": "electron test-plugins.js",
     "create-users": "electron create-multiple-users.js",
-    "build:system-plugin": "cd plugins/system-example && npm run build",
-    "install:plugin-deps": "cd plugins/system-example && npm install"
+    "plugins:dev": "pnpm --filter=@whytalk/plugins run dev",
+    "plugins:build": "pnpm --filter=@whytalk/plugins run build",
+    "plugins:install": "pnpm --filter=@whytalk/plugins run install:all",
+    "plugins:clean": "pnpm --filter=@whytalk/plugins run clean"
   },
   "dependencies": {
     "@chainsafe/libp2p-gossipsub": "^14.1.1",
@@ -119,5 +121,8 @@
       "better-sqlite3"
     ]
   },
+  "workspaces": [
+    "plugins/*"
+  ],
   "packageManager": "pnpm@10.6.5+sha512.cdf928fca20832cd59ec53826492b7dc25dc524d4370b6b4adbf65803d32efaa6c1c88147c0ae4e8d579a6c9eec715757b50d4fa35eea179d868eada4ed043af"
 }

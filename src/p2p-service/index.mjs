@@ -70,8 +70,7 @@ import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 import { kadDHT } from '@libp2p/kad-dht'
 import { ping } from '@libp2p/ping'
 import { identify } from '@libp2p/identify'
-import { createEd25519PeerId } from '@libp2p/peer-id-factory'
-import { peerIdFromString } from '@libp2p/peer-id'
+// 移除静态导入，改为动态导入
 
 class P2PService {
   constructor() {
@@ -99,6 +98,16 @@ class P2PService {
 
     // 生成新身份
     console.log('Generating new P2P identity...')
+    
+    // 动态导入createEd25519PeerId
+    const { createEd25519PeerId } = await import('@libp2p/peer-id-factory').catch(() => ({
+      createEd25519PeerId: async () => ({
+        toString: () => `offline_${Math.random().toString(36).substring(2, 15)}`,
+        publicKey: null,
+        privateKey: null
+      })
+    }))
+    
     const peerId = await createEd25519PeerId()
     
     this.identity = {
@@ -129,6 +138,16 @@ class P2PService {
     try {
       // 初始化身份
       const identity = await this.initializeIdentity()
+      
+      // 动态导入peerIdFromString
+      const { peerIdFromString } = await import('@libp2p/peer-id').catch(() => ({
+        peerIdFromString: (id) => ({
+          toString: () => id,
+          publicKey: null,
+          privateKey: null
+        })
+      }))
+      
       const peerId = peerIdFromString(identity.peerId)
 
       // 创建libp2p节点

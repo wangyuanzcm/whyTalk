@@ -1,6 +1,5 @@
 import { Libp2p } from 'libp2p'
 import { EventEmitter } from 'events'
-import { peerIdFromString } from '@libp2p/peer-id'
 import { IdentityService } from '../identity/IdentityService'
 import { databaseManager } from '../../database/Database'
 
@@ -53,6 +52,11 @@ export class P2PMessageService extends EventEmitter {
     }
 
     try {
+      // 动态导入peerIdFromString
+      const { peerIdFromString } = await import('@libp2p/peer-id').catch(() => ({
+        peerIdFromString: (id: string) => ({ toString: () => id })
+      })) as any
+      
       // 获取目标节点的连接
       const peerIdObj = peerIdFromString(targetPeerId)
       const stream = await this.node.dialProtocol(peerIdObj, this.PROTOCOL)
@@ -222,7 +226,7 @@ export class P2PMessageService extends EventEmitter {
   // 保存消息到本地数据库
   private async saveMessage(message: P2PMessage): Promise<void> {
     try {
-      const db = databaseManager.getDatabase()
+      const db = databaseManager.getDatabase()!
       
       // 检查表是否存在，如果不存在则创建
       const tableExists = db.prepare(`
@@ -272,7 +276,7 @@ export class P2PMessageService extends EventEmitter {
   // 获取消息历史
   public async getMessageHistory(peerId?: string, groupId?: string, limit: number = 50): Promise<P2PMessage[]> {
     try {
-      const db = databaseManager.getDatabase()
+      const db = databaseManager.getDatabase()!
       
       let query = 'SELECT * FROM p2p_messages WHERE 1=1'
       const params: any[] = []
@@ -317,5 +321,17 @@ export class P2PMessageService extends EventEmitter {
   // 获取群组聊天历史
   public async getGroupChatHistory(groupId: string, limit: number = 50): Promise<P2PMessage[]> {
     return this.getMessageHistory(undefined, groupId, limit)
+  }
+
+  public async cleanup(): Promise<void> {
+    try {
+      this.node = null
+      this.identityService = null
+      this.removeAllListeners()
+      console.log('P2PMessageService cleanup completed')
+    } catch (error) {
+      console.error('Error during P2PMessageService cleanup:', error)
+      throw error
+    }
   }
 }

@@ -1,9 +1,6 @@
 import { ipcMain, BrowserWindow } from 'electron'
 import { authService } from '../auth/AuthService'
 import { userService } from '../user/UserService'
-import { contactService } from '../contact/ContactService'
-import { groupService } from '../group/GroupService'
-import { chatService } from '../chat/ChatService'
 import { uploadService } from '../upload/UploadService'
 import { articleService } from '../article/ArticleService'
 import { serviceManager } from '../index'
@@ -120,16 +117,6 @@ export class IPCHandler {
   }
 
   private setupRealtimeEvents(): void {
-    // 监听新消息事件
-    chatService.on('message:new', (message) => {
-      this.broadcastToUsers('message:new', message)
-    })
-
-    // 监听消息撤回事件
-    chatService.on('message:revoke', (data) => {
-      this.broadcastToUsers('message:revoke', data)
-    })
-
     // 监听用户在线状态变化
     userService.on('user:online', (data) => {
       this.broadcastToUsers('user:online', data)
@@ -138,6 +125,9 @@ export class IPCHandler {
     userService.on('user:offline', (data) => {
       this.broadcastToUsers('user:offline', data)
     })
+    
+    // TODO: 重新实现消息相关的实时事件监听
+    // 当前消息服务已迁移到插件系统中
   }
 
   private async routeRequest(request: IPCRequest): Promise<any> {
@@ -203,155 +193,19 @@ export class IPCHandler {
       }
     }
 
-    // 联系人相关接口
-    if (url === '/api/v1/contact/list') {
-      return await contactService.getContactList(userId)
-    }
-    if (url === '/api/v1/contact/search') {
-      return await userService.searchUsers(data.mobile)
-    }
-    if (url === '/api/v1/contact/detail') {
-      return await contactService.getContactDetail(userId, data.user_id)
-    }
-    if (url === '/api/v1/contact/delete') {
-      await contactService.deleteContact(userId, data.user_id)
-      return null
-    }
-    if (url === '/api/v1/contact/edit-remark') {
-      await contactService.updateContactRemark(userId, data.user_id, data.remark)
-      return null
-    }
-    if (url === '/api/v1/contact/apply/create') {
-      await contactService.createContactApply(userId, data.user_id, data.remark)
-      return null
-    }
-    if (url === '/api/v1/contact/apply/records') {
-      return await contactService.getContactApplyList(userId)
-    }
-    if (url === '/api/v1/contact/apply/accept') {
-      await contactService.handleContactApply(userId, data.apply_id, 'accept', data.remark)
-      return null
-    }
-    if (url === '/api/v1/contact/apply/decline') {
-      await contactService.handleContactApply(userId, data.apply_id, 'reject', data.remark)
-      return null
-    }
-    if (url === '/api/v1/contact/apply/unread-num') {
-      const applyList = await contactService.getContactApplyList(userId)
-      return { unread_num: applyList.filter(item => item.status === 'pending').length }
-    }
-    if (url === '/api/v1/contact/group/list') {
-      return await contactService.getContactGroups(userId)
-    }
-    if (url === '/api/v1/contact/move-group') {
-      await contactService.moveContactToGroup(userId, { friend_id: data.user_id, group_id: data.group_id })
-      return null
-    }
-    if (url === '/api/v1/contact/group/update') {
-      // 批量更新联系人分组
-      for (const item of data.items) {
-        if (item.id === 0) continue // 跳过默认分组
-        if (item.name) {
-          await contactService.updateContactGroup(userId, item.id, { name: item.name, sort: item.sort || 0 })
-        }
-      }
-      return null
-    }
-    if (url === '/api/v1/contact/online-status') {
-      return await userService.getOnlineStatus(data.user_id)
+    // 联系人相关接口已迁移到 contact-plugin
+    if (url.startsWith('/api/v1/contact/')) {
+      throw new Error('联系人功能已迁移到通讯录插件，请通过插件访问')
     }
 
-    // 群组相关接口
-    if (url === '/api/v1/group/list') {
-      return await groupService.getGroupList(userId)
-    }
-    if (url === '/api/v1/group/detail') {
-      return await groupService.getGroupDetail(userId, data.group_id)
-    }
-    if (url === '/api/v1/group/create') {
-      return await groupService.createGroup(userId, data)
-    }
-    if (url === '/api/v1/group/update') {
-      await groupService.updateGroup(userId, data.group_id, data)
-      return null
-    }
-    if (url === '/api/v1/group/invite') {
-      await groupService.inviteMembers(userId, data.group_id, { user_ids: data.user_ids })
-      return null
-    }
-    if (url === '/api/v1/group/member/remove') {
-      await groupService.removeMembers(userId, data.group_id, { user_ids: [data.user_id] })
-      return null
-    }
-    if (url === '/api/v1/group/dismiss') {
-      await groupService.dismissGroup(userId, data.group_id)
-      return null
-    }
-    if (url === '/api/v1/group/secede') {
-      await groupService.leaveGroup(userId, data.group_id)
-      return null
-    }
-    if (url === '/api/v1/group/member/list') {
-      const groupDetail = await groupService.getGroupDetail(userId, data.group_id)
-      return groupDetail.members
-    }
-    if (url === '/api/v1/group/apply/unread') {
-      // 获取未读的群组申请数量
-      return { unread_num: 0 } // 暂时返回0，后续可以实现具体逻辑
-    }
-    if (url === '/api/v1/group/apply/all') {
-      // 获取所有群组申请记录
-      return [] // 暂时返回空数组，后续可以实现具体逻辑
-    }
-    if (url === '/api/v1/group/overt-list') {
-      // 获取公开群组列表
-      return await groupService.searchGroups(data.keyword || '', data.limit || 20)
+    // 群组相关接口已迁移到 contact-plugin
+    if (url.startsWith('/api/v1/group/')) {
+      throw new Error('群组功能已迁移到通讯录插件，请通过插件访问')
     }
 
-    // 聊天相关接口
-    if (url === '/api/v1/talk/list') {
-      const items = await chatService.getTalkList(userId)
-      return { items }
-    }
-    if (url === '/api/v1/talk/create') {
-      await chatService.createTalk(userId, data.talk_mode, data.to_from_id)
-      return null
-    }
-    if (url === '/api/v1/talk/delete') {
-      await chatService.deleteTalk(userId, data.talk_mode, data.to_from_id)
-      return null
-    }
-    if (url === '/api/v1/talk/topping') {
-      await chatService.toggleTalkTop(userId, data.talk_mode, data.to_from_id, data.action)
-      return null
-    }
-    if (url === '/api/v1/talk/disturb') {
-      await chatService.toggleTalkDisturb(userId, data.talk_mode, data.to_from_id, data.action)
-      return null
-    }
-    if (url === '/api/v1/talk/clear-unread') {
-      await chatService.clearUnread(userId, data.talk_mode, data.to_from_id)
-      return null
-    }
-    if (url === '/api/v1/talk/records') {
-      return await chatService.getTalkRecords(userId, data)
-    }
-    if (url === '/api/v1/talk/history-records') {
-      return await chatService.searchHistoryRecords(userId, data.keyword, data.talk_mode, data.to_from_id)
-    }
-    if (url === '/api/v1/talk/forward-records') {
-      return await chatService.getForwardRecords(data.msg_ids)
-    }
-    if (url === '/api/v1/talk/message/send') {
-      return await chatService.sendMessage(userId, data)
-    }
-    if (url === '/api/v1/talk/message/revoke') {
-      await chatService.revokeMessage(userId, data.talk_mode, data.to_from_id, data.msg_id)
-      return null
-    }
-    if (url === '/api/v1/talk/message/delete') {
-      await chatService.deleteMessage(userId, data.talk_mode, data.to_from_id, data.msg_ids)
-      return null
+    // 聊天和消息相关接口已迁移到 message-plugin
+    if (url.startsWith('/api/v1/talk/')) {
+      throw new Error('聊天和消息功能已迁移到消息插件，请通过插件访问')
     }
 
     // 文件上传相关接口

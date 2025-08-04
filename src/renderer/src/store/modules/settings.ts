@@ -10,7 +10,8 @@ export const useSettingsStore = defineStore('settings', {
       isNotify: storage.get('isNotify', true), // 是否同意浏览器通知
       isFullScreen: storage.get('isFullScreen', true), // 是否客户端全屏
       themeMode: storage.get('themeMode', 'light') as string,
-      currentThemeMode: storage.get('themeMode', 'light') as string
+      currentThemeMode: storage.get('themeMode', 'light') as string,
+      defaultPage: storage.get('defaultPage', '/workspace') as string // 默认进入页面
     }
   },
   actions: {
@@ -33,6 +34,10 @@ export const useSettingsStore = defineStore('settings', {
     setNotify(value: boolean) {
       this.isNotify = value
       storage.set('isNotify', value, null)
+    },
+    setDefaultPage(value: string) {
+      this.defaultPage = value
+      storage.set('defaultPage', value, null)
     }
   }
 })

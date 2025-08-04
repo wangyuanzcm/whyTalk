@@ -968,3 +968,5 @@ export class PluginDataIPC {
     console.log('Plugin Data IPC cleaned up')
   }
 }
+
+export const pluginDataIPC = PluginDataIPC.getInstance()

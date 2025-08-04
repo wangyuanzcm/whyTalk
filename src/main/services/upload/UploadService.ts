@@ -13,6 +13,29 @@ export interface UploadResult {
 }
 
 export class UploadService {
+  private isInitialized = false
+
+  // 初始化上传服务
+  public async initialize(): Promise<void> {
+    if (this.isInitialized) {
+      return
+    }
+    
+    try {
+      // 确保上传目录存在
+      if (!existsSync(config.upload.uploadPath)) {
+        mkdirSync(config.upload.uploadPath, { recursive: true })
+      }
+      
+      // 清理过期文件
+      await this.cleanupExpiredFiles()
+      this.isInitialized = true
+      console.log('UploadService initialized')
+    } catch (error) {
+      console.error('Failed to initialize UploadService:', error)
+      throw error
+    }
+  }
   
   // 上传文件
   public async uploadFile(
@@ -118,12 +141,24 @@ export class UploadService {
   }
 
   // 清理过期文件（可以定期调用）
+// 清理过期文件
   public async cleanupExpiredFiles(): Promise<void> {
     try {
-      // 这里可以实现清理逻辑，比如删除超过一定时间的临时文件
-      console.log('Cleanup expired files completed')
+      // 这里可以实现清理过期文件的逻辑
+      console.log('Cleanup expired files')
     } catch (error) {
       console.error('Failed to cleanup expired files:', error)
+    }
+  }
+
+  // 清理资源
+  public async cleanup(): Promise<void> {
+    try {
+      this.isInitialized = false
+      console.log('UploadService cleanup completed')
+    } catch (error) {
+      console.error('Error during UploadService cleanup:', error)
+      throw error
     }
   }
 }

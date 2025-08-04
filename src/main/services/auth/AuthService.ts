@@ -42,7 +42,24 @@ export class AuthService {
   private readonly JWT_SECRET = config.auth.jwtSecret
   private readonly JWT_EXPIRES_IN = config.auth.jwtExpiresIn
   private readonly TOKEN_EXPIRES_IN = 7 * 24 * 60 * 60 // 7天，以秒为单位
+  private isInitialized = false
 
+  // 初始化认证服务
+  public async initialize(): Promise<void> {
+    if (this.isInitialized) {
+      return
+    }
+    
+    try {
+      // 清理过期的会话
+      await this.cleanupExpiredSessions()
+      this.isInitialized = true
+      console.log('AuthService initialized')
+    } catch (error) {
+      console.error('Failed to initialize AuthService:', error)
+      throw error
+    }
+  }
 
   // 生成密码哈希
   public hashPassword(password: string, salt: string): string {
@@ -355,6 +372,19 @@ export class AuthService {
       console.log(`Cleaned up ${result.changes} expired sessions`)
     } catch (error) {
       console.error('Session cleanup failed:', error)
+    }
+  }
+
+  // 清理资源
+  public async cleanup(): Promise<void> {
+    try {
+      // 清理过期会话
+      await this.cleanupExpiredSessions()
+      this.isInitialized = false
+      console.log('AuthService cleanup completed')
+    } catch (error) {
+      console.error('Error during AuthService cleanup:', error)
+      throw error
     }
   }
 }

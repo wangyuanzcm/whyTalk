@@ -1,0 +1,36 @@
+{
+  "name": "@whytalk/wasm-example",
+  "version": "1.0.0",
+  "description": "WASM示例插件",
+  "author": "WhyTalk Team",
+  "main": "index.html",
+  "type": "module",
+  "scripts": {
+    "dev": "echo \"Plugin development mode\"",
+    "build": "node build.js",
+    "test": "echo \"Testing plugin\""
+  },
+  "dependencies": {
+    "@extism/extism": "^1.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.16.5",
+    "typescript": "^5.8.3"
+  },
+  "peerDependencies": {
+    "electron": ">=22.0.0"
+  },
+  "keywords": [
+    "whytalk",
+    "plugin",
+    "wasm",
+    "example",
+    "electron"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/whytalk/why-talk",
+    "directory": "plugins/wasm-example"
+  }
+}

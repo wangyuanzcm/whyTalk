@@ -14,6 +14,17 @@ export class P2PIPCHandler {
     this.mainWindow = window
   }
 
+  async initialize(): Promise<void> {
+    try {
+      console.log('P2P IPC Handler initialized')
+      // 设置P2P事件监听器
+      this.setupP2PEventListeners()
+    } catch (error) {
+      console.error('Failed to initialize P2P IPC Handler:', error)
+      throw error
+    }
+  }
+
   private registerHandlers(): void {
     // P2P服务控制
     ipcMain.handle('p2p:start', async () => {
