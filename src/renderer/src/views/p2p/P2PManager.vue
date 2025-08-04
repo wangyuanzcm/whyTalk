@@ -57,132 +57,51 @@
         </n-card>
       </n-tab-pane>
 
-      <n-tab-pane name="contacts" tab="P2P联系人">
+      <n-tab-pane name="network" tab="网络信息">
         <n-card>
           <template #header>
-            <n-space justify="space-between">
-              <span>P2P联系人 ({{ contacts.length }})</span>
-              <n-space>
-                <n-button size="small" @click="showAddContactModal = true">
-                  添加联系人
-                </n-button>
-                <n-button size="small" @click="refreshContacts" :loading="contactsLoading">
-                  刷新
-                </n-button>
-              </n-space>
-            </n-space>
+            <span>网络连接信息</span>
           </template>
           
-          <n-data-table
-            :columns="contactColumns"
-            :data="contacts"
-            :loading="contactsLoading"
-            :pagination="false"
-            size="small"
-          />
-        </n-card>
-      </n-tab-pane>
-
-      <n-tab-pane name="groups" tab="P2P群组">
-        <n-card>
-          <template #header>
-            <n-space justify="space-between">
-              <span>P2P群组</span>
-              <n-button size="small" @click="showCreateGroupModal = true">
-                创建群组
-              </n-button>
-            </n-space>
-          </template>
+          <n-descriptions :column="1" bordered>
+            <n-descriptions-item label="连接的节点数">
+              {{ peers.filter(p => p.status === 'connected').length }}
+            </n-descriptions-item>
+            <n-descriptions-item label="发现的节点数">
+              {{ peers.length }}
+            </n-descriptions-item>
+            <n-descriptions-item label="网络协议">
+              libp2p (演示模式)
+            </n-descriptions-item>
+            <n-descriptions-item label="发现机制">
+              mDNS + DHT
+            </n-descriptions-item>
+          </n-descriptions>
           
-          <n-empty description="暂无群组数据" />
-        </n-card>
-      </n-tab-pane>
-
-      <n-tab-pane name="messages" tab="消息测试">
-        <n-card>
-          <n-space vertical>
-            <n-form ref="messageFormRef" :model="messageForm" label-placement="left" label-width="80">
-              <n-form-item label="接收方">
-                <n-select
-                  v-model:value="messageForm.targetPeerId"
-                  :options="peerOptions"
-                  placeholder="选择接收方节点"
-                  clearable
-                />
-              </n-form-item>
-              <n-form-item label="消息内容">
-                <n-input
-                  v-model:value="messageForm.content"
-                  type="textarea"
-                  placeholder="输入消息内容"
-                  :rows="3"
-                />
-              </n-form-item>
-              <n-form-item>
-                <n-button @click="sendTestMessage" :loading="sendingMessage" type="primary">
-                  发送消息
-                </n-button>
-              </n-form-item>
-            </n-form>
-          </n-space>
+          <n-divider />
+          
+          <n-alert type="info">
+            <template #header>功能说明</template>
+            P2P网络模块负责底层网络基础设施管理，包括节点发现、连接管理等。
+            具体的联系人管理和消息功能请使用对应的插件。
+          </n-alert>
         </n-card>
       </n-tab-pane>
     </n-tabs>
 
-    <!-- 添加联系人模态框 -->
-    <n-modal v-model:show="showAddContactModal" preset="dialog" title="添加P2P联系人">
-      <n-form ref="contactFormRef" :model="contactForm" label-placement="left" label-width="80">
-        <n-form-item label="节点ID" required>
-          <n-input v-model:value="contactForm.peerId" placeholder="输入节点ID" />
-        </n-form-item>
-        <n-form-item label="昵称">
-          <n-input v-model:value="contactForm.nickname" placeholder="输入昵称" />
-        </n-form-item>
-        <n-form-item label="备注">
-          <n-input v-model:value="contactForm.remark" placeholder="输入备注" />
-        </n-form-item>
-      </n-form>
-      <template #action>
-        <n-space>
-          <n-button @click="showAddContactModal = false">取消</n-button>
-          <n-button @click="addContact" :loading="addingContact" type="primary">添加</n-button>
-        </n-space>
-      </template>
-    </n-modal>
 
-    <!-- 创建群组模态框 -->
-    <n-modal v-model:show="showCreateGroupModal" preset="dialog" title="创建P2P群组">
-      <n-form ref="groupFormRef" :model="groupForm" label-placement="left" label-width="80">
-        <n-form-item label="群组名称" required>
-          <n-input v-model:value="groupForm.name" placeholder="输入群组名称" />
-        </n-form-item>
-        <n-form-item label="群组描述">
-          <n-input v-model:value="groupForm.description" type="textarea" placeholder="输入群组描述" :rows="3" />
-        </n-form-item>
-      </n-form>
-      <template #action>
-        <n-space>
-          <n-button @click="showCreateGroupModal = false">取消</n-button>
-          <n-button @click="createGroup" :loading="creatingGroup" type="primary">创建</n-button>
-        </n-space>
-      </template>
-    </n-modal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, h } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { 
   NCard, NTag, NSpace, NDescriptions, NDescriptionsItem, NText, NButton, 
-  NTabs, NTabPane, NDataTable, NEmpty, NForm, NFormItem, NInput, NSelect,
-  NModal, NAlert, useMessage
+  NTabs, NTabPane, NDataTable, useMessage
 } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import {
-  getP2PContacts,
   connectToP2PPeer,
-  sendP2PMessage,
-  type P2PContact,
   type P2PPeer
 } from '@/api/p2p'
 import { useP2PStore } from '@/store/modules/p2p'
@@ -199,51 +118,12 @@ const status = computed(() => ({
   peerId: p2pStore.nodeId
 }))
 
-// 使用store中的状态
-
-const contacts = computed(() => p2pStore.contacts)
-
 // 节点数据
 const peers = computed(() => p2pStore.discoveredNodes)
 
 // 加载状态
 const loading = ref(false)
 const peersLoading = ref(false)
-const contactsLoading = ref(false)
-const sendingMessage = ref(false)
-
-// 操作状态
-const addingContact = ref(false)
-const creatingGroup = ref(false)
-
-// 模态框状态
-const showAddContactModal = ref(false)
-const showCreateGroupModal = ref(false)
-
-// 表单数据
-const messageForm = ref({
-  targetPeerId: '',
-  content: ''
-})
-
-const contactForm = ref({
-  peerId: '',
-  nickname: '',
-  remark: ''
-})
-
-const groupForm = ref({
-  name: '',
-  description: ''
-})
-
-// 节点选项
-const peerOptions = computed(() => {
-  return peers.value.map(peer => ({
-    label: `${peer.id} (${peer.status})`,
-    value: peer.id
-  }))
-})
 
 // 节点表格列
 const peerColumns: DataTableColumns<P2PPeer> = [
@@ -272,47 +152,14 @@ const peerColumns: DataTableColumns<P2PPeer> = [
   {
     title: '操作',
     key: 'actions',
-    render: (row) => h(NSpace, {}, () => [
-      h(NButton, {
-        size: 'small',
-        onClick: () => connectToPeer(row.id)
-      }, () => '连接'),
-      h(NButton, {
-        size: 'small',
-        onClick: () => addContactFromPeer(row.id)
-      }, () => '添加联系人')
-    ])
+    render: (row) => h(NButton, {
+      size: 'small',
+      onClick: () => connectToPeer(row.id)
+    }, () => '连接')
   }
 ]
 
-// 联系人表格列
-const contactColumns: DataTableColumns<P2PContact> = [
-  {
-    title: '节点ID',
-    key: 'peerId',
-    render: (row) => h('span', { style: 'font-family: monospace; font-size: 12px;' }, row.peerId)
-  },
-  {
-    title: '昵称',
-    key: 'nickname'
-  },
-  {
-    title: '备注',
-    key: 'remark'
-  },
-  {
-    title: '状态',
-    key: 'status',
-    render: (row) => h(NTag, { 
-      type: row.status === 'online' ? 'success' : 'default' 
-    }, () => row.status || 'unknown')
-  },
-  {
-    title: '添加时间',
-    key: 'addedAt',
-    render: (row) => row.addedAt ? new Date(row.addedAt).toLocaleString() : '-'
-  }
-]
+
 
 // 刷新状态
 const refreshStatus = async () => {
@@ -358,21 +205,6 @@ const refreshPeers = async () => {
   }
 }
 
-// 刷新联系人
-const refreshContacts = async () => {
-  contactsLoading.value = true
-  try {
-    const contactsData = await getP2PContacts()
-    p2pStore.setContacts(contactsData)
-  } catch (error) {
-    console.warn('P2P服务未启用，无法获取联系人列表:', error instanceof Error ? error.message : String(error))
-    p2pStore.setContacts([])
-    // 不显示错误消息，因为这是预期的行为
-  } finally {
-    contactsLoading.value = false
-  }
-}
-
 // 连接到节点
 const connectToPeer = async (peerId: string) => {
   try {
@@ -384,96 +216,10 @@ const connectToPeer = async (peerId: string) => {
   }
 }
 
-// 从节点添加联系人
-const addContactFromPeer = (peerId: string) => {
-  contactForm.value.peerId = peerId
-  showAddContactModal.value = true
-}
-
-// 添加联系人
-const addContact = async () => {
-  if (!contactForm.value.peerId) {
-    message.error('请输入节点ID')
-    return
-  }
-
-  addingContact.value = true
-  try {
-    const result = await window.electron.p2p.addContact({
-      peerId: contactForm.value.peerId,
-      nickname: contactForm.value.nickname,
-      remark: contactForm.value.remark
-    })
-    if (result.success) {
-      message.success('联系人添加成功')
-      showAddContactModal.value = false
-      contactForm.value = { peerId: '', nickname: '', remark: '' }
-      await refreshContacts()
-    } else {
-      message.error(result.message || '联系人添加失败')
-    }
-  } catch (error) {
-    message.error('添加联系人失败: ' + (error instanceof Error ? error.message : String(error)))
-  } finally {
-    addingContact.value = false
-  }
-}
-
-// 创建群组
-const createGroup = async () => {
-  if (!groupForm.value.name) {
-    message.error('请输入群组名称')
-    return
-  }
-
-  creatingGroup.value = true
-  try {
-    const result = await window.electron.p2p.createGroup({
-      name: groupForm.value.name,
-      description: groupForm.value.description
-    })
-    if (result.success) {
-      message.success(`创建群组成功，群组ID: ${result.groupId}`)
-      showCreateGroupModal.value = false
-      groupForm.value = { name: '', description: '' }
-    } else {
-      message.error(result.message || '群组创建失败')
-    }
-  } catch (error) {
-    message.error('创建群组失败: ' + (error instanceof Error ? error.message : String(error)))
-  } finally {
-    creatingGroup.value = false
-  }
-}
-
-// 发送测试消息
-const sendTestMessage = async () => {
-  if (!messageForm.value.targetPeerId || !messageForm.value.content) {
-    message.error('请选择接收方并输入消息内容')
-    return
-  }
-
-  sendingMessage.value = true
-  try {
-    await sendP2PMessage({
-      targetPeerId: messageForm.value.targetPeerId,
-      type: 'text',
-      content: messageForm.value.content
-    })
-    message.success('消息发送成功')
-    messageForm.value.content = ''
-  } catch (error) {
-    message.error('消息发送失败: ' + (error instanceof Error ? error.message : String(error)))
-  } finally {
-    sendingMessage.value = false
-  }
-}
-
 // 初始化
 onMounted(async () => {
   await refreshStatus()
   await refreshPeers()
-  await refreshContacts()
 })
 </script>
 

@@ -42,7 +42,8 @@ for ($i = 0; $i -lt $ClientCount; $i++) {
     
     # 在新的命令行窗口中启动
     $title = "WhyTalk-Client-$($user.ClientId)-$($user.Nickname)"
-    Start-Process cmd -ArgumentList "/k", "title $title && set ELECTRON_USER_DATA=$userDataDir && set VITE_DEV_PORT=$($user.Port) && npm run dev"
+    $batchCommand = "title $title `& set ELECTRON_USER_DATA=$userDataDir `& set VITE_DEV_PORT=$($user.Port) `& cd /d D:\github_workspace\why-talk `& npm run dev"
+    Start-Process cmd -ArgumentList "/k", $batchCommand
     
     Start-Sleep -Seconds 2
 }

@@ -18,7 +18,7 @@ const detail = reactive({
   email: '',
   gender: '0',
   motto: '0',
-  birthday: ''
+  birthday: undefined as string | undefined
 })
 
 const loadDetail = async () => {

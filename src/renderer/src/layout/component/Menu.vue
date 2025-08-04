@@ -1,53 +1,35 @@
 <script lang="ts" setup>
-import { useUserStore, useSettingsStore, useTalkStore } from '@/store'
+import { useUserStore, useMenuStore, useSettingsStore, useTalkStore } from '@/store'
 import AccountCard from './AccountCard.vue'
 import P2PStatusIndicator from '@/components/P2PStatusIndicator.vue'
-import { SettingTwo, Message, People, BookmarkOne, Application, Connection } from '@icon-park/vue-next'
+
 
 const userStore = useUserStore()
-const talkStore = useTalkStore()
 const router = useRouter()
-
+const menuStore = useMenuStore()
 const settingsStore = useSettingsStore()
+const talkStore = useTalkStore()
 
 const color = computed(() => {
   return settingsStore.currentThemeMode == 'dark' ? '#ffffff' : '#333'
 })
 
-const menus = reactive([
-  {
-    link: '/message',
-    icon: markRaw(Message),
-    title: '消息',
-    hotspot: computed(() => talkStore.talkUnreadNum > 0)
-  },
-  {
-    link: '/contact',
-    icon: markRaw(People),
-    title: '通讯录',
-    hotspot: computed(() => userStore.isContactApply || userStore.isGroupApply)
-  },
-  {
-    link: '/note',
-    icon: markRaw(BookmarkOne),
-    title: '笔记'
-  },
-  {
-    link: '/workspace',
-    icon: markRaw(Application),
-    title: '工作台'
-  },
-  {
-    link: '/p2p',
-    icon: markRaw(Connection),
-    title: 'P2P网络'
-  },
-  {
-    link: '/settings',
-    icon: markRaw(SettingTwo),
-    title: '设置'
-  }
-])
+// 动态菜单项，从菜单store获取
+const menus = computed(() => {
+  // 为核心菜单项添加hotspot逻辑
+  return menuStore.allMenuItems.map(item => {
+    const menuItem = { ...item }
+    
+    // 为特定菜单项添加hotspot逻辑
+    if (item.id === 'message') {
+      menuItem.hotspot = computed(() => talkStore.talkUnreadNum > 0)
+    } else if (item.id === 'contact') {
+      menuItem.hotspot = computed(() => userStore.isContactApply || userStore.isGroupApply)
+    }
+    
+    return menuItem
+  })
+})
 
 const onLogout = () => {
   userStore.logoutLogin()
@@ -64,36 +46,44 @@ const onClickMenu = (menu) => {
 const isActive = (menu) => {
   return router.currentRoute.value.path.indexOf(menu.link) >= 0
 }
+
+// 初始化菜单配置
+onMounted(() => {
+  menuStore.loadMenuConfig()
+})
 </script>
 
 <template>
   <section class="menu">
     <header class="menu-header" :url="router.currentRoute.value.path">
-      <n-popover
-        placement="right"
-        trigger="click"
-        :raw="true"
-        style="margin-left: 16px; border-radius: 8px; overflow: hidden"
-      >
-        <template #trigger>
-          <im-avatar
-            class="logo"
-            :size="35"
-            :src="userStore.avatar"
-            :username="userStore.nickname"
-          />
-        </template>
-        <AccountCard />
-      </n-popover>
+      <!-- 头像和P2P状态组合 -->
+      <div class="avatar-container">
+        <n-popover
+          placement="right"
+          trigger="click"
+          :raw="true"
+          style="border-radius: 8px; overflow: hidden"
+        >
+          <template #trigger>
+            <im-avatar
+              class="logo"
+              :size="35"
+              :src="userStore.avatar"
+              :username="userStore.nickname"
+            />
+          </template>
+          <AccountCard />
+        </n-popover>
+        
+        <!-- P2P状态圆点 -->
+        <div class="p2p-status-dot">
+          <P2PStatusIndicator />
+        </div>
+      </div>
 
       <span class="online-status" :class="{ online: userStore.online }">
         {{ userStore.online ? '在线' : '连接中...' }}
       </span>
-      
-      <!-- P2P状态指示器 -->
-      <div class="p2p-status-container">
-        <P2PStatusIndicator />
-      </div>
     </header>
 
     <main class="menu-main">
@@ -148,6 +138,22 @@ const isActive = (menu) => {
     box-sizing: border-box;
     cursor: pointer;
 
+    .avatar-container {
+      position: relative;
+      margin-left: 16px;
+      
+      .logo {
+        cursor: pointer;
+      }
+      
+      .p2p-status-dot {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        z-index: 10;
+      }
+    }
+
     .online-status {
       margin-top: 5px;
       font-size: 13px;
@@ -157,13 +163,6 @@ const isActive = (menu) => {
       &.online {
         color: #65c468;
       }
-    }
-
-    .p2p-status-container {
-      margin-top: 8px;
-      width: 100%;
-      display: flex;
-      justify-content: center;
     }
   }
 

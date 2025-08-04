@@ -128,7 +128,19 @@ export class PluginAPI {
    */
   static async setPluginConfig(pluginId: string, config: any): Promise<PluginOperationResult> {
     try {
-      const result = await window.electron.ipcRenderer.invoke('plugin:manager:set-config', pluginId, config)
+      const result = await window.electron.ipcRenderer.invoke('plugin:manager:setConfig', pluginId, config)
+      return result
+    } catch (error: any) {
+      return { success: false, error: error.message }
+    }
+  }
+
+  /**
+   * 加载前端插件
+   */
+  static async loadFrontendPlugin(pluginId: string): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      const result = await window.electron.ipcRenderer.invoke('plugin:frontend:load', pluginId)
       return result
     } catch (error: any) {
       return { success: false, error: error.message }

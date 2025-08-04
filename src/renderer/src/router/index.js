@@ -38,6 +38,12 @@ const routes = [
         meta: { auth: true },
         component: () => import('@/views/workspace/index.vue')
       },
+      {
+        path: '/plugin/:pluginId',
+        name: 'plugin',
+        meta: { auth: true },
+        component: () => import('@/views/plugin/PluginView.vue')
+      },
       SettingRouter,
       ContactRouter,
       P2PRouter

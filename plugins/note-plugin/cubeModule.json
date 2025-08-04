@@ -1,0 +1,22 @@
+{
+  "name": "note-plugin",
+  "version": "1.0.0",
+  "description": "笔记管理插件",
+  "author": "WhyTalk Team",
+  "main": "index.html",
+  "icon": "📝",
+  "menuTitle": "笔记",
+  "permissions": [
+    "storage",
+    "notifications",
+    "ipc",
+    "database"
+  ],
+  "dependencies": {
+    "vue": "^3.0.0",
+    "naive-ui": "^2.0.0"
+  },
+  "routes": {
+    "/note": "NoteView"
+  }
+}

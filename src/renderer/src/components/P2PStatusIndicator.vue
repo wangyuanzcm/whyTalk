@@ -1,25 +1,14 @@
 <template>
   <div class="p2p-status-indicator">
-    <n-badge 
-      :value="badgeValue" 
-      :color="badgeColor"
-      :show="showBadge"
-      dot
+    <!-- 简化的圆点状态指示器 -->
+    <div 
+      class="status-dot" 
+      :class="statusClass"
+      @click="showDetails = true"
+      :title="statusText"
     >
-      <n-button 
-        :type="buttonType"
-        size="small"
-        @click="showDetails = true"
-        :loading="isConnecting"
-      >
-        <template #icon>
-          <n-icon>
-            <component :is="statusIcon" />
-          </n-icon>
-        </template>
-        {{ statusText }}
-      </n-button>
-    </n-badge>
+      <div class="dot-inner"></div>
+    </div>
 
     <!-- 详情模态框 -->
     <n-modal v-model:show="showDetails" preset="card" title="P2P网络状态" style="width: 500px;">
@@ -101,12 +90,9 @@ import { computed, ref } from 'vue'
 import { useP2PStore } from '@/store/modules/p2p'
 import { p2pInitializer } from '@/utils/p2p-init'
 import { useMessage } from 'naive-ui'
-import {
-  CheckOne,
-  CloseOne,
-  Refresh,
-  Remind
-} from "@icon-park/vue-next"
+// import {
+//   Refresh
+// } from "@icon-park/vue-next"
 
 const p2pStore = useP2PStore()
 const message = useMessage()
@@ -117,20 +103,7 @@ const reconnecting = ref(false)
 const restarting = ref(false)
 
 // 计算属性
-const isConnecting = computed(() => p2pStore.networkStatus === 'connecting')
-
-const statusIcon = computed(() => {
-  switch (p2pStore.networkStatus) {
-    case 'connected':
-      return CheckOne
-    case 'connecting':
-      return Refresh
-    case 'error':
-      return Remind
-    default:
-      return CloseOne
-  }
-})
+// const isConnecting = computed(() => p2pStore.networkStatus === 'connecting')
 
 const statusText = computed(() => {
   switch (p2pStore.networkStatus) {
@@ -139,45 +112,24 @@ const statusText = computed(() => {
     case 'connecting':
       return '连接中...'
     case 'error':
-      return 'P2P错误'
+      return 'P2P连接错误'
     default:
       return 'P2P未连接'
   }
 })
 
-const buttonType = computed(() => {
+// 圆点状态样式类
+const statusClass = computed(() => {
   switch (p2pStore.networkStatus) {
     case 'connected':
-      return 'success'
+      return 'status-connected'
     case 'connecting':
-      return 'info'
+      return 'status-connecting'
     case 'error':
-      return 'error'
+      return 'status-error'
     default:
-      return 'default'
+      return 'status-disconnected'
   }
-})
-
-const badgeColor = computed(() => {
-  switch (p2pStore.networkStatus) {
-    case 'connected':
-      return '#52c41a'
-    case 'connecting':
-      return '#1890ff'
-    case 'error':
-      return '#ff4d4f'
-    default:
-      return '#d9d9d9'
-  }
-})
-
-const showBadge = computed(() => {
-  return p2pStore.contactRequests.length > 0 || p2pStore.totalUnreadMessages > 0
-})
-
-const badgeValue = computed(() => {
-  const total = p2pStore.contactRequests.length + p2pStore.totalUnreadMessages
-  return total > 99 ? '99+' : total.toString()
 })
 
 const networkStatusType = computed(() => {
@@ -263,6 +215,67 @@ const refreshStatus = async () => {
   display: inline-block;
 }
 
+/* 圆点状态指示器样式 */
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.status-dot:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.dot-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+/* 连接正常 - 绿色 */
+.status-connected .dot-inner {
+  background-color: #52c41a;
+  box-shadow: 0 0 0 2px rgba(82, 196, 26, 0.2);
+}
+
+/* 连接中 - 橙色，带动画 */
+.status-connecting .dot-inner {
+  background-color: #fa8c16;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(250, 140, 22, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(250, 140, 22, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(250, 140, 22, 0);
+  }
+}
+
+/* 连接错误 - 红色 */
+.status-error .dot-inner {
+  background-color: #ff4d4f;
+  box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2);
+}
+
+/* 未连接 - 灰色 */
+.status-disconnected .dot-inner {
+  background-color: #d9d9d9;
+  box-shadow: 0 0 0 2px rgba(217, 217, 217, 0.2);
+}
+
+/* 详情模态框样式 */
 .p2p-status-details {
   max-height: 60vh;
   overflow-y: auto;

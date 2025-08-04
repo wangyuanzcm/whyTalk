@@ -1,0 +1,25 @@
+{
+  "name": "contact-plugin",
+  "version": "1.0.0",
+  "description": "通讯录插件，提供联系人管理功能",
+  "author": "Why-Talk Team",
+  "main": "index.html",
+  "icon": "user",
+  "menuTitle": "通讯录",
+  "permissions": [
+    "storage",
+    "notifications",
+    "ipc",
+    "database"
+  ],
+  "dependencies": {
+    "vue": "^3.0.0",
+    "naive-ui": "^2.0.0"
+  },
+  "routes": [
+    {
+      "path": "/contact",
+      "component": "ContactView"
+    }
+  ]
+}

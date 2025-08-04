@@ -192,7 +192,7 @@ export class P2PMessageService {
   }
 
   // 获取本地节点ID
-  private static async getLocalPeerId(): Promise<string> {
+  static async getLocalPeerId(): Promise<string> {
     try {
       const result = await window.electron.ipcRenderer.invoke('p2p:getStatus')
       return result.peerId || ''
@@ -200,6 +200,27 @@ export class P2PMessageService {
       console.error('Failed to get local peer ID:', error)
       return ''
     }
+  }
+
+  // 获取消息历史记录
+  static async getMessageHistory(_contactId: string): Promise<any> {
+    try {
+      // 模拟返回消息历史
+      return {
+        success: true,
+        data: []
+      }
+    } catch (error) {
+      console.error('Failed to get message history:', error)
+      throw error
+    }
+  }
+
+  // 监听消息接收
+  static onMessageReceived(callback: (message: any) => void): void {
+    // 设置消息监听器
+    console.log('Setting up message listener:', callback)
+    // TODO: 实现实际的消息监听逻辑
   }
 }
 
