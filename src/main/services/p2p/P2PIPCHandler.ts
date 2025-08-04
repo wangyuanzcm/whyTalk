@@ -280,6 +280,28 @@ export class P2PIPCHandler {
       }
     })
 
+    // 获取已连接的节点
+    ipcMain.handle('p2p:getConnectedPeers', async () => {
+      try {
+        const peers = this.p2pManager.getConnectedPeers()
+        return { success: true, peers }
+      } catch (error) {
+        console.error('Failed to get connected peers:', error)
+        return { success: false, peers: [] }
+      }
+    })
+
+    // 获取节点信息
+    ipcMain.handle('p2p:getNodeInfo', async () => {
+      try {
+        const nodeInfo = this.p2pManager.getNodeInfo()
+        return { success: true, nodeInfo }
+      } catch (error) {
+        console.error('Failed to get node info:', error)
+        return { success: false, nodeInfo: null }
+      }
+    })
+
     // 同步相关
     ipcMain.handle('p2p:getUnsyncedMessages', async () => {
       try {
