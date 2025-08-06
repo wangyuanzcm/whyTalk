@@ -1,13 +1,22 @@
 {
   "name": "message-plugin",
-  "version": "1.0.0",
-  "description": "消息聊天插件，提供完整的聊天功能",
+  "version": "2.0.0",
+  "description": "基于LocalSend的消息聊天插件，支持文件传输、截屏、群组聊天等功能",
   "author": "Why-Talk Team",
   "main": "index.html",
   "icon": "message",
   "menuTitle": "消息",
   "shortName": "消息",
-  "permissions": ["storage", "notifications", "ipc", "database"],
+  "permissions": [
+    "storage", 
+    "notifications", 
+    "ipc", 
+    "database", 
+    "p2p", 
+    "localsend", 
+    "file-system", 
+    "screen-capture"
+  ],
   "dependencies": {
     "vue": "^3.0.0",
     "naive-ui": "^2.0.0"

@@ -5,6 +5,7 @@
 // 导出服务类
 export { MessageService } from './services/MessageService'
 export { ConversationService } from './services/ConversationService'
+export { LocalSendService } from './services/LocalSendService'
 
 // 导出SDK
 export { MessageSDK, createMessageSDK } from './sdk/MessageSDK'
@@ -17,6 +18,16 @@ export type {
   MessageHistory,
   SearchMessageRequest
 } from './sdk/MessageSDK'
+
+// 导出LocalSend相关类型
+export type {
+  LocalSendPeer,
+  LocalSendMessage,
+  LocalSendFile,
+  TempGroup,
+  SendFileRequest,
+  SendMessageRequest as LocalSendMessageRequest
+} from './services/LocalSendService'
 
 // 导出服务接口类型
 export type {

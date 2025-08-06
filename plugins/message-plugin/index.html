@@ -539,6 +539,243 @@
       .hidden {
         display: none !important;
       }
+
+      /* 模态框样式 */
+      .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+
+      .modal-content {
+        background: white;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 500px;
+        max-height: 80%;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      .modal-header h3 {
+        margin: 0;
+        font-size: 18px;
+      }
+
+      .close-btn {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #666;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .close-btn:hover {
+        color: #333;
+      }
+
+      .modal-body {
+        padding: 20px;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+
+      .modal-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 20px;
+      }
+
+      /* 按钮样式 */
+      .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s;
+      }
+
+      .btn-primary {
+        background: #2196f3;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #1976d2;
+      }
+
+      .btn-secondary {
+        background: #f5f5f5;
+        color: #333;
+      }
+
+      .btn-secondary:hover {
+        background: #e0e0e0;
+      }
+
+      /* 设备状态样式 */
+      .device-status {
+        margin-bottom: 20px;
+        padding: 15px;
+        background: #f9f9f9;
+        border-radius: 6px;
+      }
+
+      .status-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .status-indicator {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+      }
+
+      .status-indicator.online {
+        background: #4caf50;
+        color: white;
+      }
+
+      .status-indicator.offline {
+        background: #f44336;
+        color: white;
+      }
+
+      /* 设备列表样式 */
+      .device-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .device-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        transition: all 0.2s;
+      }
+
+      .device-item:hover {
+        background: #f5f5f5;
+      }
+
+      .device-info {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .device-name {
+        font-weight: bold;
+        margin-bottom: 4px;
+      }
+
+      .device-details {
+        font-size: 12px;
+        color: #666;
+      }
+
+      .device-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .device-actions .btn {
+        padding: 4px 8px;
+        font-size: 12px;
+      }
+
+      /* 表单样式 */
+      .form-group {
+        margin-bottom: 16px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: bold;
+      }
+
+      .form-input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #d0d0d0;
+        border-radius: 4px;
+        font-size: 14px;
+        outline: none;
+      }
+
+      .form-input:focus {
+        border-color: #2196f3;
+      }
+
+      /* 成员列表样式 */
+      .member-list {
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        padding: 8px;
+      }
+
+      .member-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px;
+        border-radius: 4px;
+        transition: all 0.2s;
+      }
+
+      .member-item:hover {
+        background: #f5f5f5;
+      }
+
+      .member-item input[type="checkbox"] {
+        margin: 0;
+      }
+
+      .member-info {
+        flex: 1;
+      }
+
+      .member-name {
+        font-weight: bold;
+      }
+
+      .member-details {
+        font-size: 12px;
+        color: #666;
+      }
     </style>
   </head>
   <body>
@@ -548,7 +785,10 @@
         <div class="sidebar-header">
           <div class="header-title">消息</div>
           <div class="header-actions">
+            <button class="action-btn" id="localSendStatusBtn" title="LocalSend状态">📡</button>
             <button class="action-btn" id="newChatBtn" title="新建聊天">➕</button>
+            <button class="action-btn" id="createGroupBtn" title="创建群组">👥</button>
+            <button class="action-btn" id="screenshotBtn" title="截屏">📷</button>
             <button class="action-btn" id="moreActionsBtn" title="更多操作">⋯</button>
           </div>
         </div>
@@ -607,12 +847,62 @@
               <button class="toolbar-btn" id="emojiBtn" title="表情">😊</button>
               <button class="toolbar-btn" id="fileBtn" title="文件">📎</button>
               <button class="toolbar-btn" id="imageBtn" title="图片">🖼️</button>
+              <button class="toolbar-btn" id="screenshotBtn" title="截屏">📷</button>
               <button class="toolbar-btn" id="voiceBtn" title="语音">🎤</button>
             </div>
             <div class="message-input">
               <textarea class="input-box" id="messageInput" placeholder="输入消息..."></textarea>
               <button class="send-btn" id="sendBtn" disabled>➤</button>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LocalSend设备列表模态框 -->
+    <div id="deviceListModal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>LocalSend设备</h3>
+          <button class="close-btn" onclick="closeModal('deviceListModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="device-status">
+            <div class="status-item">
+              <span>服务状态:</span>
+              <span id="serviceStatus" class="status-indicator">未启动</span>
+              <button id="toggleServiceBtn" class="btn btn-primary">启动服务</button>
+            </div>
+            <button id="refreshDevicesBtn" class="btn btn-secondary">刷新设备</button>
+          </div>
+          <div class="device-list" id="deviceList">
+            <!-- 设备列表将在这里动态生成 -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 创建群组模态框 -->
+    <div id="createGroupModal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>创建临时群组</h3>
+          <button class="close-btn" onclick="closeModal('createGroupModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="groupName">群组名称:</label>
+            <input type="text" id="groupName" class="form-input" placeholder="输入群组名称">
+          </div>
+          <div class="form-group">
+            <label>选择成员:</label>
+            <div class="member-list" id="memberList">
+              <!-- 成员列表将在这里动态生成 -->
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button id="createGroupConfirmBtn" class="btn btn-primary">创建群组</button>
+            <button onclick="closeModal('createGroupModal')" class="btn btn-secondary">取消</button>
           </div>
         </div>
       </div>

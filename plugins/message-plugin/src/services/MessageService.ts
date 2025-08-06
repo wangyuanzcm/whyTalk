@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events'
+import { LocalSendService, LocalSendMessage, LocalSendPeer, SendMessageRequest as LocalSendMessageRequest, SendFileRequest } from './LocalSendService'
 
 export interface Message {
   id: string
@@ -61,11 +62,14 @@ export interface P2PMessage {
 
 export class MessageService extends EventEmitter {
   private pluginId: string
+  private localSendService: LocalSendService
 
   constructor(pluginId: string) {
     super()
     this.pluginId = pluginId
+    this.localSendService = new LocalSendService(pluginId)
     this.initializeEventListeners()
+    this.initializeLocalSendListeners()
   }
 
   private initializeEventListeners() {
@@ -92,6 +96,61 @@ export class MessageService extends EventEmitter {
         this.emit('p2p:message:received', message)
       })
     }
+  }
+
+  private initializeLocalSendListeners() {
+    // 监听LocalSend服务事件
+    this.localSendService.on('service:started', () => {
+      this.emit('localsend:service-started')
+    })
+
+    this.localSendService.on('service:stopped', () => {
+      this.emit('localsend:service-stopped')
+    })
+
+    this.localSendService.on('peer:discovered', (peer: LocalSendPeer) => {
+      this.emit('localsend:peer-discovered', peer)
+    })
+
+    this.localSendService.on('peer:lost', (peer: LocalSendPeer) => {
+      this.emit('localsend:peer-lost', peer)
+    })
+
+    this.localSendService.on('message:received', (message: LocalSendMessage) => {
+      this.emit('localsend:message-received', message)
+    })
+
+    this.localSendService.on('message:sent', (message: LocalSendMessage) => {
+      this.emit('localsend:message-sent', message)
+    })
+
+    this.localSendService.on('file:received', (fileData: any) => {
+      this.emit('localsend:file-received', fileData)
+    })
+
+    this.localSendService.on('file:sent', (message: LocalSendMessage) => {
+      this.emit('localsend:file-sent', message)
+    })
+
+    this.localSendService.on('screenshot:sent', (message: LocalSendMessage) => {
+      this.emit('localsend:screenshot-sent', message)
+    })
+
+    this.localSendService.on('group:created', (group: any) => {
+      this.emit('localsend:group-created', group)
+    })
+
+    this.localSendService.on('group:message-received', (message: LocalSendMessage) => {
+      this.emit('localsend:group-message-received', message)
+    })
+
+    this.localSendService.on('group:message-sent', (message: LocalSendMessage) => {
+      this.emit('localsend:group-message-sent', message)
+    })
+
+    this.localSendService.on('contact:added', (peer: LocalSendPeer) => {
+      this.emit('localsend:contact-added', peer)
+    })
   }
 
   // 发送消息
@@ -508,6 +567,141 @@ export class MessageService extends EventEmitter {
       console.error('Failed to cleanup expired messages:', error)
       throw error
     }
+  }
+
+  // ===== LocalSend 相关方法 =====
+
+  /**
+   * 启动LocalSend服务
+   */
+  public async startLocalSendService(): Promise<boolean> {
+    return await this.localSendService.startService()
+  }
+
+  /**
+   * 停止LocalSend服务
+   */
+  public async stopLocalSendService(): Promise<boolean> {
+    return await this.localSendService.stopService()
+  }
+
+  /**
+   * 获取LocalSend服务状态
+   */
+  public async getLocalSendServiceStatus(): Promise<any> {
+    return await this.localSendService.getServiceStatus()
+  }
+
+  /**
+   * 获取已发现的设备列表
+   */
+  public getDiscoveredPeers(): LocalSendPeer[] {
+    return this.localSendService.getDiscoveredPeers()
+  }
+
+  /**
+   * 刷新设备列表
+   */
+  public async refreshPeers(): Promise<LocalSendPeer[]> {
+    return await this.localSendService.refreshPeers()
+  }
+
+  /**
+   * 通过LocalSend发送消息
+   */
+  public async sendLocalSendMessage(request: LocalSendMessageRequest): Promise<boolean> {
+    return await this.localSendService.sendMessage(request)
+  }
+
+  /**
+   * 通过LocalSend发送文件
+   */
+  public async sendLocalSendFile(request: SendFileRequest): Promise<boolean> {
+    return await this.localSendService.sendFile(request)
+  }
+
+  /**
+   * 截屏并通过LocalSend发送
+   */
+  public async captureAndSendScreenshot(targetFingerprint: string, groupId?: string): Promise<boolean> {
+    return await this.localSendService.captureAndSendScreenshot(targetFingerprint, groupId)
+  }
+
+  /**
+   * 创建临时群组
+   */
+  public createTempGroup(name: string, memberFingerprints: string[]): string {
+    return this.localSendService.createTempGroup(name, memberFingerprints)
+  }
+
+  /**
+   * 添加成员到临时群组
+   */
+  public addMemberToTempGroup(groupId: string, fingerprint: string): boolean {
+    return this.localSendService.addMemberToTempGroup(groupId, fingerprint)
+  }
+
+  /**
+   * 从临时群组移除成员
+   */
+  public removeMemberFromTempGroup(groupId: string, fingerprint: string): boolean {
+    return this.localSendService.removeMemberFromTempGroup(groupId, fingerprint)
+  }
+
+  /**
+   * 删除临时群组
+   */
+  public deleteTempGroup(groupId: string): boolean {
+    return this.localSendService.deleteTempGroup(groupId)
+  }
+
+  /**
+   * 获取临时群组列表
+   */
+  public getTempGroups(): any[] {
+    return this.localSendService.getTempGroups()
+  }
+
+  /**
+   * 获取临时群组信息
+   */
+  public getTempGroup(groupId: string): any {
+    return this.localSendService.getTempGroup(groupId)
+  }
+
+  /**
+   * 获取LocalSend消息历史记录
+   */
+  public getLocalSendMessageHistory(key: string): LocalSendMessage[] {
+    return this.localSendService.getMessageHistory(key)
+  }
+
+  /**
+   * 清空LocalSend消息历史记录
+   */
+  public clearLocalSendMessageHistory(key?: string): void {
+    this.localSendService.clearMessageHistory(key)
+  }
+
+  /**
+   * 添加联系人
+   */
+  public async addContact(fingerprint: string, alias?: string): Promise<boolean> {
+    return await this.localSendService.addContact(fingerprint, alias)
+  }
+
+  /**
+   * 移除联系人
+   */
+  public async removeContact(fingerprint: string): Promise<boolean> {
+    return await this.localSendService.removeContact(fingerprint)
+  }
+
+  /**
+   * 检查LocalSend服务是否已启动
+   */
+  public isLocalSendServiceStarted(): boolean {
+    return this.localSendService.isServiceStarted()
   }
 }
 

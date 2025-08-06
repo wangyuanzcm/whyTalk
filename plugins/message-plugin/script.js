@@ -7,11 +7,19 @@ class MessagePlugin {
     this.currentFilter = 'all'
     this.searchKeyword = ''
     this.loading = false
+    
+    // LocalSend相关状态
+    this.localSendService = null
+    this.discoveredPeers = []
+    this.tempGroups = []
+    this.isServiceStarted = false
+    
     this.init()
   }
 
   async init() {
     this.updateLoadingState(true)
+    await this.initLocalSendService()
     await this.loadChatData()
     this.bindEvents()
     this.renderInterface()
@@ -187,6 +195,30 @@ class MessagePlugin {
     if (newChatBtn) {
       newChatBtn.addEventListener('click', () => {
         this.showNewChatDialog()
+      })
+    }
+
+    // LocalSend状态按钮
+    const localSendStatusBtn = document.getElementById('localSendStatusBtn')
+    if (localSendStatusBtn) {
+      localSendStatusBtn.addEventListener('click', () => {
+        this.showDeviceListModal()
+      })
+    }
+
+    // 创建群组按钮
+    const createGroupBtn = document.getElementById('createGroupBtn')
+    if (createGroupBtn) {
+      createGroupBtn.addEventListener('click', () => {
+        this.showCreateGroupModal()
+      })
+    }
+
+    // 截屏按钮（工具栏）
+    const screenshotBtn = document.getElementById('screenshotBtn')
+    if (screenshotBtn) {
+      screenshotBtn.addEventListener('click', () => {
+        this.captureAndSendScreenshot()
       })
     }
 
@@ -697,6 +729,18 @@ class MessagePlugin {
 
     if (!messageContent || !this.currentChatId) return
 
+    const chat = this.chats.find((c) => c.id === this.currentChatId)
+    
+    // 如果是LocalSend聊天，使用LocalSend发送
+    if (chat && (chat.type === 'localsend' || chat.type === 'tempgroup')) {
+      const success = await this.sendLocalSendMessage(this.currentChatId, messageContent, type)
+      if (success && messageInput) {
+        messageInput.value = ''
+        this.autoResizeTextarea(messageInput)
+      }
+      return
+    }
+
     const message = {
       id: Date.now().toString(),
       chatId: this.currentChatId,
@@ -728,7 +772,6 @@ class MessagePlugin {
     this.renderMessages()
 
     // 更新聊天列表中的最后消息
-    const chat = this.chats.find((c) => c.id === this.currentChatId)
     if (chat) {
       chat.lastMessage = type === 'text' ? messageContent : this.getMessagePreview(type)
       chat.lastTime = message.timestamp
@@ -790,6 +833,14 @@ class MessagePlugin {
   async sendFile(file) {
     if (!file || !this.currentChatId) return
 
+    const chat = this.chats.find((c) => c.id === this.currentChatId)
+    
+    // 如果是LocalSend聊天，使用LocalSend发送文件
+    if (chat && (chat.type === 'localsend' || chat.type === 'tempgroup')) {
+      await this.sendFileToLocalSend(this.currentChatId, file)
+      return
+    }
+
     // 这里应该上传文件并获取URL
     const fileUrl = URL.createObjectURL(file)
     const fileType = file.type.startsWith('image/') ? 'image' : 'file'
@@ -837,6 +888,15 @@ class MessagePlugin {
         break
       case 'messageRead':
         this.handleMessageRead(data.payload)
+        break
+      case 'localSendMessage':
+        this.handleLocalSendMessage(data.payload)
+        break
+      case 'localSendPeerDiscovered':
+        this.handlePeerDiscovered(data.payload)
+        break
+      case 'localSendPeerLost':
+        this.handlePeerLost(data.payload)
         break
       default:
         console.log('未知消息类型:', data.type)
@@ -929,6 +989,36 @@ class MessagePlugin {
     const chat = this.chats.find((c) => c.id === chatId)
     if (chat) {
       chat.unread = 0
+      this.renderChatList()
+    }
+  }
+
+  // 处理设备发现
+  handlePeerDiscovered(payload) {
+    const { peer } = payload
+    
+    // 检查是否已存在
+    const existingPeerIndex = this.discoveredPeers.findIndex(p => p.id === peer.id)
+    if (existingPeerIndex === -1) {
+      this.discoveredPeers.push(peer)
+    } else {
+      this.discoveredPeers[existingPeerIndex] = peer
+    }
+    
+    this.updatePeerList()
+  }
+
+  // 处理设备丢失
+  handlePeerLost(payload) {
+    const { peerId } = payload
+    
+    // 从发现的设备列表中移除
+    this.discoveredPeers = this.discoveredPeers.filter(p => p.id !== peerId)
+    
+    // 更新聊天列表中的在线状态
+    const chat = this.chats.find(c => c.id === peerId)
+    if (chat && chat.type === 'localsend') {
+      chat.online = false
       this.renderChatList()
     }
   }
@@ -1147,7 +1237,565 @@ document.addEventListener('keydown', (e) => {
   }
 })
 
-// 全局错误处理
+// 初始化LocalSend服务
+  async initLocalSendService() {
+    try {
+      if (window.electronAPI && window.electronAPI.invoke) {
+        const result = await window.electronAPI.invoke('localsend:init')
+        if (result.success) {
+          this.isServiceStarted = true
+          console.log('LocalSend服务初始化成功')
+          // 开始发现设备
+          this.startDeviceDiscovery()
+        } else {
+          console.error('LocalSend服务初始化失败:', result.error)
+        }
+      }
+    } catch (error) {
+      console.error('初始化LocalSend服务失败:', error)
+    }
+  }
+
+  // 开始设备发现
+  async startDeviceDiscovery() {
+    try {
+      if (window.electronAPI && window.electronAPI.invoke) {
+        const result = await window.electronAPI.invoke('localsend:discover')
+        if (result.success) {
+          this.discoveredPeers = result.peers || []
+          this.updatePeerList()
+        }
+      }
+    } catch (error) {
+      console.error('设备发现失败:', error)
+    }
+  }
+
+  // 更新设备列表
+  updatePeerList() {
+    // 将发现的设备添加到聊天列表中
+    this.discoveredPeers.forEach(peer => {
+      const existingChat = this.chats.find(chat => chat.id === peer.id)
+      if (!existingChat) {
+        this.chats.push({
+          id: peer.id,
+          name: peer.alias || peer.fingerprint.substring(0, 8),
+          avatar: peer.alias ? peer.alias.charAt(0).toUpperCase() : '📱',
+          type: 'localsend',
+          lastMessage: '设备已发现',
+          lastTime: new Date().toISOString(),
+          unread: 0,
+          pinned: false,
+          online: true,
+          peer: peer,
+          lastUpdated: Date.now()
+        })
+      }
+    })
+    this.renderChatList()
+  }
+
+  // 通过LocalSend发送消息
+  async sendLocalSendMessage(peerId, content, type = 'text') {
+    try {
+      if (window.electronAPI && window.electronAPI.invoke) {
+        const result = await window.electronAPI.invoke('localsend:send', {
+          peerId: peerId,
+          content: content,
+          type: type
+        })
+        
+        if (result.success) {
+          // 添加到本地消息列表
+          const message = {
+            id: Date.now().toString(),
+            chatId: peerId,
+            content: content,
+            messageType: type,
+            type: 'sent',
+            timestamp: new Date().toISOString(),
+            time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
+            sender: {
+              id: 'me',
+              name: '我',
+              avatar: '👤'
+            }
+          }
+          
+          if (!this.messages[peerId]) {
+            this.messages[peerId] = []
+          }
+          this.messages[peerId].push(message)
+          
+          // 如果是当前聊天，重新渲染消息
+          if (this.currentChatId === peerId) {
+            this.renderMessages()
+          }
+          
+          // 更新聊天列表
+          const chat = this.chats.find(c => c.id === peerId)
+          if (chat) {
+            chat.lastMessage = type === 'text' ? content : this.getMessagePreview(type)
+            chat.lastTime = message.timestamp
+            chat.lastUpdated = Date.now()
+            this.renderChatList()
+          }
+          
+          return true
+        } else {
+          console.error('发送LocalSend消息失败:', result.error)
+          return false
+        }
+      }
+    } catch (error) {
+      console.error('发送LocalSend消息失败:', error)
+      return false
+    }
+  }
+
+  // 处理接收到的LocalSend消息
+  handleLocalSendMessage(data) {
+    const { peerId, content, type, sender } = data
+    
+    const message = {
+      id: Date.now().toString(),
+      chatId: peerId,
+      content: content,
+      messageType: type || 'text',
+      type: 'received',
+      timestamp: new Date().toISOString(),
+      time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
+      sender: {
+        id: peerId,
+        name: sender.alias || sender.fingerprint.substring(0, 8),
+        avatar: sender.alias ? sender.alias.charAt(0).toUpperCase() : '📱'
+      }
+    }
+    
+    if (!this.messages[peerId]) {
+      this.messages[peerId] = []
+    }
+    this.messages[peerId].push(message)
+    
+    // 如果是当前聊天，重新渲染消息
+    if (this.currentChatId === peerId) {
+      this.renderMessages()
+    }
+    
+    // 更新聊天列表
+    let chat = this.chats.find(c => c.id === peerId)
+    if (!chat) {
+      // 如果聊天不存在，创建新的聊天
+      chat = {
+        id: peerId,
+        name: sender.alias || sender.fingerprint.substring(0, 8),
+        avatar: sender.alias ? sender.alias.charAt(0).toUpperCase() : '📱',
+        type: 'localsend',
+        lastMessage: type === 'text' ? content : this.getMessagePreview(type),
+        lastTime: message.timestamp,
+        unread: 1,
+        pinned: false,
+        online: true,
+        peer: sender,
+        lastUpdated: Date.now()
+      }
+      this.chats.push(chat)
+    } else {
+      chat.lastMessage = type === 'text' ? content : this.getMessagePreview(type)
+      chat.lastTime = message.timestamp
+      chat.lastUpdated = Date.now()
+      if (this.currentChatId !== peerId) {
+        chat.unread = (chat.unread || 0) + 1
+      }
+    }
+    
+    this.renderChatList()
+    
+    // 播放提示音（如果不是当前聊天）
+    if (this.currentChatId !== peerId) {
+      this.playNotificationSound()
+    }
+  }
+
+  // 创建临时群组
+  async createTempGroup(peerIds, groupName) {
+    try {
+      if (window.electronAPI && window.electronAPI.invoke) {
+        const result = await window.electronAPI.invoke('localsend:createGroup', {
+          peerIds: peerIds,
+          groupName: groupName
+        })
+        
+        if (result.success) {
+          const groupId = result.groupId
+          const group = {
+            id: groupId,
+            name: groupName,
+            avatar: groupName.charAt(0).toUpperCase(),
+            type: 'tempgroup',
+            lastMessage: '群组已创建',
+            lastTime: new Date().toISOString(),
+            unread: 0,
+            pinned: false,
+            online: true,
+            members: peerIds,
+            lastUpdated: Date.now()
+          }
+          
+          this.chats.push(group)
+          this.tempGroups.push(group)
+          this.renderChatList()
+          
+          return groupId
+        }
+      }
+    } catch (error) {
+      console.error('创建临时群组失败:', error)
+    }
+    return null
+  }
+
+  // 发送文件到LocalSend设备
+   async sendFileToLocalSend(peerId, file) {
+     try {
+       if (window.electronAPI && window.electronAPI.invoke) {
+         const result = await window.electronAPI.invoke('localsend:sendFile', {
+           peerId: peerId,
+           filePath: file.path || file.name,
+           fileName: file.name,
+           fileSize: file.size
+         })
+         
+         if (result.success) {
+           // 添加文件消息到聊天
+           const message = {
+             content: result.fileUrl || file.name,
+             messageType: 'file',
+             fileName: file.name,
+             fileSize: this.formatFileSize(file.size)
+           }
+           
+           await this.sendLocalSendMessage(peerId, message.content, 'file')
+           return true
+         }
+       }
+     } catch (error) {
+       console.error('发送文件到LocalSend设备失败:', error)
+     }
+     return false
+   }
+
+   // 显示设备列表模态框
+   showDeviceListModal() {
+     const modal = document.getElementById('deviceListModal')
+     if (modal) {
+       modal.classList.remove('hidden')
+       this.updateDeviceListModal()
+     }
+   }
+
+   // 更新设备列表模态框
+   async updateDeviceListModal() {
+     const serviceStatus = document.getElementById('serviceStatus')
+     const toggleServiceBtn = document.getElementById('toggleServiceBtn')
+     const deviceList = document.getElementById('deviceList')
+     
+     // 更新服务状态
+     if (serviceStatus && toggleServiceBtn) {
+       if (this.isServiceStarted) {
+         serviceStatus.textContent = '已启动'
+         serviceStatus.className = 'status-indicator online'
+         toggleServiceBtn.textContent = '停止服务'
+       } else {
+         serviceStatus.textContent = '未启动'
+         serviceStatus.className = 'status-indicator offline'
+         toggleServiceBtn.textContent = '启动服务'
+       }
+     }
+     
+     // 更新设备列表
+     if (deviceList) {
+       deviceList.innerHTML = ''
+       
+       if (this.discoveredPeers.length === 0) {
+         deviceList.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">暂无发现的设备</div>'
+       } else {
+         this.discoveredPeers.forEach(peer => {
+           const deviceItem = document.createElement('div')
+           deviceItem.className = 'device-item'
+           deviceItem.innerHTML = `
+             <div class="device-info">
+               <div class="device-name">${peer.alias || peer.fingerprint.substring(0, 8)}</div>
+               <div class="device-details">${peer.ip}:${peer.port} | ${peer.deviceModel || 'Unknown'}</div>
+             </div>
+             <div class="device-actions">
+               <button class="btn btn-primary" onclick="messagePlugin.startChatWithPeer('${peer.id}')">聊天</button>
+               <button class="btn btn-secondary" onclick="messagePlugin.addPeerAsContact('${peer.id}')">添加联系人</button>
+             </div>
+           `
+           deviceList.appendChild(deviceItem)
+         })
+       }
+     }
+     
+     // 绑定按钮事件
+     if (toggleServiceBtn) {
+       toggleServiceBtn.onclick = () => this.toggleLocalSendService()
+     }
+     
+     const refreshBtn = document.getElementById('refreshDevicesBtn')
+     if (refreshBtn) {
+       refreshBtn.onclick = () => this.refreshDevices()
+     }
+   }
+
+   // 切换LocalSend服务状态
+   async toggleLocalSendService() {
+     try {
+       if (window.electronAPI && window.electronAPI.invoke) {
+         const action = this.isServiceStarted ? 'stop' : 'start'
+         const result = await window.electronAPI.invoke(`localsend:${action}`)
+         
+         if (result.success) {
+           this.isServiceStarted = !this.isServiceStarted
+           this.updateDeviceListModal()
+           
+           if (this.isServiceStarted) {
+             this.startDeviceDiscovery()
+           }
+         } else {
+           alert(`${action === 'start' ? '启动' : '停止'}服务失败: ${result.error}`)
+         }
+       }
+     } catch (error) {
+       console.error('切换LocalSend服务状态失败:', error)
+       alert('操作失败，请重试')
+     }
+   }
+
+   // 刷新设备列表
+   async refreshDevices() {
+     await this.startDeviceDiscovery()
+     this.updateDeviceListModal()
+   }
+
+   // 开始与设备聊天
+   startChatWithPeer(peerId) {
+     const peer = this.discoveredPeers.find(p => p.id === peerId)
+     if (peer) {
+       // 确保聊天存在于列表中
+       let chat = this.chats.find(c => c.id === peerId)
+       if (!chat) {
+         chat = {
+           id: peerId,
+           name: peer.alias || peer.fingerprint.substring(0, 8),
+           avatar: peer.alias ? peer.alias.charAt(0).toUpperCase() : '📱',
+           type: 'localsend',
+           lastMessage: '开始聊天',
+           lastTime: new Date().toISOString(),
+           unread: 0,
+           pinned: false,
+           online: true,
+           peer: peer,
+           lastUpdated: Date.now()
+         }
+         this.chats.push(chat)
+         this.renderChatList()
+       }
+       
+       // 选择聊天
+       this.selectChat(peerId)
+       
+       // 关闭模态框
+       this.closeModal('deviceListModal')
+     }
+   }
+
+   // 添加设备为联系人
+   async addPeerAsContact(peerId) {
+     try {
+       if (window.electronAPI && window.electronAPI.invoke) {
+         const result = await window.electronAPI.invoke('localsend:addContact', {
+           peerId: peerId
+         })
+         
+         if (result.success) {
+           alert('联系人添加成功')
+         } else {
+           alert('添加联系人失败: ' + result.error)
+         }
+       }
+     } catch (error) {
+       console.error('添加联系人失败:', error)
+       alert('添加联系人失败，请重试')
+     }
+   }
+
+   // 显示创建群组模态框
+   showCreateGroupModal() {
+     const modal = document.getElementById('createGroupModal')
+     if (modal) {
+       modal.classList.remove('hidden')
+       this.updateCreateGroupModal()
+     }
+   }
+
+   // 更新创建群组模态框
+   updateCreateGroupModal() {
+     const memberList = document.getElementById('memberList')
+     if (memberList) {
+       memberList.innerHTML = ''
+       
+       if (this.discoveredPeers.length === 0) {
+         memberList.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">暂无可用设备</div>'
+       } else {
+         this.discoveredPeers.forEach(peer => {
+           const memberItem = document.createElement('div')
+           memberItem.className = 'member-item'
+           memberItem.innerHTML = `
+             <input type="checkbox" id="member_${peer.id}" value="${peer.id}">
+             <div class="member-info">
+               <div class="member-name">${peer.alias || peer.fingerprint.substring(0, 8)}</div>
+               <div class="member-details">${peer.ip}:${peer.port}</div>
+             </div>
+           `
+           memberList.appendChild(memberItem)
+         })
+       }
+     }
+     
+     // 绑定创建按钮事件
+     const createBtn = document.getElementById('createGroupConfirmBtn')
+     if (createBtn) {
+       createBtn.onclick = () => this.confirmCreateGroup()
+     }
+   }
+
+   // 确认创建群组
+   async confirmCreateGroup() {
+     const groupNameInput = document.getElementById('groupName')
+     const memberCheckboxes = document.querySelectorAll('#memberList input[type="checkbox"]:checked')
+     
+     if (!groupNameInput || !groupNameInput.value.trim()) {
+       alert('请输入群组名称')
+       return
+     }
+     
+     if (memberCheckboxes.length === 0) {
+       alert('请至少选择一个成员')
+       return
+     }
+     
+     const groupName = groupNameInput.value.trim()
+     const memberIds = Array.from(memberCheckboxes).map(cb => cb.value)
+     
+     const groupId = await this.createTempGroup(memberIds, groupName)
+     if (groupId) {
+       alert('群组创建成功')
+       this.closeModal('createGroupModal')
+       
+       // 清空表单
+       groupNameInput.value = ''
+       memberCheckboxes.forEach(cb => cb.checked = false)
+       
+       // 选择新创建的群组
+       this.selectChat(groupId)
+     } else {
+       alert('群组创建失败，请重试')
+     }
+   }
+
+   // 截屏并发送
+   async captureAndSendScreenshot() {
+     if (!this.currentChatId) {
+       alert('请先选择一个聊天')
+       return
+     }
+     
+     try {
+       if (window.electronAPI && window.electronAPI.invoke) {
+         const result = await window.electronAPI.invoke('screen:capture')
+         
+         if (result.success) {
+           const chat = this.chats.find(c => c.id === this.currentChatId)
+           
+           if (chat && (chat.type === 'localsend' || chat.type === 'tempgroup')) {
+             // 通过LocalSend发送截屏
+             const sendResult = await window.electronAPI.invoke('localsend:sendScreenshot', {
+               peerId: this.currentChatId,
+               screenshotPath: result.filePath
+             })
+             
+             if (sendResult.success) {
+               // 添加截屏消息到聊天
+               await this.sendLocalSendMessage(this.currentChatId, result.filePath, 'image')
+             } else {
+               alert('发送截屏失败: ' + sendResult.error)
+             }
+           } else {
+             // 普通聊天发送截屏
+             await this.sendMessage(result.filePath, 'image')
+           }
+         } else {
+           alert('截屏失败: ' + result.error)
+         }
+       }
+     } catch (error) {
+       console.error('截屏失败:', error)
+       alert('截屏失败，请重试')
+     }
+   }
+
+   // 关闭模态框
+   closeModal(modalId) {
+     const modal = document.getElementById(modalId)
+     if (modal) {
+       modal.classList.add('hidden')
+     }
+   }
+}
+
+// 全局函数，供HTML调用
+function closeModal(modalId) {
+  const modal = document.getElementById(modalId)
+  if (modal) {
+    modal.classList.add('hidden')
+  }
+}
+
+// 初始化模态框事件监听
+document.addEventListener('DOMContentLoaded', function() {
+  // 点击模态框外部关闭
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('modal')) {
+      e.target.classList.add('hidden')
+    }
+  })
+  
+  // 绑定关闭按钮事件
+  const closeButtons = document.querySelectorAll('.modal .close-btn')
+  closeButtons.forEach(btn => {
+    btn.addEventListener('click', function() {
+      const modal = this.closest('.modal')
+      if (modal) {
+        modal.classList.add('hidden')
+      }
+    })
+  })
+  
+  // 绑定取消按钮事件
+  const cancelButtons = document.querySelectorAll('.modal .btn-secondary')
+  cancelButtons.forEach(btn => {
+    btn.addEventListener('click', function() {
+      const modal = this.closest('.modal')
+      if (modal) {
+        modal.classList.add('hidden')
+      }
+    })
+  })
+})
+
+  // 全局错误处理
 window.addEventListener('error', (event) => {
   console.error('MessagePlugin Error:', event.error)
 })
