@@ -49,7 +49,9 @@ export class FrontendPluginRenderer {
   /**
    * 打开系统插件UI窗口
    */
-  public async openSystemPluginUIWindow(pluginId: string): Promise<{ success: boolean; error?: string }> {
+  public async openSystemPluginUIWindow(
+    pluginId: string
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       // 检查窗口是否已存在
       const existingWindow = this.pluginWindows.get(`${pluginId}-ui`)
@@ -86,7 +88,7 @@ export class FrontendPluginRenderer {
   public async openPluginWindow(pluginId: string): Promise<{ success: boolean; error?: string }> {
     try {
       console.log(`Opening frontend plugin window for: ${pluginId}`)
-      
+
       // 检查窗口是否已存在
       const existingWindow = this.pluginWindows.get(pluginId)
       if (existingWindow && !existingWindow.isDestroyed()) {
@@ -98,8 +100,11 @@ export class FrontendPluginRenderer {
       // 获取插件信息（这里需要从PluginManager获取）
       console.log(`Getting plugin info for: ${pluginId}`)
       const plugin = await this.getPluginInfo(pluginId)
-      console.log(`Plugin info retrieved:`, plugin ? { id: plugin.id, type: plugin.type, path: plugin.path } : 'null')
-      
+      console.log(
+        `Plugin info retrieved:`,
+        plugin ? { id: plugin.id, type: plugin.type, path: plugin.path } : 'null'
+      )
+
       if (!plugin || plugin.type !== PluginType.FRONTEND) {
         console.error(`Frontend plugin not found or wrong type: ${pluginId}`)
         return { success: false, error: 'Frontend plugin not found' }
@@ -126,7 +131,7 @@ export class FrontendPluginRenderer {
    */
   private async createSystemPluginUIWindow(plugin: PluginInstance): Promise<BrowserWindow> {
     const config = plugin.config as any
-    
+
     const window = new BrowserWindow({
       width: 1000,
       height: 700,
@@ -152,7 +157,7 @@ export class FrontendPluginRenderer {
 
     // 检查插件是否有HTML文件
     const isHtmlFile = config.main && config.main.endsWith('.html')
-    
+
     try {
       if (isHtmlFile) {
         console.log(`Loading plugin HTML content for ${plugin.id}:`, config.main)
@@ -166,7 +171,9 @@ export class FrontendPluginRenderer {
         // 如果没有HTML文件，加载默认的UI配置演示页面
         const isDev = process.env.NODE_ENV === 'development'
         if (isDev && process.env['ELECTRON_RENDERER_URL']) {
-          await window.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/ui-config-demo.html?plugin=${plugin.id}`)
+          await window.loadURL(
+            `${process.env['ELECTRON_RENDERER_URL']}/ui-config-demo.html?plugin=${plugin.id}`
+          )
         } else {
           await window.loadFile(join(__dirname, '../renderer/ui-config-demo.html'), {
             query: { plugin: plugin.id }
@@ -200,7 +207,7 @@ export class FrontendPluginRenderer {
     const pluginSession = session.fromPartition(partitionName, {
       cache: false
     })
-    
+
     // 确保partition属性被正确设置
     ;(pluginSession as any).partition = partitionName
 
@@ -241,10 +248,10 @@ export class FrontendPluginRenderer {
           ...details.responseHeaders,
           'Content-Security-Policy': [
             "default-src 'self'; " +
-            "script-src 'self' 'unsafe-inline'; " +
-            "style-src 'self' 'unsafe-inline'; " +
-            "img-src 'self' data: https:; " +
-            "connect-src 'self';"
+              "script-src 'self' 'unsafe-inline'; " +
+              "style-src 'self' 'unsafe-inline'; " +
+              "img-src 'self' data: https:; " +
+              "connect-src 'self';"
           ]
         }
       })
@@ -253,7 +260,7 @@ export class FrontendPluginRenderer {
     // 拦截网络请求
     pluginSession.webRequest.onBeforeRequest((details, callback) => {
       const url = details.url
-      
+
       // 检查URL是否被允许
       if (!this.securityManager.isUrlAllowed(plugin, url)) {
         console.warn(`Blocked request to ${url} from plugin ${plugin.id}`)
@@ -268,10 +275,10 @@ export class FrontendPluginRenderer {
     pluginSession.setPermissionRequestHandler(async (_webContents, permission, callback) => {
       // 将Electron权限映射到我们的权限系统
       const permissionMap = {
-        'camera': 'camera',
-        'microphone': 'microphone',
-        'geolocation': 'location',
-        'notifications': 'notifications'
+        camera: 'camera',
+        microphone: 'microphone',
+        geolocation: 'location',
+        notifications: 'notifications'
       }
 
       const mappedPermission = permissionMap[permission]
@@ -290,13 +297,13 @@ export class FrontendPluginRenderer {
   private async loadPluginContent(window: BrowserWindow, plugin: PluginInstance) {
     const config = plugin.config as CubeModuleConfig
     const htmlPath = join(plugin.path, config.main)
-    
+
     return new Promise<void>((resolve, reject) => {
       // 监听页面加载完成事件
       window.webContents.once('did-finish-load', async () => {
         try {
           console.log(`Page loaded for plugin ${plugin.id}, injecting API...`)
-          
+
           // 等待DOM完全准备好
           await window.webContents.executeJavaScript(`
             new Promise((resolve) => {
@@ -307,16 +314,18 @@ export class FrontendPluginRenderer {
               }
             })
           `)
-          
+
           // 检查插件API是否已经通过preload脚本注入
           const apiAvailable = await window.webContents.executeJavaScript(`
             typeof window.pluginAPI !== 'undefined'
           `)
-          
+
           if (apiAvailable) {
             console.log(`Plugin API already available for ${plugin.id} via preload script`)
           } else {
-            console.log(`Plugin API not found for ${plugin.id}, this should not happen with proper preload script`)
+            console.log(
+              `Plugin API not found for ${plugin.id}, this should not happen with proper preload script`
+            )
             // 作为后备方案，手动注入基础API
             await window.webContents.executeJavaScript(`
               try {
@@ -348,7 +357,7 @@ export class FrontendPluginRenderer {
               }
             `)
           }
-          
+
           // 触发自定义事件，通知插件API已准备好
           await window.webContents.executeJavaScript(`
             try {
@@ -370,7 +379,7 @@ export class FrontendPluginRenderer {
               console.error('Failed to dispatch pluginAPIReady event:', error)
             }
           `)
-          
+
           console.log(`Plugin API injection completed for ${plugin.id}`)
           resolve()
         } catch (error) {
@@ -378,13 +387,17 @@ export class FrontendPluginRenderer {
           reject(error)
         }
       })
-      
+
       // 监听加载失败事件
       window.webContents.once('did-fail-load', (_event, errorCode, errorDescription) => {
-        console.error(`Failed to load plugin content for ${plugin.id}:`, errorCode, errorDescription)
+        console.error(
+          `Failed to load plugin content for ${plugin.id}:`,
+          errorCode,
+          errorDescription
+        )
         reject(new Error(`Failed to load plugin content: ${errorDescription}`))
       })
-      
+
       // 开始加载HTML文件
       console.log(`Loading HTML file for plugin ${plugin.id}:`, htmlPath)
       window.loadFile(htmlPath).catch(reject)
@@ -451,7 +464,10 @@ export class FrontendPluginRenderer {
     console.log(`Requesting plugin info via IPC for: ${pluginId}`)
     return new Promise((resolve) => {
       ipcMain.emit('plugin:get-info', null, pluginId, (plugin: PluginInstance | null) => {
-        console.log(`IPC response for plugin ${pluginId}:`, plugin ? { id: plugin.id, type: plugin.type } : 'null')
+        console.log(
+          `IPC response for plugin ${pluginId}:`,
+          plugin ? { id: plugin.id, type: plugin.type } : 'null'
+        )
         resolve(plugin)
       })
     })

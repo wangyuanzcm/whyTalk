@@ -22,7 +22,7 @@ defineProps<{
     <header class="el-header border-bottom">{{ title }}</header>
     <section class="el-container o-hidden">
       <aside class="el-aside border-right">
-        <router-link v-for="(menu, key) in menus" :to="menu.path" :key="key">
+        <router-link v-for="(menu, key) in menus" :key="key" :to="menu.path">
           <div
             v-if="menu.show !== false"
             class="menu pointer"
@@ -38,7 +38,7 @@ defineProps<{
               {{ menu.name || '' }}
             </div>
 
-            <div class="tips" v-if="menu.tips">
+            <div v-if="menu.tips" class="tips">
               <span class="badge">{{ menu.tips }}</span>
             </div>
           </div>

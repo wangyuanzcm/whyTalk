@@ -40,12 +40,14 @@ Why-Talk includes a comprehensive plugin system that allows you to extend the ap
 ### Plugin Types
 
 #### 🎨 Frontend Plugins
+
 - Built with HTML, CSS, and JavaScript
 - Run in isolated browser windows
 - Access to plugin APIs for system integration
 - Configuration via `cubeModule.json`
 
 #### ⚙️ System Plugins
+
 - Built with Rust and compiled to WebAssembly (WASM)
 - Powered by Extism runtime for security and performance
 - Direct access to system capabilities
@@ -54,31 +56,37 @@ Why-Talk includes a comprehensive plugin system that allows you to extend the ap
 ### Quick Start
 
 #### Install Plugin Dependencies
+
 ```bash
 $ pnpm install
 ```
 
 #### Create a New Frontend Plugin
+
 ```bash
 $ node plugin-dev-tools.js create-frontend my-plugin
 ```
 
 #### Create a New System Plugin
+
 ```bash
 $ node plugin-dev-tools.js create-system my-system-plugin
 ```
 
 #### Build System Plugin
+
 ```bash
 $ node plugin-dev-tools.js build my-system-plugin
 ```
 
 #### Test Plugins
+
 ```bash
 $ pnpm test:plugins
 ```
 
 #### List All Plugins
+
 ```bash
 $ node plugin-dev-tools.js list
 ```
@@ -86,6 +94,7 @@ $ node plugin-dev-tools.js list
 ### Plugin Development
 
 #### Frontend Plugin Structure
+
 ```
 plugins/my-plugin/
 ├── cubeModule.json    # Plugin configuration
@@ -95,6 +104,7 @@ plugins/my-plugin/
 ```
 
 #### System Plugin Structure
+
 ```
 plugins/my-system-plugin/
 ├── cubeModule.json    # Plugin configuration
@@ -117,11 +127,7 @@ Each plugin requires a `cubeModule.json` configuration file:
   "description": "My awesome plugin",
   "author": "Developer Name",
   "main": "index.html",
-  "permissions": [
-    "storage",
-    "notifications",
-    "filesystem.read"
-  ]
+  "permissions": ["storage", "notifications", "filesystem.read"]
 }
 ```
 
@@ -179,6 +185,7 @@ node plugin-dev-tools.js list
 ### Requirements
 
 For system plugin development:
+
 - Rust toolchain (install from [rustup.rs](https://rustup.rs/))
 - `wasm32-unknown-unknown` target
 - Optional: `wasm-opt` for optimization
@@ -186,6 +193,7 @@ For system plugin development:
 ### Documentation
 
 For detailed plugin development documentation, see:
+
 - `plugins/README.md` - Complete plugin development guide
 - Example plugins in `plugins/` directory
 - API documentation in source code

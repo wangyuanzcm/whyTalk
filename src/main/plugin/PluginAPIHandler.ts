@@ -1,4 +1,12 @@
-import { ipcMain, dialog, shell, clipboard, nativeImage, Notification, BrowserWindow } from 'electron'
+import {
+  ipcMain,
+  dialog,
+  shell,
+  clipboard,
+  nativeImage,
+  Notification,
+  BrowserWindow
+} from 'electron'
 import { readFile, writeFile, existsSync } from 'fs'
 import { promisify } from 'util'
 import { SecurityManager, Permission } from './SecurityManager'
@@ -30,55 +38,55 @@ export class PluginAPIHandler {
   private setupHandlers() {
     // 清除现有的处理器以避免重复注册
     this.removeExistingHandlers()
-    
+
     // 基础信息
     ipcMain.handle('plugin:info', this.handleGetPluginInfo.bind(this))
-    
+
     // 权限管理
     ipcMain.handle('plugin:permission:request', this.handleRequestPermission.bind(this))
     ipcMain.handle('plugin:permission:check', this.handleCheckPermission.bind(this))
-    
+
     // 消息通信
     ipcMain.handle('plugin:message:send', this.handleSendMessage.bind(this))
-    
+
     // 存储API
     ipcMain.handle('plugin:storage:get', this.handleStorageGet.bind(this))
     ipcMain.handle('plugin:storage:set', this.handleStorageSet.bind(this))
     ipcMain.handle('plugin:storage:remove', this.handleStorageRemove.bind(this))
     ipcMain.handle('plugin:storage:clear', this.handleStorageClear.bind(this))
-    
+
     // 通知API
     ipcMain.handle('plugin:notification:show', this.handleShowNotification.bind(this))
-    
+
     // 系统API
     ipcMain.handle('plugin:system:info', this.handleGetSystemInfo.bind(this))
     ipcMain.handle('plugin:system:open-external', this.handleOpenExternal.bind(this))
-    
+
     // UI配置API
     ipcMain.handle('plugin:ui:get-config', this.handleGetUIConfig.bind(this))
     ipcMain.handle('plugin:ui:execute-action', this.handleExecuteUIAction.bind(this))
-    
+
     // 文件API
     ipcMain.handle('plugin:files:read-text', this.handleReadTextFile.bind(this))
     ipcMain.handle('plugin:files:write-text', this.handleWriteTextFile.bind(this))
     ipcMain.handle('plugin:files:exists', this.handleFileExists.bind(this))
     ipcMain.handle('plugin:files:select-file', this.handleSelectFile.bind(this))
     ipcMain.handle('plugin:files:select-directory', this.handleSelectDirectory.bind(this))
-    
+
     // 网络API
     ipcMain.handle('plugin:network:fetch', this.handleNetworkFetch.bind(this))
     ipcMain.handle('plugin:network:is-online', this.handleIsOnline.bind(this))
-    
+
     // 剪贴板API
     ipcMain.handle('plugin:clipboard:read-text', this.handleClipboardReadText.bind(this))
     ipcMain.handle('plugin:clipboard:write-text', this.handleClipboardWriteText.bind(this))
     ipcMain.handle('plugin:clipboard:read-image', this.handleClipboardReadImage.bind(this))
     ipcMain.handle('plugin:clipboard:write-image', this.handleClipboardWriteImage.bind(this))
-    
+
     // 窗口控制
     ipcMain.on('plugin:window:close', this.handleWindowClose.bind(this))
     ipcMain.on('plugin:window:minimize', this.handleWindowMinimize.bind(this))
-    
+
     // 插件管理API
     ipcMain.handle('plugin:manager:list', this.handleListPlugins.bind(this))
     ipcMain.handle('plugin:manager:install-local', this.handleInstallLocalPlugin.bind(this))
@@ -130,8 +138,8 @@ export class PluginAPIHandler {
       'plugin:window:set-title',
       'plugin:window:set-size'
     ]
-    
-    handlersToRemove.forEach(channel => {
+
+    handlersToRemove.forEach((channel) => {
       try {
         ipcMain.removeAllListeners(channel)
       } catch (error) {
@@ -146,13 +154,13 @@ export class PluginAPIHandler {
   private getPluginIdFromEvent(event: Electron.IpcMainInvokeEvent): string | null {
     const webContents = event.sender
     const session = webContents.session as any
-    
+
     // 从session partition中提取插件ID
     if (session.partition && session.partition.startsWith('plugin-')) {
       const pluginId = session.partition.replace('plugin-', '')
       return pluginId
     }
-    
+
     return null
   }
 
@@ -164,12 +172,12 @@ export class PluginAPIHandler {
     if (!pluginId) {
       throw new Error('Plugin ID not found')
     }
-    
+
     const plugin = this.pluginManager.getPlugin(pluginId)
     if (!plugin) {
       throw new Error('Plugin not found')
     }
-    
+
     return {
       id: plugin.id,
       name: plugin.config.name,
@@ -187,12 +195,12 @@ export class PluginAPIHandler {
     if (!pluginId) {
       return false
     }
-    
+
     const plugin = this.pluginManager.getPlugin(pluginId)
     if (!plugin) {
       return false
     }
-    
+
     const result = await this.securityManager.checkPermission(plugin, permission as Permission)
     return result.granted
   }
@@ -205,7 +213,7 @@ export class PluginAPIHandler {
     if (!pluginId) {
       return false
     }
-    
+
     const grantedPermissions = this.securityManager.getGrantedPermissions(pluginId)
     return grantedPermissions.includes(permission as Permission)
   }
@@ -218,16 +226,18 @@ export class PluginAPIHandler {
     if (!pluginId) {
       throw new Error('Plugin ID not found')
     }
-    
+
     // 这里可以实现插件间通信或与主应用通信
     console.log(`Message from plugin ${pluginId}:`, message)
-    
+
     // 广播给主应用
-    const mainWindow = BrowserWindow.getAllWindows().find(w => !(w.webContents.session as any).partition?.startsWith('plugin-'))
+    const mainWindow = BrowserWindow.getAllWindows().find(
+      (w) => !(w.webContents.session as any).partition?.startsWith('plugin-')
+    )
     if (mainWindow) {
       mainWindow.webContents.send('plugin:message:from-plugin', pluginId, message)
     }
-    
+
     return { success: true }
   }
 
@@ -239,7 +249,7 @@ export class PluginAPIHandler {
     if (!pluginId) {
       return null
     }
-    
+
     const pluginStorage = this.pluginStorage.get(pluginId)
     return pluginStorage ? pluginStorage.get(key) : null
   }
@@ -252,11 +262,11 @@ export class PluginAPIHandler {
     if (!pluginId) {
       throw new Error('Plugin ID not found')
     }
-    
+
     if (!this.pluginStorage.has(pluginId)) {
       this.pluginStorage.set(pluginId, new Map())
     }
-    
+
     this.pluginStorage.get(pluginId)!.set(key, value)
   }
 
@@ -268,7 +278,7 @@ export class PluginAPIHandler {
     if (!pluginId) {
       return
     }
-    
+
     const pluginStorage = this.pluginStorage.get(pluginId)
     if (pluginStorage) {
       pluginStorage.delete(key)
@@ -283,29 +293,36 @@ export class PluginAPIHandler {
     if (!pluginId) {
       return
     }
-    
+
     this.pluginStorage.delete(pluginId)
   }
 
   /**
    * 显示通知
    */
-  private async handleShowNotification(event: Electron.IpcMainInvokeEvent, title: string, options?: any) {
+  private async handleShowNotification(
+    event: Electron.IpcMainInvokeEvent,
+    title: string,
+    options?: any
+  ) {
     const pluginId = this.getPluginIdFromEvent(event)
     if (!pluginId) {
       throw new Error('Plugin ID not found')
     }
-    
+
     const plugin = this.pluginManager.getPlugin(pluginId)
     if (!plugin) {
       throw new Error('Plugin not found')
     }
-    
-    const hasPermission = await this.securityManager.checkPermission(plugin, Permission.NOTIFICATIONS)
+
+    const hasPermission = await this.securityManager.checkPermission(
+      plugin,
+      Permission.NOTIFICATIONS
+    )
     if (!hasPermission.granted) {
       throw new Error('Permission denied: notifications')
     }
-    
+
     new Notification({
       title,
       body: options?.body || '',
@@ -338,17 +355,17 @@ export class PluginAPIHandler {
     if (!pluginId) {
       throw new Error('Plugin ID not found')
     }
-    
+
     const plugin = this.pluginManager.getPlugin(pluginId)
     if (!plugin) {
       throw new Error('Plugin not found')
     }
-    
+
     // 检查URL是否被允许
     if (!this.securityManager.isUrlAllowed(plugin, url)) {
       throw new Error('URL not allowed')
     }
-    
+
     await shell.openExternal(url)
   }
 
@@ -382,7 +399,7 @@ export class PluginAPIHandler {
       properties: ['openFile'],
       filters: options?.filters || [{ name: 'All Files', extensions: ['*'] }]
     })
-    
+
     return result.filePaths
   }
 
@@ -393,7 +410,7 @@ export class PluginAPIHandler {
     const result = await dialog.showOpenDialog({
       properties: ['openDirectory']
     })
-    
+
     return result.filePaths[0] || ''
   }
 
@@ -406,7 +423,7 @@ export class PluginAPIHandler {
       const { default: fetch } = await import('node-fetch')
       const response = await fetch(url, options)
       const data = await response.json()
-      
+
       return {
         status: response.status,
         statusText: response.statusText,
@@ -414,7 +431,9 @@ export class PluginAPIHandler {
         data
       }
     } catch (error) {
-      throw new Error(`Network fetch failed: ${error instanceof Error ? error.message : String(error)}`)
+      throw new Error(
+        `Network fetch failed: ${error instanceof Error ? error.message : String(error)}`
+      )
     }
   }
 
@@ -554,7 +573,12 @@ export class PluginAPIHandler {
   /**
    * 执行UI组件关联的动作
    */
-  private async handleExecuteUIAction(event: Electron.IpcMainInvokeEvent, pluginId: string, actionName: string, params?: any) {
+  private async handleExecuteUIAction(
+    event: Electron.IpcMainInvokeEvent,
+    pluginId: string,
+    actionName: string,
+    params?: any
+  ) {
     try {
       const pluginIdFromEvent = this.getPluginIdFromEvent(event)
       if (!pluginIdFromEvent) {
@@ -567,7 +591,10 @@ export class PluginAPIHandler {
       }
 
       // 检查权限
-      const permissionResult = await this.securityManager.checkPermission(plugin, Permission.SYSTEM_INFO)
+      const permissionResult = await this.securityManager.checkPermission(
+        plugin,
+        Permission.SYSTEM_INFO
+      )
       if (!permissionResult.granted) {
         return { success: false, error: 'Permission denied' }
       }
@@ -649,7 +676,11 @@ export class PluginAPIHandler {
     }
   }
 
-  private async handleSetPluginConfig(_: Electron.IpcMainInvokeEvent, pluginId: string, config: any) {
+  private async handleSetPluginConfig(
+    _: Electron.IpcMainInvokeEvent,
+    pluginId: string,
+    config: any
+  ) {
     try {
       return await this.pluginManager.setPluginConfig(pluginId, config)
     } catch (error: any) {

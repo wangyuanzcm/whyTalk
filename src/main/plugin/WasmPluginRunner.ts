@@ -38,14 +38,14 @@ export class WasmPluginRunner {
     try {
       const wasmBytes = readFileSync(wasmPath)
       const module = await WebAssembly.compile(wasmBytes)
-      
+
       // 创建导入对象
       const imports = this.createImports()
       const instance = await WebAssembly.instantiate(module, imports)
-      
+
       this.loadedModules.set(pluginId, module)
       this.instances.set(pluginId, instance)
-      
+
       console.log(`WASM module loaded successfully: ${pluginId}`)
       return true
     } catch (error) {
@@ -58,12 +58,12 @@ export class WasmPluginRunner {
    * 执行 WASM 函数
    */
   async executeFunction(
-    pluginId: string, 
-    functionName: string, 
+    pluginId: string,
+    functionName: string,
     ...args: any[]
   ): Promise<WasmExecutionResult> {
     const startTime = Date.now()
-    
+
     try {
       const instance = this.instances.get(pluginId)
       if (!instance) {
@@ -110,9 +110,7 @@ export class WasmPluginRunner {
     }
 
     const exports = instance.exports
-    return Object.keys(exports).filter(key => 
-      typeof exports[key] === 'function'
-    )
+    return Object.keys(exports).filter((key) => typeof exports[key] === 'function')
   }
 
   /**
@@ -121,10 +119,10 @@ export class WasmPluginRunner {
   unloadModule(pluginId: string): boolean {
     const hasModule = this.loadedModules.has(pluginId)
     const hasInstance = this.instances.has(pluginId)
-    
+
     this.loadedModules.delete(pluginId)
     this.instances.delete(pluginId)
-    
+
     return hasModule || hasInstance
   }
 
@@ -144,49 +142,49 @@ export class WasmPluginRunner {
       env: {
         // 内存管理
         memory: new WebAssembly.Memory({ initial: 1 }),
-        
+
         // 日志函数
         log: (ptr: number, len: number) => {
           // 这里需要从内存中读取字符串
           console.log('WASM Plugin Log:', ptr, len)
         },
-        
+
         // 错误处理
         abort: (msg: number, file: number, line: number, col: number) => {
           console.error('WASM Plugin Abort:', { msg, file, line, col })
         },
-        
+
         // 数学函数
         Math_random: Math.random,
         Date_now: Date.now,
-        
+
         // 字符串操作辅助函数
         strlen: (_ptr: number) => {
           // 计算字符串长度的辅助函数
           return 0
         }
       },
-      
+
       // WASI 基础支持（简化版）
       wasi_snapshot_preview1: {
         proc_exit: (code: number) => {
           console.log('WASM process exit with code:', code)
         },
-        
+
         fd_write: (_fd: number, _iovs: number, _iovs_len: number, _nwritten: number) => {
           // 简化的文件写入
           return 0
         },
-        
+
         fd_read: (_fd: number, _iovs: number, _iovs_len: number, _nread: number) => {
           // 简化的文件读取
           return 0
         },
-        
+
         environ_sizes_get: (_environ_count: number, _environ_buf_size: number) => {
           return 0
         },
-        
+
         environ_get: (_environ: number, _environ_buf: number) => {
           return 0
         }
@@ -219,13 +217,11 @@ export class WasmPluginRunner {
     try {
       const wasmBytes = readFileSync(wasmPath)
       const module = await WebAssembly.compile(wasmBytes)
-      
-      const imports = WebAssembly.Module.imports(module).map(imp => 
-        `${imp.module}.${imp.name}`
-      )
-      
-      const exports = WebAssembly.Module.exports(module).map(exp => exp.name)
-      
+
+      const imports = WebAssembly.Module.imports(module).map((imp) => `${imp.module}.${imp.name}`)
+
+      const exports = WebAssembly.Module.exports(module).map((exp) => exp.name)
+
       return {
         imports,
         exports,

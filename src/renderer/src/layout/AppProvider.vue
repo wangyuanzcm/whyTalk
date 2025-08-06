@@ -8,7 +8,7 @@ import { NotificationApi, MessageApi, DialogApi, ModalApi } from '@/layout/commo
 import {
   useThemeMode,
   useVisibilityChange,
-  useUnreadMessage,
+  // useUnreadMessage, // TODO: 已迁移到插件中
   useConnectStatus,
   useClickEvent,
   useAccessPrompt
@@ -31,7 +31,7 @@ onMounted(() => {
     useAccessPrompt()
   }
 
-  useUnreadMessage()
+  // useUnreadMessage() // TODO: 通过插件间通信处理未读消息
   useConnectStatus()
   useClickEvent()
 })
@@ -53,7 +53,7 @@ onMounted(() => {
             <notification-api />
             <dialog-api />
             <modal-api />
-            
+
             <n-layout-content>
               <slot></slot>
             </n-layout-content>

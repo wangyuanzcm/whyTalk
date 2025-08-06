@@ -1,48 +1,47 @@
 const properties = {
-  name: "properties",
-  token: function(stream, state) {
-    var sol = stream.sol() || state.afterSection;
-    var eol = stream.eol();
-    state.afterSection = false;
+  name: 'properties',
+  token: function (stream, state) {
+    var sol = stream.sol() || state.afterSection
+    var eol = stream.eol()
+    state.afterSection = false
     if (sol) {
       if (state.nextMultiline) {
-        state.inMultiline = true;
-        state.nextMultiline = false;
+        state.inMultiline = true
+        state.nextMultiline = false
       } else {
-        state.position = "def";
+        state.position = 'def'
       }
     }
     if (eol && !state.nextMultiline) {
-      state.inMultiline = false;
-      state.position = "def";
+      state.inMultiline = false
+      state.position = 'def'
     }
     if (sol) {
-      while (stream.eatSpace()) {
-      }
+      while (stream.eatSpace()) {}
     }
-    var ch = stream.next();
-    if (sol && (ch === "#" || ch === "!" || ch === ";")) {
-      state.position = "comment";
-      stream.skipToEnd();
-      return "comment";
-    } else if (sol && ch === "[") {
-      state.afterSection = true;
-      stream.skipTo("]");
-      stream.eat("]");
-      return "header";
-    } else if (ch === "=" || ch === ":") {
-      state.position = "quote";
-      return null;
-    } else if (ch === "\\" && state.position === "quote") {
+    var ch = stream.next()
+    if (sol && (ch === '#' || ch === '!' || ch === ';')) {
+      state.position = 'comment'
+      stream.skipToEnd()
+      return 'comment'
+    } else if (sol && ch === '[') {
+      state.afterSection = true
+      stream.skipTo(']')
+      stream.eat(']')
+      return 'header'
+    } else if (ch === '=' || ch === ':') {
+      state.position = 'quote'
+      return null
+    } else if (ch === '\\' && state.position === 'quote') {
       if (stream.eol()) {
-        state.nextMultiline = true;
+        state.nextMultiline = true
       }
     }
-    return state.position;
+    return state.position
   },
-  startState: function() {
+  startState: function () {
     return {
-      position: "def",
+      position: 'def',
       // Current position, "def", "quote" or "comment"
       nextMultiline: false,
       // Is the next line multiline value
@@ -50,9 +49,7 @@ const properties = {
       // Is the current line a multiline value
       afterSection: false
       // Did we just open a section
-    };
+    }
   }
-};
-export {
-  properties
-};
+}
+export { properties }

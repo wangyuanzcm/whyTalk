@@ -79,7 +79,11 @@
 .chat-container-item .chat-content .chat-content-main .chat-content-message > div[data-v-3ca9ed00] {
   max-width: 70%;
 }
-.chat-container-item .chat-content .chat-content-main .chat-content-message .text-content[data-v-3ca9ed00] {
+.chat-container-item
+  .chat-content
+  .chat-content-main
+  .chat-content-message
+  .text-content[data-v-3ca9ed00] {
   padding: 10px;
   border-radius: 5px;
   width: fit-content;
@@ -88,11 +92,19 @@
   word-wrap: break-word;
   font-size: 14px;
 }
-.chat-container-item .chat-content .chat-content-main .chat-content-message .sent-status[data-v-3ca9ed00] {
+.chat-container-item
+  .chat-content
+  .chat-content-main
+  .chat-content-message
+  .sent-status[data-v-3ca9ed00] {
   margin: 0 10px;
   color: #8f8f8f;
 }
-.chat-container-item .chat-content .chat-content-main .chat-content-message .sent-status.fail[data-v-3ca9ed00] {
+.chat-container-item
+  .chat-content
+  .chat-content-main
+  .chat-content-message
+  .sent-status.fail[data-v-3ca9ed00] {
   color: #ff8d8d;
 }
 .chat-container-item .chat-content .chat-content-main .chat-content-quote[data-v-3ca9ed00] {
@@ -136,14 +148,26 @@
   display: flex;
   flex-direction: row-reverse;
 }
-.chat-container-item.align-right .chat-content .chat-content-main .chat-content-message[data-v-3ca9ed00],
-.chat-container-item.align-right .chat-content .chat-content-main .chat-tools-menus[data-v-3ca9ed00] {
+.chat-container-item.align-right
+  .chat-content
+  .chat-content-main
+  .chat-content-message[data-v-3ca9ed00],
+.chat-container-item.align-right
+  .chat-content
+  .chat-content-main
+  .chat-tools-menus[data-v-3ca9ed00] {
   justify-content: right;
 }
-.chat-container-item.align-right .chat-content .chat-content-main .chat-content-message[data-v-3ca9ed00] {
+.chat-container-item.align-right
+  .chat-content
+  .chat-content-main
+  .chat-content-message[data-v-3ca9ed00] {
   flex-direction: row-reverse;
 }
-.chat-container-item.align-right .chat-content .chat-content-main .chat-content-quote[data-v-3ca9ed00] {
+.chat-container-item.align-right
+  .chat-content
+  .chat-content-main
+  .chat-content-quote[data-v-3ca9ed00] {
   margin-left: auto;
 }
 .chat-container-item.system[data-v-3ca9ed00] {

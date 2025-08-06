@@ -69,10 +69,7 @@ export const config: AppConfig = {
 import { existsSync, mkdirSync } from 'fs'
 
 export function ensureDirectories(): void {
-  const dirs = [
-    config.upload.uploadPath,
-    config.database.backupPath
-  ]
+  const dirs = [config.upload.uploadPath, config.database.backupPath]
 
   for (const dir of dirs) {
     if (!existsSync(dir)) {

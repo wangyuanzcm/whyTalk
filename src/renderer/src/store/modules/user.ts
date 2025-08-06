@@ -1,7 +1,5 @@
 import { defineStore } from 'pinia'
 import { ServeUserSetting } from '@/api/user'
-import { ServContactApplyUnreadNum } from '@/api/contact'
-import { ServGroupApplyUnread } from '@/api/group'
 import * as auth from '@/utils/auth.ts'
 import { storage } from '@/utils'
 
@@ -70,19 +68,14 @@ export const useUserStore = defineStore('user', {
 
       storage.set('user_info', data)
     },
+    // 联系人申请和群组申请功能已迁移到插件中
     async loadFriendApplyNum() {
-      const { code, data } = await ServContactApplyUnreadNum()
-
-      if (code == 200 && data) {
-        this.isContactApply = data.unread_num > 0
-      }
+      // TODO: 通过插件间通信获取联系人申请数量
+      this.isContactApply = false
     },
     async loadGroupApplyUnread() {
-      const { code, data } = await ServGroupApplyUnread()
-
-      if (code == 200) {
-        this.isGroupApply = data.unread_num > 0
-      }
+      // TODO: 通过插件间通信获取群组申请数量
+      this.isGroupApply = false
     }
   }
 })

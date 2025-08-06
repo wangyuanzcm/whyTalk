@@ -47,7 +47,7 @@ const toPermission = () => {
           <div class="desc">新消息提示音 ：{{ isPromptTone ? '已开启' : '已关闭' }}</div>
         </div>
         <div class="tools">
-          <n-switch size="medium" v-model:value="isPromptTone" />
+          <n-switch v-model:value="isPromptTone" size="medium" />
         </div>
       </div>
 
@@ -57,7 +57,7 @@ const toPermission = () => {
           <div class="desc">推送键盘输入消息：{{ isKeyboard ? '已开启' : '已关闭' }}</div>
         </div>
         <div class="tools">
-          <n-switch size="medium" v-model:value="isKeyboard" />
+          <n-switch v-model:value="isKeyboard" size="medium" />
         </div>
       </div>
 
@@ -74,7 +74,7 @@ const toPermission = () => {
           </div>
         </div>
         <div class="tools">
-          <n-switch size="medium" v-model:value="isNotify" />
+          <n-switch v-model:value="isNotify" size="medium" />
         </div>
       </div>
     </div>

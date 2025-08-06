@@ -96,10 +96,13 @@ export class ContactSDK {
   /**
    * 更新联系人信息
    */
-  async updateContact(contactId: number, data: {
-    remark?: string
-    group_id?: number
-  }): Promise<boolean> {
+  async updateContact(
+    contactId: number,
+    data: {
+      remark?: string
+      group_id?: number
+    }
+  ): Promise<boolean> {
     const response = await this.sendMessage('contact.update', {
       contactId,
       ...data
@@ -145,10 +148,13 @@ export class ContactSDK {
   /**
    * 更新联系人分组
    */
-  async updateContactGroup(groupId: number, data: {
-    name?: string
-    sort?: number
-  }): Promise<boolean> {
+  async updateContactGroup(
+    groupId: number,
+    data: {
+      name?: string
+      sort?: number
+    }
+  ): Promise<boolean> {
     const response = await this.sendMessage('contact.group.update', {
       groupId,
       ...data
@@ -188,7 +194,11 @@ export class ContactSDK {
   /**
    * 处理好友申请
    */
-  async handleFriendApply(applyId: number, action: 'accept' | 'reject', remark?: string): Promise<boolean> {
+  async handleFriendApply(
+    applyId: number,
+    action: 'accept' | 'reject',
+    remark?: string
+  ): Promise<boolean> {
     const response = await this.sendMessage('friend.apply.handle', {
       applyId,
       action,
@@ -239,11 +249,14 @@ export class ContactSDK {
   /**
    * 更新群组信息
    */
-  async updateGroup(groupId: number, data: {
-    name?: string
-    avatar?: string
-    profile?: string
-  }): Promise<boolean> {
+  async updateGroup(
+    groupId: number,
+    data: {
+      name?: string
+      avatar?: string
+      profile?: string
+    }
+  ): Promise<boolean> {
     const response = await this.sendMessage('group.update', {
       groupId,
       ...data
@@ -368,7 +381,7 @@ export class ContactSDK {
     }
 
     const response = await window.electronAPI.invoke('plugin-send-message', message)
-    
+
     if (!response.success) {
       throw new Error(response.error || '通讯录服务调用失败')
     }

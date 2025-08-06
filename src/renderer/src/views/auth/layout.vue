@@ -3,7 +3,7 @@ import { isElectronMode } from '@/utils/electron'
 </script>
 
 <template>
-  <div id="logo-name" v-if="!isElectronMode()">Lumen IM</div>
+  <div v-if="!isElectronMode()" id="logo-name">Lumen IM</div>
 
   <section class="section">
     <router-view />

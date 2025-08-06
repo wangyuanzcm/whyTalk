@@ -28,13 +28,17 @@ let once = false
 /**
  * 通过IPC发送API请求
  */
-export async function ipcApi<T = any>(uri: string, params?: any, options?: ApiOptions): Response<T> {
+export async function ipcApi<T = any>(
+  uri: string,
+  params?: any,
+  options?: ApiOptions
+): Response<T> {
   if (options?.loading) options.loading.value = true
 
   try {
     const token = auth.getToken()
     console.log('ipcApi: Making request to', uri, 'with token:', token ? 'present' : 'missing')
-    
+
     // 通过IPC发送请求
     const response = await window.electron.ipcRenderer.invoke('api-request', {
       url: uri,
@@ -43,14 +47,18 @@ export async function ipcApi<T = any>(uri: string, params?: any, options?: ApiOp
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     })
 
-    console.log('ipcApi: Response received:', { status: response.status, code: response.code, url: uri })
+    console.log('ipcApi: Response received:', {
+      status: response.status,
+      code: response.code,
+      url: uri
+    })
     const { code, message, data } = response
 
     // 处理认证失败
     if (code === 401) {
       console.warn('ipcApi: Authentication failed, clearing token')
       auth.deleteToken()
-      
+
       if (!once) {
         once = true
         window['$dialog']?.info({
@@ -63,7 +71,7 @@ export async function ipcApi<T = any>(uri: string, params?: any, options?: ApiOp
           }
         })
       }
-      
+
       return { status: 401, code, message }
     }
 
@@ -88,7 +96,7 @@ export async function ipcApi<T = any>(uri: string, params?: any, options?: ApiOp
   } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : '网络请求失败'
     console.error('IPC API request failed:', err)
-    
+
     if (options?.error || options?.error == undefined) {
       error(options?.failText || errorMessage)
     }
@@ -134,10 +142,10 @@ export async function uploadFile(file: File, options?: ApiOptions): Promise<ApiR
 
   try {
     const token = auth.getToken()
-    
+
     // 将文件转换为ArrayBuffer
     const arrayBuffer = await file.arrayBuffer()
-    
+
     // 通过IPC发送文件上传请求
     const response = await window.electron.ipcRenderer.invoke('upload-file', {
       filename: file.name,
@@ -166,7 +174,7 @@ export async function uploadFile(file: File, options?: ApiOptions): Promise<ApiR
     return { status: 200, code, message, data }
   } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : '文件上传失败'
-    
+
     if (options?.error || options?.error == undefined) {
       error(options?.failText || errorMessage)
     }
@@ -184,15 +192,19 @@ export async function uploadFile(file: File, options?: ApiOptions): Promise<ApiR
 /**
  * 附件上传（通过IPC）
  */
-export async function uploadAnnex(file: File, articleId: number, options?: ApiOptions): Promise<ApiResponse<any>> {
+export async function uploadAnnex(
+  file: File,
+  articleId: number,
+  options?: ApiOptions
+): Promise<ApiResponse<any>> {
   if (options?.loading) options.loading.value = true
 
   try {
     const token = auth.getToken()
-    
+
     // 将文件转换为ArrayBuffer
     const arrayBuffer = await file.arrayBuffer()
-    
+
     // 通过IPC发送附件上传请求
     const response = await window.electron.ipcRenderer.invoke('upload-annex', {
       filename: file.name,
@@ -222,7 +234,7 @@ export async function uploadAnnex(file: File, articleId: number, options?: ApiOp
     return { status: 200, code, message, data }
   } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : '附件上传失败'
-    
+
     if (options?.error || options?.error == undefined) {
       error(options?.failText || errorMessage)
     }
@@ -240,15 +252,21 @@ export async function uploadAnnex(file: File, articleId: number, options?: ApiOp
 /**
  * 分片上传（通过IPC）
  */
-export async function uploadMultipart(fileSlice: Blob, uploadId: string, splitIndex: number, splitNum: number, options?: ApiOptions): Promise<ApiResponse<any>> {
+export async function uploadMultipart(
+  fileSlice: Blob,
+  uploadId: string,
+  splitIndex: number,
+  splitNum: number,
+  options?: ApiOptions
+): Promise<ApiResponse<any>> {
   if (options?.loading) options.loading.value = true
 
   try {
     const token = auth.getToken()
-    
+
     // 将文件片段转换为ArrayBuffer
     const arrayBuffer = await fileSlice.arrayBuffer()
-    
+
     // 通过IPC发送分片上传请求
     const response = await window.electron.ipcRenderer.invoke('upload-multipart', {
       data: Array.from(new Uint8Array(arrayBuffer)),
@@ -277,7 +295,7 @@ export async function uploadMultipart(fileSlice: Blob, uploadId: string, splitIn
     return { status: 200, code, message, data }
   } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : '分片上传失败'
-    
+
     if (options?.error || options?.error == undefined) {
       error(options?.failText || errorMessage)
     }

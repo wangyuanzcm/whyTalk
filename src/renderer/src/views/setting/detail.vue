@@ -81,8 +81,8 @@ loadDetail()
       <n-avatar
         :size="150"
         :src="detail.avatar"
-        @click="cropper = true"
         class="avatar-box pointer"
+        @click="cropper = true"
       />
 
       <n-button text @click="cropper = true"> 点击修改头像 </n-button>
@@ -111,8 +111,8 @@ loadDetail()
         </n-form-item>
         <n-form-item label="我的昵称：">
           <n-input
-            placeholder="我的昵称"
             v-model:value="detail.nickname"
+            placeholder="我的昵称"
             maxlength="20"
             show-count
           />
@@ -135,11 +135,11 @@ loadDetail()
         </n-form-item>
         <n-form-item label="个性签名：">
           <n-input
+            v-model:value="detail.motto"
             placeholder="编辑个签，展示我的独特态度"
             type="textarea"
             maxlength="500"
             show-count
-            v-model:value="detail.motto"
             :autosize="{
               minRows: 3,
               maxRows: 5
@@ -150,10 +150,10 @@ loadDetail()
         <n-form-item>
           <n-button
             type="primary"
-            @click="onChangeDetail"
             :loading="loading"
             text-color="#ffffff"
             style="margin-left: 94px"
+            @click="onChangeDetail"
           >
             保存修改
           </n-button>

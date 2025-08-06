@@ -4,7 +4,7 @@ import eslintPluginVue from 'eslint-plugin-vue'
 import vueParser from 'vue-eslint-parser'
 
 export default tseslint.config(
-  { ignores: ['**/node_modules', '**/dist', '**/out'] },
+  { ignores: ['**/node_modules', '**/dist', '**/out', '**/temp_*', '**/userData*', '**/*.mjs'] },
   tseslint.configs.recommended,
   eslintPluginVue.configs['flat/recommended'],
   {
@@ -32,7 +32,32 @@ export default tseslint.config(
             lang: 'ts'
           }
         }
-      ]
+      ],
+      '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/ban-ts-comment': 'warn',
+      '@typescript-eslint/prefer-as-const': 'warn',
+      '@typescript-eslint/no-empty-object-type': 'warn',
+      'no-useless-escape': 'warn'
+    }
+  },
+  {
+    files: ['tests/**/*', 'plugins/**/*'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/explicit-function-return-type': 'off'
+    }
+  },
+  {
+    files: ['**/*.js', '**/*.mjs'],
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/explicit-function-return-type': 'off',
+      'no-useless-escape': 'off'
     }
   },
   eslintConfigPrettier

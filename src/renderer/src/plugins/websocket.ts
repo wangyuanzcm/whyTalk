@@ -67,7 +67,7 @@ class WsSocket {
       console.log('WebSocket URL is null, skipping connection')
       return
     }
-    
+
     this.connect = new WebSocket(url)
     this.connect.onerror = this.onError.bind(this)
     this.connect.onopen = this.onOpen.bind(this)

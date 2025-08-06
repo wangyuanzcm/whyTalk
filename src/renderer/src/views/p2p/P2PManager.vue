@@ -4,16 +4,16 @@
     <n-alert v-if="!status.isRunning" type="warning" class="mb-4">
       <template #header>P2P 服务未启用</template>
       P2P 功能当前处于开发阶段，服务暂时未启用。这是一个演示界面，展示了 P2P 功能的完整设计。
-      <br>要启用 P2P 功能，需要解决 libp2p 依赖问题并重新启动服务。
+      <br />要启用 P2P 功能，需要解决 libp2p 依赖问题并重新启动服务。
     </n-alert>
-    
+
     <n-card title="P2P 网络管理" class="mb-4">
       <template #header-extra>
         <n-tag :type="status.isRunning ? 'success' : 'error'">
           {{ status.isRunning ? '运行中' : '已停止' }}
         </n-tag>
       </template>
-      
+
       <n-space vertical>
         <n-descriptions :column="2" bordered>
           <n-descriptions-item label="节点ID">
@@ -23,14 +23,10 @@
             {{ status.isRunning ? '运行中' : '已停止' }}
           </n-descriptions-item>
         </n-descriptions>
-        
+
         <n-space>
-          <n-button @click="refreshStatus" :loading="loading">
-            刷新状态
-          </n-button>
-          <n-button @click="refreshPeers" :loading="peersLoading">
-            刷新节点
-          </n-button>
+          <n-button :loading="loading" @click="refreshStatus"> 刷新状态 </n-button>
+          <n-button :loading="peersLoading" @click="refreshPeers"> 刷新节点 </n-button>
         </n-space>
       </n-space>
     </n-card>
@@ -41,12 +37,10 @@
           <template #header>
             <n-space justify="space-between">
               <span>已发现的节点 ({{ peers.length }})</span>
-              <n-button size="small" @click="refreshPeers" :loading="peersLoading">
-                刷新
-              </n-button>
+              <n-button size="small" :loading="peersLoading" @click="refreshPeers"> 刷新 </n-button>
             </n-space>
           </template>
-          
+
           <n-data-table
             :columns="peerColumns"
             :data="peers"
@@ -62,24 +56,20 @@
           <template #header>
             <span>网络连接信息</span>
           </template>
-          
+
           <n-descriptions :column="1" bordered>
             <n-descriptions-item label="连接的节点数">
-              {{ peers.filter(p => p.status === 'connected').length }}
+              {{ peers.filter((p) => p.status === 'connected').length }}
             </n-descriptions-item>
             <n-descriptions-item label="发现的节点数">
               {{ peers.length }}
             </n-descriptions-item>
-            <n-descriptions-item label="网络协议">
-              libp2p (演示模式)
-            </n-descriptions-item>
-            <n-descriptions-item label="发现机制">
-              mDNS + DHT
-            </n-descriptions-item>
+            <n-descriptions-item label="网络协议"> libp2p (演示模式) </n-descriptions-item>
+            <n-descriptions-item label="发现机制"> mDNS + DHT </n-descriptions-item>
           </n-descriptions>
-          
+
           <n-divider />
-          
+
           <n-alert type="info">
             <template #header>功能说明</template>
             P2P网络模块负责底层网络基础设施管理，包括节点发现、连接管理等。
@@ -88,29 +78,32 @@
         </n-card>
       </n-tab-pane>
     </n-tabs>
-
-
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { 
-  NCard, NTag, NSpace, NDescriptions, NDescriptionsItem, NText, NButton, 
-  NTabs, NTabPane, NDataTable, useMessage
+import {
+  NCard,
+  NTag,
+  NSpace,
+  NDescriptions,
+  NDescriptionsItem,
+  NText,
+  NButton,
+  NTabs,
+  NTabPane,
+  NDataTable,
+  useMessage
 } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
-import {
-  connectToP2PPeer,
-  type P2PPeer
-} from '@/api/p2p'
+import { connectToP2PPeer, type P2PPeer } from '@/api/p2p'
 import { useP2PStore } from '@/store/modules/p2p'
 
 const message = useMessage()
 const p2pStore = useP2PStore()
 
 // 本地状态
-
 
 // P2P状态对象
 const status = computed(() => ({
@@ -135,9 +128,14 @@ const peerColumns: DataTableColumns<P2PPeer> = [
   {
     title: '状态',
     key: 'status',
-    render: (row) => h(NTag, { 
-      type: row.status === 'online' ? 'success' : 'default' 
-    }, () => row.status)
+    render: (row) =>
+      h(
+        NTag,
+        {
+          type: row.status === 'online' ? 'success' : 'default'
+        },
+        () => row.status
+      )
   },
   {
     title: '地址数量',
@@ -152,14 +150,17 @@ const peerColumns: DataTableColumns<P2PPeer> = [
   {
     title: '操作',
     key: 'actions',
-    render: (row) => h(NButton, {
-      size: 'small',
-      onClick: () => connectToPeer(row.id)
-    }, () => '连接')
+    render: (row) =>
+      h(
+        NButton,
+        {
+          size: 'small',
+          onClick: () => connectToPeer(row.id)
+        },
+        () => '连接'
+      )
   }
 ]
-
-
 
 // 刷新状态
 const refreshStatus = async () => {
@@ -190,14 +191,17 @@ const refreshPeers = async () => {
     if (result.success) {
       p2pStore.setDiscoveredNodes(result.peers || [])
     }
-    
+
     // 同时获取连接的节点
     const connectedResult = await window.electron.p2p.getConnectedPeers()
     if (connectedResult.success) {
       p2pStore.setConnectedPeers(connectedResult.peers || [])
     }
   } catch (error) {
-    console.warn('P2P服务未启用，无法获取节点列表:', error instanceof Error ? error.message : String(error))
+    console.warn(
+      'P2P服务未启用，无法获取节点列表:',
+      error instanceof Error ? error.message : String(error)
+    )
     p2pStore.setDiscoveredNodes([])
     // 不显示错误消息，因为这是预期的行为
   } finally {

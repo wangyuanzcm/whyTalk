@@ -9,11 +9,12 @@ export default {
       meta: { auth: false },
       component: () => import('@/views/setting/detail.vue')
     },
-    {
-      path: '/settings/security',
-      meta: { auth: false },
-      component: () => import('@/views/setting/security.vue')
-    },
+    // TODO: 安全设置页面已迁移到插件中
+    // {
+    //   path: '/settings/security',
+    //   meta: { auth: false },
+    //   component: () => import('@/views/setting/security.vue')
+    // },
     {
       path: '/settings/binding',
       meta: { auth: false },

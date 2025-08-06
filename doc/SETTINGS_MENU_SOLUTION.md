@@ -16,7 +16,7 @@
 ## 代码流程分析
 
 ```
-用户点击设置菜单 
+用户点击设置菜单
     ↓
 Menu.vue 中的 onClickMenu 函数被触发
     ↓
@@ -34,6 +34,7 @@ Menu.vue 中的 onClickMenu 函数被触发
 ### 方案1: 正常登录流程（推荐）
 
 1. **访问登录页面**:
+
    ```
    http://localhost:5173/#/auth/login
    ```
@@ -50,9 +51,13 @@ Menu.vue 中的 onClickMenu 函数被触发
 
 ```javascript
 // 将所有的
-meta: { auth: true }
+meta: {
+  auth: true
+}
 // 改为
-meta: { auth: false }
+meta: {
+  auth: false
+}
 ```
 
 ### 方案3: 浏览器控制台设置临时token
@@ -77,12 +82,14 @@ location.reload()
 ## 相关文件说明
 
 ### 核心文件
+
 - `src/renderer/src/layout/component/Menu.vue` - 主菜单组件
 - `src/renderer/src/router/modules/setting.js` - 设置路由配置
 - `src/renderer/src/utils/auth.ts` - 认证工具函数
 - `src/renderer/src/router/index.js` - 主路由配置和守卫
 
 ### 设置页面组件
+
 - `src/renderer/src/views/setting/layout.vue` - 设置页面布局
 - `src/renderer/src/views/setting/detail.vue` - 个人信息设置
 - `src/renderer/src/views/setting/security.vue` - 安全设置

@@ -1,45 +1,18 @@
-export interface ValidationResult {
-  valid: boolean
-  errors: string[]
-  warnings?: string[]
-}
-
-export interface ContactValidationData {
-  user_id?: number
-  friend_id?: number
-  remark?: string
-  group_id?: number
-  is_pinned?: boolean
-  plugin_source?: string
-  custom_data?: any
-}
-
-export interface MessageValidationData {
-  user_id?: number
-  talk_mode?: number
-  to_from_id?: number
-  message_type?: number
-  content?: string
-  plugin_source?: string
-  attachment_data?: any
-  custom_data?: any
-}
-
-export interface ConversationValidationData {
-  user_id?: number
-  talk_mode?: number
-  to_from_id?: number
-  is_pinned?: boolean
-  plugin_data?: any
-  custom_settings?: any
-}
+import type {
+  ValidationResult,
+  ContactValidationData,
+  MessageValidationData,
+  ConversationValidationData
+} from './DataValidator.d'
 
 export class DataValidator {
-  
   /**
    * 验证联系人数据
    */
-  static validateContactData(data: ContactValidationData, isUpdate: boolean = false): ValidationResult {
+  static validateContactData(
+    data: ContactValidationData,
+    isUpdate: boolean = false
+  ): ValidationResult {
     const errors: string[] = []
     const warnings: string[] = []
 
@@ -48,11 +21,11 @@ export class DataValidator {
       if (!data.user_id || typeof data.user_id !== 'number' || data.user_id <= 0) {
         errors.push('user_id is required and must be a positive number')
       }
-      
+
       if (!data.friend_id || typeof data.friend_id !== 'number' || data.friend_id <= 0) {
         errors.push('friend_id is required and must be a positive number')
       }
-      
+
       // 检查用户不能添加自己为好友
       if (data.user_id && data.friend_id && data.user_id === data.friend_id) {
         errors.push('user cannot add themselves as a friend')
@@ -90,10 +63,10 @@ export class DataValidator {
     if (data.custom_data !== undefined) {
       const customDataValidation = this.validateCustomData(data.custom_data)
       if (!customDataValidation.valid) {
-        errors.push(...customDataValidation.errors.map(e => `custom_data: ${e}`))
+        errors.push(...customDataValidation.errors.map((e) => `custom_data: ${e}`))
       }
       if (customDataValidation.warnings) {
-        warnings.push(...customDataValidation.warnings.map(w => `custom_data: ${w}`))
+        warnings.push(...customDataValidation.warnings.map((w) => `custom_data: ${w}`))
       }
     }
 
@@ -103,7 +76,10 @@ export class DataValidator {
   /**
    * 验证消息数据
    */
-  static validateMessageData(data: MessageValidationData, isUpdate: boolean = false): ValidationResult {
+  static validateMessageData(
+    data: MessageValidationData,
+    isUpdate: boolean = false
+  ): ValidationResult {
     const errors: string[] = []
     const warnings: string[] = []
 
@@ -160,12 +136,15 @@ export class DataValidator {
 
     // 附件数据验证
     if (data.attachment_data !== undefined) {
-      const attachmentValidation = this.validateAttachmentData(data.attachment_data, data.message_type)
+      const attachmentValidation = this.validateAttachmentData(
+        data.attachment_data,
+        data.message_type
+      )
       if (!attachmentValidation.valid) {
-        errors.push(...attachmentValidation.errors.map(e => `attachment_data: ${e}`))
+        errors.push(...attachmentValidation.errors.map((e) => `attachment_data: ${e}`))
       }
       if (attachmentValidation.warnings) {
-        warnings.push(...attachmentValidation.warnings.map(w => `attachment_data: ${w}`))
+        warnings.push(...attachmentValidation.warnings.map((w) => `attachment_data: ${w}`))
       }
     }
 
@@ -173,10 +152,10 @@ export class DataValidator {
     if (data.custom_data !== undefined) {
       const customDataValidation = this.validateCustomData(data.custom_data)
       if (!customDataValidation.valid) {
-        errors.push(...customDataValidation.errors.map(e => `custom_data: ${e}`))
+        errors.push(...customDataValidation.errors.map((e) => `custom_data: ${e}`))
       }
       if (customDataValidation.warnings) {
-        warnings.push(...customDataValidation.warnings.map(w => `custom_data: ${w}`))
+        warnings.push(...customDataValidation.warnings.map((w) => `custom_data: ${w}`))
       }
     }
 
@@ -186,7 +165,10 @@ export class DataValidator {
   /**
    * 验证会话数据
    */
-  static validateConversationData(data: ConversationValidationData, isUpdate: boolean = false): ValidationResult {
+  static validateConversationData(
+    data: ConversationValidationData,
+    isUpdate: boolean = false
+  ): ValidationResult {
     const errors: string[] = []
     const warnings: string[] = []
 
@@ -216,10 +198,10 @@ export class DataValidator {
     if (data.plugin_data !== undefined) {
       const pluginDataValidation = this.validateCustomData(data.plugin_data)
       if (!pluginDataValidation.valid) {
-        errors.push(...pluginDataValidation.errors.map(e => `plugin_data: ${e}`))
+        errors.push(...pluginDataValidation.errors.map((e) => `plugin_data: ${e}`))
       }
       if (pluginDataValidation.warnings) {
-        warnings.push(...pluginDataValidation.warnings.map(w => `plugin_data: ${w}`))
+        warnings.push(...pluginDataValidation.warnings.map((w) => `plugin_data: ${w}`))
       }
     }
 
@@ -227,10 +209,10 @@ export class DataValidator {
     if (data.custom_settings !== undefined) {
       const settingsValidation = this.validateCustomData(data.custom_settings)
       if (!settingsValidation.valid) {
-        errors.push(...settingsValidation.errors.map(e => `custom_settings: ${e}`))
+        errors.push(...settingsValidation.errors.map((e) => `custom_settings: ${e}`))
       }
       if (settingsValidation.warnings) {
-        warnings.push(...settingsValidation.warnings.map(w => `custom_settings: ${w}`))
+        warnings.push(...settingsValidation.warnings.map((w) => `custom_settings: ${w}`))
       }
     }
 
@@ -258,10 +240,12 @@ export class DataValidator {
     try {
       const jsonString = JSON.stringify(data)
       const sizeInBytes = new TextEncoder().encode(jsonString).length
-      
-      if (sizeInBytes > 1024 * 1024) { // 1MB
+
+      if (sizeInBytes > 1024 * 1024) {
+        // 1MB
         errors.push('data size cannot exceed 1MB')
-      } else if (sizeInBytes > 100 * 1024) { // 100KB
+      } else if (sizeInBytes > 100 * 1024) {
+        // 100KB
         warnings.push('data size is quite large, consider optimizing')
       }
     } catch (error) {
@@ -350,7 +334,8 @@ export class DataValidator {
     }
 
     // 大小警告
-    if (data.size && data.size > 10 * 1024 * 1024) { // 10MB
+    if (data.size && data.size > 10 * 1024 * 1024) {
+      // 10MB
       warnings.push('image size is quite large')
     }
   }
@@ -376,7 +361,8 @@ export class DataValidator {
     }
 
     // 大小警告
-    if (data.size && data.size > 100 * 1024 * 1024) { // 100MB
+    if (data.size && data.size > 100 * 1024 * 1024) {
+      // 100MB
       warnings.push('file size is quite large')
     }
   }
@@ -398,7 +384,8 @@ export class DataValidator {
     }
 
     // 时长警告
-    if (data.duration && data.duration > 300) { // 5分钟
+    if (data.duration && data.duration > 300) {
+      // 5分钟
       warnings.push('voice message is quite long')
     }
   }
@@ -428,11 +415,13 @@ export class DataValidator {
     }
 
     // 大小和时长警告
-    if (data.size && data.size > 500 * 1024 * 1024) { // 500MB
+    if (data.size && data.size > 500 * 1024 * 1024) {
+      // 500MB
       warnings.push('video size is quite large')
     }
 
-    if (data.duration && data.duration > 1800) { // 30分钟
+    if (data.duration && data.duration > 1800) {
+      // 30分钟
       warnings.push('video is quite long')
     }
   }
@@ -444,7 +433,7 @@ export class DataValidator {
     // 通用字段验证
     const allowedFields = ['url', 'path', 'name', 'size', 'type', 'metadata']
     const dataFields = Object.keys(data)
-    
+
     for (const field of dataFields) {
       if (!allowedFields.includes(field)) {
         warnings.push(`unknown field: ${field}`)

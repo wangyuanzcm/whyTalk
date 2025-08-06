@@ -1,8 +1,8 @@
-var commentType = { slash: 0, parenthesis: 1 };
-var stateType = { comment: 0, _string: 1, characterClass: 2 };
+var commentType = { slash: 0, parenthesis: 1 }
+var stateType = { comment: 0, _string: 1, characterClass: 2 }
 const ebnf = {
-  name: "ebnf",
-  startState: function() {
+  name: 'ebnf',
+  startState: function () {
     return {
       stringType: null,
       commentType: null,
@@ -11,130 +11,128 @@ const ebnf = {
       localState: null,
       stack: [],
       inDefinition: false
-    };
+    }
   },
-  token: function(stream, state) {
-    if (!stream) return;
+  token: function (stream, state) {
+    if (!stream) return
     if (state.stack.length === 0) {
       if (stream.peek() == '"' || stream.peek() == "'") {
-        state.stringType = stream.peek();
-        stream.next();
-        state.stack.unshift(stateType._string);
-      } else if (stream.match("/*")) {
-        state.stack.unshift(stateType.comment);
-        state.commentType = commentType.slash;
-      } else if (stream.match("(*")) {
-        state.stack.unshift(stateType.comment);
-        state.commentType = commentType.parenthesis;
+        state.stringType = stream.peek()
+        stream.next()
+        state.stack.unshift(stateType._string)
+      } else if (stream.match('/*')) {
+        state.stack.unshift(stateType.comment)
+        state.commentType = commentType.slash
+      } else if (stream.match('(*')) {
+        state.stack.unshift(stateType.comment)
+        state.commentType = commentType.parenthesis
       }
     }
     switch (state.stack[0]) {
       case stateType._string:
         while (state.stack[0] === stateType._string && !stream.eol()) {
           if (stream.peek() === state.stringType) {
-            stream.next();
-            state.stack.shift();
-          } else if (stream.peek() === "\\") {
-            stream.next();
-            stream.next();
+            stream.next()
+            state.stack.shift()
+          } else if (stream.peek() === '\\') {
+            stream.next()
+            stream.next()
           } else {
-            stream.match(/^.[^\\\"\']*/);
+            stream.match(/^.[^\\\"\']*/)
           }
         }
-        return state.lhs ? "property" : "string";
+        return state.lhs ? 'property' : 'string'
       // Token style
       case stateType.comment:
         while (state.stack[0] === stateType.comment && !stream.eol()) {
-          if (state.commentType === commentType.slash && stream.match("*/")) {
-            state.stack.shift();
-            state.commentType = null;
-          } else if (state.commentType === commentType.parenthesis && stream.match("*)")) {
-            state.stack.shift();
-            state.commentType = null;
+          if (state.commentType === commentType.slash && stream.match('*/')) {
+            state.stack.shift()
+            state.commentType = null
+          } else if (state.commentType === commentType.parenthesis && stream.match('*)')) {
+            state.stack.shift()
+            state.commentType = null
           } else {
-            stream.match(/^.[^\*]*/);
+            stream.match(/^.[^\*]*/)
           }
         }
-        return "comment";
+        return 'comment'
       case stateType.characterClass:
         while (state.stack[0] === stateType.characterClass && !stream.eol()) {
-          if (!(stream.match(/^[^\]\\]+/) || stream.match("."))) {
-            state.stack.shift();
+          if (!(stream.match(/^[^\]\\]+/) || stream.match('.'))) {
+            state.stack.shift()
           }
         }
-        return "operator";
+        return 'operator'
     }
-    var peek = stream.peek();
+    var peek = stream.peek()
     switch (peek) {
-      case "[":
-        stream.next();
-        state.stack.unshift(stateType.characterClass);
-        return "bracket";
-      case ":":
-      case "|":
-      case ";":
-        stream.next();
-        return "operator";
-      case "%":
-        if (stream.match("%%")) {
-          return "header";
+      case '[':
+        stream.next()
+        state.stack.unshift(stateType.characterClass)
+        return 'bracket'
+      case ':':
+      case '|':
+      case ';':
+        stream.next()
+        return 'operator'
+      case '%':
+        if (stream.match('%%')) {
+          return 'header'
         } else if (stream.match(/[%][A-Za-z]+/)) {
-          return "keyword";
+          return 'keyword'
         } else if (stream.match(/[%][}]/)) {
-          return "bracket";
+          return 'bracket'
         }
-        break;
-      case "/":
+        break
+      case '/':
         if (stream.match(/[\/][A-Za-z]+/)) {
-          return "keyword";
+          return 'keyword'
         }
-      case "\\":
+      case '\\':
         if (stream.match(/[\][a-z]+/)) {
-          return "string.special";
+          return 'string.special'
         }
-      case ".":
-        if (stream.match(".")) {
-          return "atom";
+      case '.':
+        if (stream.match('.')) {
+          return 'atom'
         }
-      case "*":
-      case "-":
-      case "+":
-      case "^":
+      case '*':
+      case '-':
+      case '+':
+      case '^':
         if (stream.match(peek)) {
-          return "atom";
+          return 'atom'
         }
-      case "$":
-        if (stream.match("$$")) {
-          return "builtin";
+      case '$':
+        if (stream.match('$$')) {
+          return 'builtin'
         } else if (stream.match(/[$][0-9]+/)) {
-          return "variableName.special";
+          return 'variableName.special'
         }
-      case "<":
+      case '<':
         if (stream.match(/<<[a-zA-Z_]+>>/)) {
-          return "builtin";
+          return 'builtin'
         }
     }
-    if (stream.match("//")) {
-      stream.skipToEnd();
-      return "comment";
-    } else if (stream.match("return")) {
-      return "operator";
+    if (stream.match('//')) {
+      stream.skipToEnd()
+      return 'comment'
+    } else if (stream.match('return')) {
+      return 'operator'
     } else if (stream.match(/^[a-zA-Z_][a-zA-Z0-9_]*/)) {
       if (stream.match(/(?=[\(.])/)) {
-        return "variable";
+        return 'variable'
       } else if (stream.match(/(?=[\s\n]*[:=])/)) {
-        return "def";
+        return 'def'
       }
-      return "variableName.special";
-    } else if (["[", "]", "(", ")"].indexOf(stream.peek()) != -1) {
-      stream.next();
-      return "bracket";
+      return 'variableName.special'
+    } else if (['[', ']', '(', ')'].indexOf(stream.peek()) != -1) {
+      stream.next()
+      return 'bracket'
     } else if (!stream.eatSpace()) {
-      stream.next();
+      stream.next()
     }
-    return null;
+    return null
   }
-};
-export {
-  ebnf
-};
+}
+export { ebnf }

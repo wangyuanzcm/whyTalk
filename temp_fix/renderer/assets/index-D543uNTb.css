@@ -33,7 +33,9 @@
   -webkit-transition: -webkit-transform 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86);
   transition: -webkit-transform 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86);
   transition: transform 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86);
-  transition: transform 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86), -webkit-transform 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86);
+  transition:
+    transform 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86),
+    -webkit-transform 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86);
 }
 .ant-spin-spinning[data-v-e4a49ed6] {
   position: static;
@@ -194,32 +196,32 @@
   display: block;
 }
 @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
-.ant-spin-blur[data-v-e4a49ed6] {
+  .ant-spin-blur[data-v-e4a49ed6] {
     background: #fff;
     opacity: 0.5;
-}
+  }
 }
 @-webkit-keyframes antSpinMove-e4a49ed6 {
-to {
+  to {
     opacity: 1;
-}
+  }
 }
 @keyframes antSpinMove-e4a49ed6 {
-to {
+  to {
     opacity: 1;
-}
+  }
 }
 @-webkit-keyframes antRotate-e4a49ed6 {
-to {
+  to {
     -webkit-transform: rotate(405deg);
     transform: rotate(405deg);
-}
+  }
 }
 @keyframes antRotate-e4a49ed6 {
-to {
+  to {
     -webkit-transform: rotate(405deg);
     transform: rotate(405deg);
-}
+  }
 }
 .ant-spin-rtl[data-v-e4a49ed6] {
   direction: rtl;
@@ -231,16 +233,16 @@ to {
   animation-name: antRotateRtl-e4a49ed6;
 }
 @-webkit-keyframes antRotateRtl-e4a49ed6 {
-to {
+  to {
     -webkit-transform: rotate(-405deg);
     transform: rotate(-405deg);
-}
+  }
 }
 @keyframes antRotateRtl-e4a49ed6 {
-to {
+  to {
     -webkit-transform: rotate(-405deg);
     transform: rotate(-405deg);
-}
+  }
 }
 /* ant-spin 加载动画 end */
 .main-box[data-v-2430a8e9] {

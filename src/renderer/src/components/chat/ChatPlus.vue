@@ -185,12 +185,12 @@ defineExpose({
         :item="customRender(item)"
         :raw="item"
         :is-selected="multiSelect.isSelected(item)"
+        :on-context-menu="onContextMenu"
+        :show-tools-menus="showToolsMenus"
         @element-event="onElementEvent"
         @selected-element="setMultiSelect([item.msg_id])"
         @click-avatar="onClickAvatar"
         @click-name="onClickName"
-        :on-context-menu="onContextMenu"
-        :showToolsMenus="showToolsMenus"
       />
 
       <FooterLoadToolbar
@@ -209,7 +209,7 @@ defineExpose({
       v-if="dataSourceMode === 'pulldown'"
       :show="!isScrollBottom"
       :unread="unread"
-      :scrollToBottom="scrollToBottom"
+      :scroll-to-bottom="scrollToBottom"
     />
   </section>
 </template>

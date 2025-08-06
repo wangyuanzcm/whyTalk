@@ -72,19 +72,23 @@ interface PluginManager {
   loadAllPlugins(): Promise<void>
   loadPlugin(pluginPath: string): Promise<void>
   unloadPlugin(pluginId: string): Promise<void>
-  
+
   // 插件控制
   enablePlugin(pluginId: string): Promise<boolean>
   disablePlugin(pluginId: string): Promise<boolean>
-  
+
   // 插件查询
   getPlugin(pluginId: string): PluginInstance | undefined
   getAllPlugins(): PluginInstance[]
   listPlugins(): Promise<PluginInfo[]>
-  
+
   // 系统插件执行
-  executeSystemPlugin(pluginId: string, functionName: string, input?: any): Promise<WasmExecutionResult>
-  
+  executeSystemPlugin(
+    pluginId: string,
+    functionName: string,
+    input?: any
+  ): Promise<WasmExecutionResult>
+
   // 插件安装管理
   installLocalPlugin(zipPath: string): Promise<InstallResult>
   installRemotePlugin(url: string): Promise<InstallResult>
@@ -105,11 +109,11 @@ interface PluginDataAPI {
   getData<T>(key: string): Promise<APIResponse<T>>
   deleteData(key: string): Promise<APIResponse>
   listData(): Promise<APIResponse<PluginDataItem[]>>
-  
+
   // 配置管理
   saveConfig(config: any): Promise<APIResponse>
   getConfig<T>(): Promise<APIResponse<T>>
-  
+
   // 用户偏好设置
   saveUserPreferences(userId: number, preferences: any): Promise<APIResponse>
   getUserPreferences<T>(userId: number): Promise<APIResponse<T>>
@@ -127,7 +131,7 @@ interface SharedDataAPI {
   getSharedData<T>(namespace: string, key: string): Promise<APIResponse<T>>
   deleteSharedData(namespace: string, key: string): Promise<APIResponse>
   listSharedData(namespace: string): Promise<APIResponse<SharedDataItem[]>>
-  
+
   // 便捷方法
   cacheContacts(contacts: any[]): Promise<APIResponse>
   getCachedContacts<T>(): Promise<APIResponse<T[]>>
@@ -146,7 +150,7 @@ interface ContactAPI {
   addContact(contactData: ContactData): Promise<APIResponse<number>>
   updateContact(contactId: number, updates: Partial<ContactData>): Promise<APIResponse>
   deleteContact(contactId: number): Promise<APIResponse>
-  
+
   // 联系人操作
   pinContact(contactId: number, isPinned: boolean): Promise<APIResponse>
   searchContacts(keyword: string): Promise<APIResponse<ContactData[]>>
@@ -159,7 +163,11 @@ interface ContactAPI {
 interface MessageAPI {
   // 消息管理
   getMessage(messageId: number): Promise<APIResponse<MessageData>>
-  getMessages(conversationId: number, page?: number, limit?: number): Promise<APIResponse<{messages: MessageData[], total: number}>>
+  getMessages(
+    conversationId: number,
+    page?: number,
+    limit?: number
+  ): Promise<APIResponse<{ messages: MessageData[]; total: number }>>
   sendMessage(messageData: MessageData): Promise<APIResponse<number>>
   markMessageAsRead(messageId: number): Promise<APIResponse>
   deleteMessage(messageId: number): Promise<APIResponse>
@@ -174,7 +182,10 @@ interface ConversationAPI {
   getConversation(conversationId: number): Promise<APIResponse<ConversationData>>
   getConversations(userId?: number, options?: any): Promise<APIResponse<ConversationData[]>>
   createConversation(conversationData: ConversationData): Promise<APIResponse<number>>
-  updateConversation(conversationId: number, updates: Partial<ConversationData>): Promise<APIResponse>
+  updateConversation(
+    conversationId: number,
+    updates: Partial<ConversationData>
+  ): Promise<APIResponse>
   deleteConversation(conversationId: number): Promise<APIResponse>
 }
 ```
@@ -188,10 +199,10 @@ interface ConversationAPI {
 ```typescript
 interface P2PServiceAPI {
   // 服务生命周期
-  start(): Promise<{success: boolean, message?: string, nodeId?: string}>
-  stop(): Promise<{success: boolean, message?: string}>
-  getStatus(): Promise<{success: boolean, isRunning?: boolean, nodeId?: string, message?: string}>
-  
+  start(): Promise<{ success: boolean; message?: string; nodeId?: string }>
+  stop(): Promise<{ success: boolean; message?: string }>
+  getStatus(): Promise<{ success: boolean; isRunning?: boolean; nodeId?: string; message?: string }>
+
   // 节点信息
   getPeerId(): string | null
   getIdentity(): any
@@ -205,36 +216,20 @@ interface P2PServiceAPI {
 ```typescript
 interface P2PMessageAPI {
   // 直接消息
-  sendDirectMessage(params: {
-    to: string,
-    content: string,
-    messageType?: number
-  }): Promise<any>
-  
+  sendDirectMessage(params: { to: string; content: string; messageType?: number }): Promise<any>
+
   // 群组消息
-  sendGroupMessage(params: {
-    groupId: string,
-    content: string,
-    messageType?: number
-  }): Promise<any>
-  
+  sendGroupMessage(params: { groupId: string; content: string; messageType?: number }): Promise<any>
+
   // 消息历史
-  getChatHistory(params: {
-    peerId: string,
-    limit?: number,
-    offset?: number
-  }): Promise<any>
-  
-  getGroupChatHistory(params: {
-    groupId: string,
-    limit?: number,
-    offset?: number
-  }): Promise<any>
-  
+  getChatHistory(params: { peerId: string; limit?: number; offset?: number }): Promise<any>
+
+  getGroupChatHistory(params: { groupId: string; limit?: number; offset?: number }): Promise<any>
+
   // 消息状态
-  markMessagesAsRead(params: {messageIds: number[]}): Promise<any>
-  deleteMessage(params: {messageId: number}): Promise<any>
-  recallMessage(params: {messageId: number}): Promise<any>
+  markMessagesAsRead(params: { messageIds: number[] }): Promise<any>
+  deleteMessage(params: { messageId: number }): Promise<any>
+  recallMessage(params: { messageId: number }): Promise<any>
 }
 ```
 
@@ -243,15 +238,15 @@ interface P2PMessageAPI {
 ```typescript
 interface P2PContactAPI {
   // 联系人操作
-  addContact(params: {peerId: string, remark?: string}): Promise<any>
-  getContacts(): Promise<{success: boolean, contacts?: any[], message?: string}>
-  deleteContact(params: {contactId: number}): Promise<any>
-  updateContact(params: {contactId: number, updates: any}): Promise<any>
-  searchContacts(params: {keyword: string}): Promise<any>
-  
+  addContact(params: { peerId: string; remark?: string }): Promise<any>
+  getContacts(): Promise<{ success: boolean; contacts?: any[]; message?: string }>
+  deleteContact(params: { contactId: number }): Promise<any>
+  updateContact(params: { contactId: number; updates: any }): Promise<any>
+  searchContacts(params: { keyword: string }): Promise<any>
+
   // 联系人请求
   getContactRequests(): Promise<any>
-  handleContactRequest(params: {requestId: number, action: 'accept' | 'reject'}): Promise<any>
+  handleContactRequest(params: { requestId: number; action: 'accept' | 'reject' }): Promise<any>
 }
 ```
 
@@ -260,14 +255,14 @@ interface P2PContactAPI {
 ```typescript
 interface P2PGroupAPI {
   // 群组操作
-  createGroup(params: {name: string, description?: string}): Promise<any>
-  getGroups(): Promise<{success: boolean, groups?: any[], message?: string}>
-  joinGroup(params: {groupId: string}): Promise<any>
-  leaveGroup(params: {groupId: string}): Promise<any>
-  
+  createGroup(params: { name: string; description?: string }): Promise<any>
+  getGroups(): Promise<{ success: boolean; groups?: any[]; message?: string }>
+  joinGroup(params: { groupId: string }): Promise<any>
+  leaveGroup(params: { groupId: string }): Promise<any>
+
   // 群组成员
-  getGroupMembers(params: {groupId: string}): Promise<any>
-  inviteToGroup(params: {groupId: string, peerIds: string[]}): Promise<any>
+  getGroupMembers(params: { groupId: string }): Promise<any>
+  inviteToGroup(params: { groupId: string; peerIds: string[] }): Promise<any>
 }
 ```
 
@@ -282,7 +277,7 @@ interface IPCHandler {
   send(channel: string, ...args: any[]): void
   on(channel: string, listener: (...args: any[]) => void): void
   removeAllListeners(channel: string): void
-  
+
   // RESTful API 风格
   request(request: IPCRequest): Promise<IPCResponse>
 }
@@ -292,7 +287,7 @@ interface IPCRequest {
   method: string
   url: string
   data?: any
-  headers?: {[key: string]: string}
+  headers?: { [key: string]: string }
 }
 
 interface IPCResponse {
@@ -316,21 +311,21 @@ enum Permission {
   STORAGE = 'storage',
   DATABASE = 'database',
   SHARED_DATA = 'shared_data',
-  
+
   // 通信权限
   IPC = 'ipc',
   P2P = 'p2p',
   NETWORK = 'network',
-  
+
   // 系统权限
   SYSTEM_INFO = 'system_info',
   FILE_SYSTEM = 'file_system',
   NOTIFICATIONS = 'notifications',
   CLIPBOARD = 'clipboard',
-  
+
   // 窗口权限
   WINDOW_CONTROL = 'window_control',
-  
+
   // 联系人和消息权限
   CONTACTS = 'contacts',
   MESSAGES = 'messages',
@@ -345,12 +340,12 @@ interface PermissionAPI {
   // 权限检查
   checkPermission(permission: string): Promise<APIResponse<boolean>>
   requestPermission(permission: string): Promise<APIResponse<boolean>>
-  
+
   // 权限管理
   getPermissions(): Promise<APIResponse<string[]>>
   grantPermission(pluginId: string, permission: string): boolean
   revokePermission(pluginId: string, permission: string): boolean
-  
+
   // 数据访问验证
   validateDataAccess(operation: string, resourceType: string): boolean
   validateAPIAccess(apiName: string): boolean
@@ -365,17 +360,15 @@ interface FileSystemAPI {
   readText(path: string): Promise<string>
   writeText(path: string, content: string): Promise<void>
   exists(path: string): Promise<boolean>
-  
+
   // 文件选择
   selectFile(options?: {
-    title?: string,
-    filters?: {name: string, extensions: string[]}[],
+    title?: string
+    filters?: { name: string; extensions: string[] }[]
     multiSelections?: boolean
   }): Promise<string[]>
-  
-  selectDirectory(options?: {
-    title?: string
-  }): Promise<string>
+
+  selectDirectory(options?: { title?: string }): Promise<string>
 }
 ```
 
@@ -384,17 +377,20 @@ interface FileSystemAPI {
 ```typescript
 interface NetworkAPI {
   // HTTP 请求
-  fetch(url: string, options?: {
-    method?: string,
-    headers?: {[key: string]: string},
-    body?: any,
-    timeout?: number
-  }): Promise<{
-    status: number,
-    headers: {[key: string]: string},
+  fetch(
+    url: string,
+    options?: {
+      method?: string
+      headers?: { [key: string]: string }
+      body?: any
+      timeout?: number
+    }
+  ): Promise<{
+    status: number
+    headers: { [key: string]: string }
     data: any
   }>
-  
+
   // 网络状态
   isOnline(): Promise<boolean>
 }
@@ -406,12 +402,12 @@ interface NetworkAPI {
 interface SystemAPI {
   // 系统信息
   getInfo(): Promise<{
-    platform: string,
-    arch: string,
-    version: string,
+    platform: string
+    arch: string
+    version: string
     appVersion: string
   }>
-  
+
   // 外部链接
   openExternal(url: string): Promise<void>
 }
@@ -422,14 +418,17 @@ interface SystemAPI {
 ```typescript
 interface NotificationAPI {
   // 通知显示
-  show(title: string, options?: {
-    body?: string,
-    icon?: string,
-    tag?: string,
-    silent?: boolean,
-    requireInteraction?: boolean
-  }): Promise<void>
-  
+  show(
+    title: string,
+    options?: {
+      body?: string
+      icon?: string
+      tag?: string
+      silent?: boolean
+      requireInteraction?: boolean
+    }
+  ): Promise<void>
+
   // 权限请求
   requestPermission(): Promise<boolean>
 }
@@ -442,19 +441,16 @@ interface ClipboardAPI {
   // 文本操作
   readText(): Promise<string>
   writeText(text: string): Promise<void>
-  
+
   // 图片操作
   readImage(): Promise<{
-    data: Buffer,
-    format: string,
-    width: number,
+    data: Buffer
+    format: string
+    width: number
     height: number
   }>
-  
-  writeImage(imageData: {
-    data: Buffer,
-    format: string
-  }): Promise<void>
+
+  writeImage(imageData: { data: Buffer; format: string }): Promise<void>
 }
 ```
 
@@ -467,7 +463,7 @@ interface WindowAPI {
   minimize(): void
   maximize(): void
   restore(): void
-  
+
   // 窗口状态
   isMaximized(): boolean
   isMinimized(): boolean
@@ -483,19 +479,19 @@ interface WindowAPI {
 interface DataValidator {
   // 联系人数据验证
   validateContactData(data: ContactValidationData, isUpdate?: boolean): ValidationResult
-  
+
   // 消息数据验证
   validateMessageData(data: MessageValidationData, isUpdate?: boolean): ValidationResult
-  
+
   // 会话数据验证
   validateConversationData(data: ConversationValidationData, isUpdate?: boolean): ValidationResult
-  
+
   // 自定义数据验证
   validateCustomData(data: any): ValidationResult
-  
+
   // 附件数据验证
   validateAttachmentData(data: any, messageType?: number): ValidationResult
-  
+
   // 插件标识验证
   validatePluginId(pluginId: string): ValidationResult
   validateDataKey(key: string): ValidationResult

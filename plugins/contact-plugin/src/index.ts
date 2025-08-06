@@ -10,13 +10,7 @@ export { GroupService } from './services/GroupService'
 export { ContactSDK, createContactSDK } from './sdk/ContactSDK'
 
 // 导出类型定义
-export type {
-  Contact,
-  ContactGroup,
-  FriendApply,
-  Group,
-  GroupMember
-} from './sdk/ContactSDK'
+export type { Contact, ContactGroup, FriendApply, Group, GroupMember } from './sdk/ContactSDK'
 
 // 导出服务接口类型
 export type {
@@ -65,13 +59,7 @@ export const PLUGIN_INFO = {
   version: '1.0.0',
   description: '提供联系人和群组管理功能',
   author: 'Why Talk Team',
-  permissions: [
-    'contacts:read',
-    'contacts:write',
-    'groups:read',
-    'groups:write',
-    'users:read'
-  ]
+  permissions: ['contacts:read', 'contacts:write', 'groups:read', 'groups:write', 'users:read']
 }
 
 // 默认导出插件信息

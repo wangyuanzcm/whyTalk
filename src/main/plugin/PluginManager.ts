@@ -1,88 +1,28 @@
 import { app, ipcMain } from 'electron'
 import { join } from 'path'
-import { readFileSync, existsSync, readdirSync, statSync, writeFileSync, mkdirSync, rmSync } from 'fs'
+import {
+  readFileSync,
+  existsSync,
+  readdirSync,
+  statSync,
+  writeFileSync,
+  mkdirSync,
+  rmSync
+} from 'fs'
 import { createWriteStream } from 'fs'
 import * as https from 'https'
 import * as http from 'http'
 import * as yauzl from 'yauzl'
-// import { createExtism, Plugin } from '@extism/extism'
-// 使用自定义的 WASM 插件运行器替代 Extism
+// import { SecurityManager } from './SecurityManager'
+// import { PluginAPIHandler } from './PluginAPIHandler'
 import { wasmPluginRunner, WasmExecutionResult } from './WasmPluginRunner'
 import { getPluginDatabase, PluginDatabase } from './PluginDatabase'
-type Plugin = any
-
-// 插件类型枚举
-export enum PluginType {
-  FRONTEND = 'frontend',
-  SYSTEM = 'system'
-}
-
-// 前端插件配置接口
-export interface CubeModuleConfig {
-  name: string
-  version: string
-  description?: string
-  author?: string
-  main: string // 入口HTML文件
-  permissions?: string[]
-  dependencies?: Record<string, string>
-}
-
-// 系统插件配置接口
-export interface SystemPluginConfig {
-  name: string
-  version: string
-  description?: string
-  author?: string
-  main: string // WASM文件路径
-  permissions?: string[]
-  functions?: string[] // 导出的函数列表
-  ui?: {
-    components?: UIComponent[] // 前端组件配置
-    settings?: SettingsConfig // 设置页面配置
-  }
-}
-
-// UI组件配置接口
-export interface UIComponent {
-  id: string
-  type: 'button' | 'input' | 'select' | 'checkbox' | 'textarea' | 'slider' | 'color-picker'
-  label: string
-  description?: string
-  defaultValue?: any
-  options?: { label: string; value: any }[] // 用于select类型
-  validation?: {
-    required?: boolean
-    min?: number
-    max?: number
-    pattern?: string
-  }
-  action?: string // 对应的WASM函数名
-  position?: 'toolbar' | 'sidebar' | 'settings' | 'context-menu'
-}
-
-// 设置页面配置接口
-export interface SettingsConfig {
-  title?: string
-  description?: string
-  sections?: SettingsSection[]
-}
-
-export interface SettingsSection {
-  title: string
-  description?: string
-  components: string[] // 引用UIComponent的id
-}
-
-// 插件实例接口
-export interface PluginInstance {
-  id: string
-  type: PluginType
-  config: CubeModuleConfig | SystemPluginConfig
-  path: string
-  enabled: boolean
-  extismPlugin?: Plugin // 仅系统插件使用
-}
+import { PluginType } from './PluginManager.d'
+import type {
+  CubeModuleConfig,
+  SystemPluginConfig,
+  PluginInstance
+} from './PluginManager.d'
 
 /**
  * 插件管理器
@@ -108,7 +48,7 @@ export class PluginManager {
       // 应用程序包内的插件目录
       this.builtinPluginsDir = join(process.resourcesPath, 'app.asar.unpacked', 'plugins')
     }
-    
+
     console.log(`Plugin directory: ${this.pluginsDir}`)
     console.log(`Builtin plugin directory: ${this.builtinPluginsDir}`)
     this.database = getPluginDatabase()
@@ -132,7 +72,7 @@ export class PluginManager {
   private setupIpcHandlers() {
     // 获取所有插件列表
     ipcMain.handle('plugin:list', () => {
-      return Array.from(this.plugins.values()).map(plugin => ({
+      return Array.from(this.plugins.values()).map((plugin) => ({
         id: plugin.id,
         type: plugin.type,
         config: plugin.config,
@@ -151,9 +91,12 @@ export class PluginManager {
     })
 
     // 执行系统插件函数
-    ipcMain.handle('plugin:execute', async (_, pluginId: string, functionName: string, input?: any) => {
-      return await this.executeSystemPlugin(pluginId, functionName, input)
-    })
+    ipcMain.handle(
+      'plugin:execute',
+      async (_, pluginId: string, functionName: string, input?: any) => {
+        return await this.executeSystemPlugin(pluginId, functionName, input)
+      }
+    )
 
     // 获取前端插件内容
     ipcMain.handle('plugin:frontend:load', (_, pluginId: string) => {
@@ -166,7 +109,7 @@ export class PluginManager {
       if (!plugin || plugin.type !== PluginType.SYSTEM) {
         return { success: false, error: 'System plugin not found' }
       }
-      
+
       const exports = wasmPluginRunner.getExports(pluginId)
       return { success: true, exports }
     })
@@ -179,14 +122,14 @@ export class PluginManager {
       if (!plugin || plugin.type !== PluginType.SYSTEM) {
         return { success: false, error: 'System plugin not found' }
       }
-      
+
       // 卸载现有模块
       wasmPluginRunner.unloadModule(pluginId)
-      
+
       // 重新加载
       const configPath = join(plugin.path, 'cubeModule.json')
       await this.loadSystemPluginFromPath(plugin.path, configPath)
-      
+
       return { success: true }
     })
   }
@@ -198,7 +141,7 @@ export class PluginManager {
     // 首先加载内置插件
     if (existsSync(this.builtinPluginsDir)) {
       console.log('Loading builtin plugins...')
-      const builtinPluginDirs = readdirSync(this.builtinPluginsDir).filter(dir => {
+      const builtinPluginDirs = readdirSync(this.builtinPluginsDir).filter((dir) => {
         const fullPath = join(this.builtinPluginsDir, dir)
         return statSync(fullPath).isDirectory()
       })
@@ -214,7 +157,7 @@ export class PluginManager {
       require('fs').mkdirSync(this.pluginsDir, { recursive: true })
     } else {
       console.log('Loading user plugins...')
-      const userPluginDirs = readdirSync(this.pluginsDir).filter(dir => {
+      const userPluginDirs = readdirSync(this.pluginsDir).filter((dir) => {
         const fullPath = join(this.pluginsDir, dir)
         return statSync(fullPath).isDirectory()
       })
@@ -238,7 +181,7 @@ export class PluginManager {
         // 读取配置文件确定插件类型
         const configContent = readFileSync(cubeConfigPath, 'utf-8')
         const config = JSON.parse(configContent)
-        
+
         if (config.type === 'system') {
           await this.loadSystemPluginFromPath(pluginPath, cubeConfigPath)
         } else {
@@ -294,7 +237,7 @@ export class PluginManager {
     try {
       const configContent = readFileSync(configPath, 'utf-8')
       const config: SystemPluginConfig = JSON.parse(configContent)
-      
+
       // 验证必要字段
       if (!config.name || !config.main) {
         console.error(`Invalid system plugin config: ${configPath}`)
@@ -359,9 +302,11 @@ export class PluginManager {
       }
 
       this.plugins.set(config.name, plugin)
-      
+
       if (isHtmlFile) {
-        console.log(`System plugin with UI loaded: ${config.name} (WASM: ${hasWasmModule ? 'Yes' : 'No'})`)
+        console.log(
+          `System plugin with UI loaded: ${config.name} (WASM: ${hasWasmModule ? 'Yes' : 'No'})`
+        )
       } else {
         console.log(`System plugin loaded: ${config.name}`)
       }
@@ -373,7 +318,11 @@ export class PluginManager {
   /**
    * 执行系统插件函数
    */
-  public async executeSystemPlugin(pluginId: string, functionName: string, input?: any): Promise<WasmExecutionResult> {
+  public async executeSystemPlugin(
+    pluginId: string,
+    functionName: string,
+    input?: any
+  ): Promise<WasmExecutionResult> {
     const plugin = this.plugins.get(pluginId)
     if (!plugin || plugin.type !== PluginType.SYSTEM || !plugin.enabled) {
       return { success: false, error: 'Plugin not found or not enabled' }
@@ -402,7 +351,7 @@ export class PluginManager {
       const config = plugin.config as CubeModuleConfig
       const mainPath = join(plugin.path, config.main)
       const htmlContent = readFileSync(mainPath, 'utf-8')
-      
+
       return {
         success: true,
         data: {
@@ -460,7 +409,7 @@ export class PluginManager {
   public async listPlugins() {
     try {
       console.log('Listing plugins, total count:', this.plugins.size)
-      const plugins = Array.from(this.plugins.values()).map(plugin => ({
+      const plugins = Array.from(this.plugins.values()).map((plugin) => ({
         id: plugin.id,
         type: plugin.type,
         name: plugin.config.name,
@@ -489,13 +438,13 @@ export class PluginManager {
 
       const pluginId = await this.extractAndInstallPlugin(zipPath)
       const plugin = this.plugins.get(pluginId)
-      
+
       if (plugin) {
         // 保存到数据库
         this.database.savePluginConfig(pluginId, plugin.config, plugin.enabled)
         this.database.recordPluginInstallation(pluginId, plugin.config.version, 'local', zipPath)
       }
-      
+
       return { success: true, pluginId }
     } catch (error: any) {
       return { success: false, error: error.message }
@@ -509,22 +458,27 @@ export class PluginManager {
     try {
       const tempPath = join(app.getPath('temp'), `plugin-${Date.now()}.zip`)
       await this.downloadFile(url, tempPath)
-      
+
       const result = await this.installLocalPlugin(tempPath)
-      
+
       // 如果安装成功，更新数据库记录为远程安装
       if (result.success && result.pluginId) {
         const plugin = this.plugins.get(result.pluginId)
         if (plugin) {
-          this.database.recordPluginInstallation(result.pluginId, plugin.config.version, 'remote', url)
+          this.database.recordPluginInstallation(
+            result.pluginId,
+            plugin.config.version,
+            'remote',
+            url
+          )
         }
       }
-      
+
       // 清理临时文件
       if (existsSync(tempPath)) {
         rmSync(tempPath)
       }
-      
+
       return result
     } catch (error: any) {
       return { success: false, error: error.message }
@@ -543,18 +497,18 @@ export class PluginManager {
 
       // 先卸载插件
       await this.unloadPlugin(pluginId)
-      
+
       // 删除插件文件
       if (existsSync(plugin.path)) {
         rmSync(plugin.path, { recursive: true, force: true })
       }
-      
+
       // 从插件列表中移除
       this.plugins.delete(pluginId)
-      
+
       // 从数据库中删除
       this.database.deletePluginConfig(pluginId)
-      
+
       return { success: true }
     } catch (error: any) {
       return { success: false, error: error.message }
@@ -573,13 +527,13 @@ export class PluginManager {
 
       plugin.enabled = true
       await this.savePluginConfig(plugin)
-      
+
       // 更新数据库
       this.database.setPluginEnabled(pluginId, true)
-      
+
       // 重新加载插件
       await this.loadPlugin(plugin.path)
-      
+
       return { success: true }
     } catch (error: any) {
       return { success: false, error: error.message }
@@ -598,15 +552,15 @@ export class PluginManager {
 
       plugin.enabled = false
       await this.savePluginConfig(plugin)
-      
+
       // 更新数据库
       this.database.setPluginEnabled(pluginId, false)
-      
+
       // 卸载插件但不删除文件
       if (plugin.extismPlugin) {
         plugin.extismPlugin = undefined
       }
-      
+
       return { success: true }
     } catch (error: any) {
       return { success: false, error: error.message }
@@ -642,7 +596,7 @@ export class PluginManager {
       // 更新配置
       plugin.config = { ...plugin.config, ...config }
       await this.savePluginConfig(plugin)
-      
+
       return { success: true }
     } catch (error: any) {
       return { success: false, error: error.message }
@@ -656,27 +610,29 @@ export class PluginManager {
     return new Promise((resolve, reject) => {
       const client = url.startsWith('https:') ? https : http
       const file = createWriteStream(outputPath)
-      
-      client.get(url, (response) => {
-        if (response.statusCode !== 200) {
-          reject(new Error(`下载失败: ${response.statusCode}`))
-          return
-        }
-        
-        response.pipe(file)
-        
-        file.on('finish', () => {
-          file.close()
-          resolve()
+
+      client
+        .get(url, (response) => {
+          if (response.statusCode !== 200) {
+            reject(new Error(`下载失败: ${response.statusCode}`))
+            return
+          }
+
+          response.pipe(file)
+
+          file.on('finish', () => {
+            file.close()
+            resolve()
+          })
+
+          file.on('error', (err) => {
+            rmSync(outputPath, { force: true })
+            reject(err)
+          })
         })
-        
-        file.on('error', (err) => {
-          rmSync(outputPath, { force: true })
+        .on('error', (err) => {
           reject(err)
         })
-      }).on('error', (err) => {
-        reject(err)
-      })
     })
   }
 
@@ -697,7 +653,7 @@ export class PluginManager {
         mkdirSync(tempDir, { recursive: true })
 
         zipfile.readEntry()
-        
+
         zipfile.on('entry', (entry) => {
           if (/\/$/.test(entry.fileName)) {
             // 目录
@@ -709,19 +665,22 @@ export class PluginManager {
             const filePath = join(tempDir, entry.fileName)
             const dirPath = join(filePath, '..')
             mkdirSync(dirPath, { recursive: true })
-            
+
             zipfile.openReadStream(entry, (err, readStream) => {
               if (err) {
                 reject(err)
                 return
               }
-              
+
               const writeStream = createWriteStream(filePath)
               readStream.pipe(writeStream)
-              
+
               writeStream.on('close', () => {
                 // 检查是否是配置文件
-                if (entry.fileName.endsWith('cubeModule.json') || entry.fileName.endsWith('plugin.json')) {
+                if (
+                  entry.fileName.endsWith('cubeModule.json') ||
+                  entry.fileName.endsWith('plugin.json')
+                ) {
                   try {
                     const config = JSON.parse(readFileSync(filePath, 'utf-8'))
                     pluginId = config.name || entry.fileName.split('/')[0]
@@ -735,75 +694,82 @@ export class PluginManager {
             })
           }
         })
-        
+
         zipfile.on('end', async () => {
           try {
             if (!configFound) {
               throw new Error('插件配置文件不存在')
             }
-            
+
             // 检查插件是否已存在
             const finalPluginPath = join(this.pluginsDir, pluginId)
             const isAlreadyInstalled = existsSync(finalPluginPath)
-            
+
             if (isAlreadyInstalled) {
               // 检查是否为相同版本
               try {
                 const existingConfigPath = join(finalPluginPath, 'cubeModule.json')
                 const fallbackConfigPath = join(finalPluginPath, 'plugin.json')
                 let existingConfig
-                
+
                 if (existsSync(existingConfigPath)) {
                   existingConfig = JSON.parse(readFileSync(existingConfigPath, 'utf-8'))
                 } else if (existsSync(fallbackConfigPath)) {
                   existingConfig = JSON.parse(readFileSync(fallbackConfigPath, 'utf-8'))
                 }
-                
+
                 if (existingConfig) {
                   // 读取新插件的配置
                   const newConfigPath = join(tempDir, 'cubeModule.json')
                   const newFallbackConfigPath = join(tempDir, 'plugin.json')
                   let newConfig
-                  
+
                   if (existsSync(newConfigPath)) {
                     newConfig = JSON.parse(readFileSync(newConfigPath, 'utf-8'))
                   } else if (existsSync(newFallbackConfigPath)) {
                     newConfig = JSON.parse(readFileSync(newFallbackConfigPath, 'utf-8'))
                   }
-                  
+
                   if (newConfig && existingConfig.version === newConfig.version) {
                     // 清理临时目录
                     rmSync(tempDir, { recursive: true, force: true })
-                    throw new Error(`插件 "${pluginId}" (版本 ${existingConfig.version}) 已经安装，无需重复安装`)
+                    throw new Error(
+                      `插件 "${pluginId}" (版本 ${existingConfig.version}) 已经安装，无需重复安装`
+                    )
                   }
                 } else {
                   // 如果无法读取现有配置文件，说明插件目录可能损坏，直接删除重新安装
-                  console.warn(`Plugin directory exists but config file not found, removing: ${finalPluginPath}`)
+                  console.warn(
+                    `Plugin directory exists but config file not found, removing: ${finalPluginPath}`
+                  )
                   rmSync(finalPluginPath, { recursive: true, force: true })
                 }
               } catch (configError) {
                 // 如果读取配置失败，说明插件目录可能损坏，删除重新安装
-                console.warn('Failed to read existing plugin config, removing corrupted plugin directory:', configError)
+                console.warn(
+                  'Failed to read existing plugin config, removing corrupted plugin directory:',
+                  configError
+                )
                 if (existsSync(finalPluginPath)) {
                   rmSync(finalPluginPath, { recursive: true, force: true })
                 }
               }
             }
-            
+
             // 删除旧版本（如果仍然存在）
             if (existsSync(finalPluginPath)) {
               rmSync(finalPluginPath, { recursive: true, force: true })
             }
-            
+
             // 复制文件
             this.copyDirectory(tempDir, finalPluginPath)
-            
+
             // 清理临时目录
             rmSync(tempDir, { recursive: true, force: true })
-            
+
             // 加载插件
             await this.loadPlugin(finalPluginPath)
-            
+
             resolve(pluginId)
           } catch (error) {
             reject(error)
@@ -819,11 +785,11 @@ export class PluginManager {
   private copyDirectory(src: string, dest: string) {
     mkdirSync(dest, { recursive: true })
     const entries = readdirSync(src)
-    
+
     for (const entry of entries) {
       const srcPath = join(src, entry)
       const destPath = join(dest, entry)
-      
+
       if (statSync(srcPath).isDirectory()) {
         this.copyDirectory(srcPath, destPath)
       } else {
@@ -837,10 +803,23 @@ export class PluginManager {
    * 保存插件配置
    */
   private async savePluginConfig(plugin: PluginInstance) {
-    const configPath = plugin.type === PluginType.FRONTEND 
-      ? join(plugin.path, 'cubeModule.json')
-      : join(plugin.path, 'plugin.json')
-    
+    const configPath =
+      plugin.type === PluginType.FRONTEND
+        ? join(plugin.path, 'cubeModule.json')
+        : join(plugin.path, 'plugin.json')
+
     writeFileSync(configPath, JSON.stringify(plugin.config, null, 2))
   }
 }
+
+// 重新导出类型定义和枚举
+export { PluginType } from './PluginManager.d'
+
+export type {
+  CubeModuleConfig,
+  SystemPluginConfig,
+  UIComponent,
+  SettingsConfig,
+  SettingsSection,
+  PluginInstance
+} from './PluginManager.d'

@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { ServContactSearch } from '@/api/contact.ts'
-import { useInject } from '@/hooks'
+// import { ServContactSearch } from '@/api/contact.ts'
+// import { useInject } from '@/hooks'
 
-const { toShowUserInfo } = useInject()
+// const { toShowUserInfo } = useInject()
 
 const emit = defineEmits(['update:show'])
 
@@ -10,29 +10,28 @@ const isShow = ref(true)
 const keyword = ref('')
 const isShowError = ref(false)
 
-const onShowError = (value: boolean) => {
-  isShowError.value = value
-
-  if (value) {
-    setTimeout(() => (isShowError.value = false), 3000)
-  }
-}
+// const onShowError = (value: boolean) => {
+//   isShowError.value = value
+//   if (value) {
+//     setTimeout(() => (isShowError.value = false), 3000)
+//   }
+// }
 
 const onSubmit = async () => {
   if (!keyword.value.length) return
 
-  const { code, data } = await ServContactSearch(
-    { mobile: keyword.value },
-    {
-      error: false
-    }
-  )
+  // const { code, data } = await ServContactSearch(
+  //   { mobile: keyword.value },
+  //   {
+  //     error: false
+  //   }
+  // )
 
-  if (code !== 200 || !data) {
-    return onShowError(true)
-  }
+  // if (code !== 200 || !data) {
+  //   return onShowError(true)
+  // }
 
-  toShowUserInfo(data.user_id)
+  // toShowUserInfo(data.user_id)
   onClose()
 }
 
@@ -64,9 +63,9 @@ const onClose = () => {
         :feedback="isShowError ? '无法找到该用户，请检查搜索内容并重试!' : ''"
       >
         <n-input
+          v-model:value="keyword"
           placeholder="请输入手机号"
           :maxlength="30"
-          v-model:value="keyword"
           @keydown.enter="onSubmit"
         />
       </n-form-item>
@@ -74,7 +73,7 @@ const onClose = () => {
 
     <template #footer>
       <div style="width: 100%; text-align: center">
-        <n-button type="primary" text-color="#ffffff" @click="onSubmit" :disabled="isCanSubmit">
+        <n-button type="primary" text-color="#ffffff" :disabled="isCanSubmit" @click="onSubmit">
           查询手机号
         </n-button>
       </div>

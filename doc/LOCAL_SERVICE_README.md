@@ -5,10 +5,11 @@
 ## 架构概述
 
 ### 服务层结构
+
 ```
 src/main/services/
 ├── auth/           # 用户认证服务
-├── chat/           # 聊天消息服务  
+├── chat/           # 聊天消息服务
 ├── contact/        # 联系人管理服务
 ├── database/       # 数据库管理
 ├── group/          # 群组管理服务
@@ -21,8 +22,9 @@ src/main/services/
 ### 核心组件
 
 #### 1. 数据库管理 (DatabaseManager)
+
 - **位置**: `src/main/services/database/Database.ts`
-- **功能**: 
+- **功能**:
   - SQLite数据库连接管理
   - 数据库架构初始化
   - 事务支持
@@ -30,6 +32,7 @@ src/main/services/
   - 数据库备份和优化
 
 #### 2. 认证服务 (AuthService)
+
 - **位置**: `src/main/services/auth/AuthService.ts`
 - **功能**:
   - 用户注册、登录、登出
@@ -39,6 +42,7 @@ src/main/services/
   - 忘记密码处理
 
 #### 3. 聊天服务 (ChatService)
+
 - **位置**: `src/main/services/chat/ChatService.ts`
 - **功能**:
   - 会话列表管理
@@ -48,6 +52,7 @@ src/main/services/
   - 历史记录搜索
 
 #### 4. 用户服务 (UserService)
+
 - **位置**: `src/main/services/user/UserService.ts`
 - **功能**:
   - 用户信息管理
@@ -57,6 +62,7 @@ src/main/services/
   - 密码和联系方式更新
 
 #### 5. 联系人服务 (ContactService)
+
 - **位置**: `src/main/services/contact/ContactService.ts`
 - **功能**:
   - 联系人增删改查
@@ -65,6 +71,7 @@ src/main/services/
   - 联系人搜索
 
 #### 6. 群组服务 (GroupService)
+
 - **位置**: `src/main/services/group/GroupService.ts`
 - **功能**:
   - 群组创建和管理
@@ -74,6 +81,7 @@ src/main/services/
   - 群组搜索
 
 #### 7. 文件上传服务 (UploadService)
+
 - **位置**: `src/main/services/upload/UploadService.ts`
 - **功能**:
   - 文件上传处理
@@ -82,6 +90,7 @@ src/main/services/
   - 文件清理
 
 #### 8. IPC处理器 (IPCHandler)
+
 - **位置**: `src/main/services/ipc/IPCHandler.ts`
 - **功能**:
   - 渲染进程API请求路由
@@ -94,6 +103,7 @@ src/main/services/
 数据库使用SQLite，架构定义在 `src/main/services/database/schema.sql`：
 
 ### 主要表结构
+
 - **users**: 用户基本信息
 - **user_sessions**: 用户会话管理
 - **user_online_status**: 用户在线状态
@@ -140,12 +150,14 @@ src/main/services/
 所有API接口通过IPC通信处理，支持的接口包括：
 
 ### 认证相关
+
 - `POST /api/v1/auth/login` - 用户登录
 - `POST /api/v1/auth/register` - 用户注册
 - `POST /api/v1/auth/logout` - 用户登出
 - `POST /api/v1/auth/forget` - 忘记密码
 
 ### 用户相关
+
 - `GET /api/v1/user/detail` - 获取用户详情
 - `PUT /api/v1/user/update` - 更新用户信息
 - `PUT /api/v1/user/password/update` - 更新密码
@@ -154,6 +166,7 @@ src/main/services/
 - `GET /api/v1/user/setting` - 获取用户设置
 
 ### 联系人相关
+
 - `GET /api/v1/contact/list` - 获取联系人列表
 - `POST /api/v1/contact/search` - 搜索用户
 - `GET /api/v1/contact/detail` - 获取联系人详情
@@ -165,6 +178,7 @@ src/main/services/
 - `POST /api/v1/contact/apply/decline` - 拒绝申请
 
 ### 群组相关
+
 - `GET /api/v1/group/list` - 获取群组列表
 - `GET /api/v1/group/detail` - 获取群组详情
 - `POST /api/v1/group/create` - 创建群组
@@ -175,6 +189,7 @@ src/main/services/
 - `POST /api/v1/group/secede` - 退出群组
 
 ### 聊天相关
+
 - `GET /api/v1/talk/list` - 获取会话列表
 - `POST /api/v1/talk/create` - 创建会话
 - `DELETE /api/v1/talk/delete` - 删除会话
@@ -186,11 +201,13 @@ src/main/services/
 - `DELETE /api/v1/talk/message/delete` - 删除消息
 
 ### 文件上传
+
 - 通过 `upload-file` IPC事件处理文件上传
 
 ## 实时事件
 
 支持的实时事件：
+
 - `message:new` - 新消息
 - `message:revoke` - 消息撤回
 - `user:online` - 用户上线
@@ -227,7 +244,8 @@ src/main/services/
 
 ## 部署说明
 
-1. **依赖安装**: 
+1. **依赖安装**:
+
    ```bash
    npm install
    # 或
@@ -235,6 +253,7 @@ src/main/services/
    ```
 
 2. **构建应用**:
+
    ```bash
    npm run build
    ```

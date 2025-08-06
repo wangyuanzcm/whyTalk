@@ -1,139 +1,147 @@
 function switchState(source, setState, f) {
-  setState(f);
-  return f(source, setState);
+  setState(f)
+  return f(source, setState)
 }
-var lowerRE = /[a-z]/;
-var upperRE = /[A-Z]/;
-var innerRE = /[a-zA-Z0-9_]/;
-var digitRE = /[0-9]/;
-var hexRE = /[0-9A-Fa-f]/;
-var symbolRE = /[-&*+.\\/<>=?^|:]/;
-var specialRE = /[(),[\]{}]/;
-var spacesRE = /[ \v\f]/;
+var lowerRE = /[a-z]/
+var upperRE = /[A-Z]/
+var innerRE = /[a-zA-Z0-9_]/
+var digitRE = /[0-9]/
+var hexRE = /[0-9A-Fa-f]/
+var symbolRE = /[-&*+.\\/<>=?^|:]/
+var specialRE = /[(),[\]{}]/
+var spacesRE = /[ \v\f]/
 function normal() {
-  return function(source, setState) {
+  return function (source, setState) {
     if (source.eatWhile(spacesRE)) {
-      return null;
+      return null
     }
-    var char = source.next();
+    var char = source.next()
     if (specialRE.test(char)) {
-      return char === "{" && source.eat("-") ? switchState(source, setState, chompMultiComment(1)) : char === "[" && source.match("glsl|") ? switchState(source, setState, chompGlsl) : "builtin";
+      return char === '{' && source.eat('-')
+        ? switchState(source, setState, chompMultiComment(1))
+        : char === '[' && source.match('glsl|')
+          ? switchState(source, setState, chompGlsl)
+          : 'builtin'
     }
     if (char === "'") {
-      return switchState(source, setState, chompChar);
+      return switchState(source, setState, chompChar)
     }
     if (char === '"') {
-      return source.eat('"') ? source.eat('"') ? switchState(source, setState, chompMultiString) : "string" : switchState(source, setState, chompSingleString);
+      return source.eat('"')
+        ? source.eat('"')
+          ? switchState(source, setState, chompMultiString)
+          : 'string'
+        : switchState(source, setState, chompSingleString)
     }
     if (upperRE.test(char)) {
-      source.eatWhile(innerRE);
-      return "type";
+      source.eatWhile(innerRE)
+      return 'type'
     }
     if (lowerRE.test(char)) {
-      var isDef = source.pos === 1;
-      source.eatWhile(innerRE);
-      return isDef ? "def" : "variable";
+      var isDef = source.pos === 1
+      source.eatWhile(innerRE)
+      return isDef ? 'def' : 'variable'
     }
     if (digitRE.test(char)) {
-      if (char === "0") {
+      if (char === '0') {
         if (source.eat(/[xX]/)) {
-          source.eatWhile(hexRE);
-          return "number";
+          source.eatWhile(hexRE)
+          return 'number'
         }
       } else {
-        source.eatWhile(digitRE);
+        source.eatWhile(digitRE)
       }
-      if (source.eat(".")) {
-        source.eatWhile(digitRE);
+      if (source.eat('.')) {
+        source.eatWhile(digitRE)
       }
       if (source.eat(/[eE]/)) {
-        source.eat(/[-+]/);
-        source.eatWhile(digitRE);
+        source.eat(/[-+]/)
+        source.eatWhile(digitRE)
       }
-      return "number";
+      return 'number'
     }
     if (symbolRE.test(char)) {
-      if (char === "-" && source.eat("-")) {
-        source.skipToEnd();
-        return "comment";
+      if (char === '-' && source.eat('-')) {
+        source.skipToEnd()
+        return 'comment'
       }
-      source.eatWhile(symbolRE);
-      return "keyword";
+      source.eatWhile(symbolRE)
+      return 'keyword'
     }
-    if (char === "_") {
-      return "keyword";
+    if (char === '_') {
+      return 'keyword'
     }
-    return "error";
-  };
+    return 'error'
+  }
 }
 function chompMultiComment(nest) {
   if (nest == 0) {
-    return normal();
+    return normal()
   }
-  return function(source, setState) {
+  return function (source, setState) {
     while (!source.eol()) {
-      var char = source.next();
-      if (char == "{" && source.eat("-")) {
-        ++nest;
-      } else if (char == "-" && source.eat("}")) {
-        --nest;
+      var char = source.next()
+      if (char == '{' && source.eat('-')) {
+        ++nest
+      } else if (char == '-' && source.eat('}')) {
+        --nest
         if (nest === 0) {
-          setState(normal());
-          return "comment";
+          setState(normal())
+          return 'comment'
         }
       }
     }
-    setState(chompMultiComment(nest));
-    return "comment";
-  };
+    setState(chompMultiComment(nest))
+    return 'comment'
+  }
 }
 function chompMultiString(source, setState) {
   while (!source.eol()) {
-    var char = source.next();
+    var char = source.next()
     if (char === '"' && source.eat('"') && source.eat('"')) {
-      setState(normal());
-      return "string";
+      setState(normal())
+      return 'string'
     }
   }
-  return "string";
+  return 'string'
 }
 function chompSingleString(source, setState) {
   while (source.skipTo('\\"')) {
-    source.next();
-    source.next();
+    source.next()
+    source.next()
   }
   if (source.skipTo('"')) {
-    source.next();
-    setState(normal());
-    return "string";
+    source.next()
+    setState(normal())
+    return 'string'
   }
-  source.skipToEnd();
-  setState(normal());
-  return "error";
+  source.skipToEnd()
+  setState(normal())
+  return 'error'
 }
 function chompChar(source, setState) {
   while (source.skipTo("\\'")) {
-    source.next();
-    source.next();
+    source.next()
+    source.next()
   }
   if (source.skipTo("'")) {
-    source.next();
-    setState(normal());
-    return "string";
+    source.next()
+    setState(normal())
+    return 'string'
   }
-  source.skipToEnd();
-  setState(normal());
-  return "error";
+  source.skipToEnd()
+  setState(normal())
+  return 'error'
 }
 function chompGlsl(source, setState) {
   while (!source.eol()) {
-    var char = source.next();
-    if (char === "|" && source.eat("]")) {
-      setState(normal());
-      return "string";
+    var char = source.next()
+    if (char === '|' && source.eat(']')) {
+      setState(normal())
+      return 'string'
     }
   }
-  return "string";
+  return 'string'
 }
 var wellKnownWords = {
   case: 1,
@@ -151,26 +159,24 @@ var wellKnownWords = {
   import: 1,
   exposing: 1,
   port: 1
-};
+}
 const elm = {
-  name: "elm",
-  startState: function() {
-    return { f: normal() };
+  name: 'elm',
+  startState: function () {
+    return { f: normal() }
   },
-  copyState: function(s) {
-    return { f: s.f };
+  copyState: function (s) {
+    return { f: s.f }
   },
-  token: function(stream, state) {
-    var type = state.f(stream, function(s) {
-      state.f = s;
-    });
-    var word = stream.current();
-    return wellKnownWords.hasOwnProperty(word) ? "keyword" : type;
+  token: function (stream, state) {
+    var type = state.f(stream, function (s) {
+      state.f = s
+    })
+    var word = stream.current()
+    return wellKnownWords.hasOwnProperty(word) ? 'keyword' : type
   },
   languageData: {
-    commentTokens: { line: "--" }
+    commentTokens: { line: '--' }
   }
-};
-export {
-  elm
-};
+}
+export { elm }

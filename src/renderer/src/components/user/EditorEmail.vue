@@ -95,15 +95,15 @@ const onValidate = (e: any) => {
   >
     <n-form ref="formRef" :model="state" :rules="rules">
       <n-form-item label="登录密码" path="password">
-        <n-input placeholder="请填写登录密码" type="password" v-model:value="state.password" />
+        <n-input v-model:value="state.password" placeholder="请填写登录密码" type="password" />
       </n-form-item>
 
       <n-form-item label="新邮箱" path="email">
-        <n-input placeholder="请填写新邮箱" type="text" v-model:value="state.email" />
+        <n-input v-model:value="state.email" placeholder="请填写新邮箱" type="text" />
       </n-form-item>
 
       <n-form-item label="邮箱验证码" path="code">
-        <n-input placeholder="请填写验证码" type="text" v-model:value="state.code" />
+        <n-input v-model:value="state.code" placeholder="请填写验证码" type="text" />
         <Countdown class="mt-l5" @click="onSendEmail"> </Countdown>
       </n-form-item>
     </n-form>

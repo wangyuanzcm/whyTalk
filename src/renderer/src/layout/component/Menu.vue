@@ -1,14 +1,13 @@
 <script lang="ts" setup>
-import { useUserStore, useMenuStore, useSettingsStore, useTalkStore } from '@/store'
+import { useUserStore, useMenuStore, useSettingsStore } from '@/store'
 import AccountCard from './AccountCard.vue'
 import P2PStatusIndicator from '@/components/P2PStatusIndicator.vue'
-
 
 const userStore = useUserStore()
 const router = useRouter()
 const menuStore = useMenuStore()
 const settingsStore = useSettingsStore()
-const talkStore = useTalkStore()
+// talkStore 已迁移到插件中
 
 const color = computed(() => {
   return settingsStore.currentThemeMode == 'dark' ? '#ffffff' : '#333'
@@ -17,16 +16,17 @@ const color = computed(() => {
 // 动态菜单项，从菜单store获取
 const menus = computed(() => {
   // 为核心菜单项添加hotspot逻辑
-  return menuStore.allMenuItems.map(item => {
+  return menuStore.allMenuItems.map((item) => {
     const menuItem = { ...item }
-    
+
     // 为特定菜单项添加hotspot逻辑
     if (item.id === 'message') {
-      menuItem.hotspot = computed(() => talkStore.talkUnreadNum > 0)
+      // TODO: 通过插件间通信获取未读消息数量
+      menuItem.hotspot = computed(() => false)
     } else if (item.id === 'contact') {
       menuItem.hotspot = computed(() => userStore.isContactApply || userStore.isGroupApply)
     }
-    
+
     return menuItem
   })
 })
@@ -74,7 +74,7 @@ onMounted(() => {
           </template>
           <AccountCard />
         </n-popover>
-        
+
         <!-- P2P状态圆点 -->
         <div class="p2p-status-dot">
           <P2PStatusIndicator />
@@ -97,14 +97,14 @@ onMounted(() => {
         @click="onClickMenu(nav)"
       >
         <!-- 消息提示 -->
-        <div class="hotspot" v-if="nav.hotspot" />
+        <div v-if="nav.hotspot" class="hotspot" />
 
         <p>
           <component
             :is="nav.icon"
             :theme="isActive(nav) ? 'filled' : 'outline'"
             :fill="isActive(nav) ? '#1890ff' : color"
-            :strokeWidth="2"
+            :stroke-width="2"
             :size="22"
           />
         </p>
@@ -114,7 +114,7 @@ onMounted(() => {
     </main>
 
     <footer class="menu-footer">
-      <div @click="onLogout" class="pointer">退出</div>
+      <div class="pointer" @click="onLogout">退出</div>
     </footer>
   </section>
 </template>
@@ -141,11 +141,11 @@ onMounted(() => {
     .avatar-container {
       position: relative;
       margin-left: 16px;
-      
+
       .logo {
         cursor: pointer;
       }
-      
+
       .p2p-status-dot {
         position: absolute;
         top: 2px;

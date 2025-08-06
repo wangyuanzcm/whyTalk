@@ -113,8 +113,8 @@ const onSendSms = async () => {
       <n-form ref="formRef" size="large" :model="model" :rules="rules">
         <n-form-item path="username" :show-label="false">
           <n-input
-            placeholder="请输入手机号"
             v-model:value="model.username"
+            placeholder="请输入手机号"
             :maxlength="11"
             @keydown.enter="onValidate"
           />
@@ -122,8 +122,8 @@ const onSendSms = async () => {
 
         <n-form-item path="sms_code" :show-label="false">
           <n-input
-            placeholder="验证码"
             v-model:value="model.sms_code"
+            placeholder="验证码"
             :maxlength="6"
             @keydown.enter="onValidate"
           />
@@ -132,18 +132,18 @@ const onSendSms = async () => {
 
         <n-form-item path="nickname" :show-label="false">
           <n-input
-            placeholder="设置昵称"
             v-model:value="model.nickname"
+            placeholder="设置昵称"
             @keydown.enter="onValidate"
           />
         </n-form-item>
 
         <n-form-item path="password" :show-label="false">
           <n-input
+            v-model:value="model.password"
             placeholder="设置密码"
             type="password"
             show-password-on="click"
-            v-model:value="model.password"
             @keydown.enter="onValidate"
           />
         </n-form-item>
@@ -154,8 +154,8 @@ const onSendSms = async () => {
           block
           text-color="#ffffff"
           class="mt-t20"
-          @click="onValidate"
           :loading="loading"
+          @click="onValidate"
         >
           立即注册
         </n-button>

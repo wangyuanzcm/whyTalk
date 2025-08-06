@@ -1,7 +1,14 @@
 import { defineStore } from 'pinia'
 import { storage } from '@/utils'
 import { markRaw } from 'vue'
-import { SettingTwo, Message, People, BookmarkOne, Application, Connection } from '@icon-park/vue-next'
+import {
+  SettingTwo,
+  Message,
+  People,
+  BookmarkOne,
+  Application,
+  Connection
+} from '@icon-park/vue-next'
 
 // 菜单项接口
 export interface MenuItem {
@@ -38,7 +45,7 @@ export const useMenuStore = defineStore('menu', {
           id: 'p2p',
           link: '/p2p',
           icon: markRaw(Connection),
-          title: 'P2P网络',
+          title: '网络',
           core: true
         },
         {
@@ -49,7 +56,7 @@ export const useMenuStore = defineStore('menu', {
           core: true
         }
       ] as MenuItem[],
-      
+
       // 插件菜单项
       pluginMenuItems: [
         {
@@ -74,44 +81,48 @@ export const useMenuStore = defineStore('menu', {
           pluginId: 'frontend_note-plugin_1.0.0'
         }
       ] as MenuItem[],
-      
+
       // 菜单配置
       menuConfig: {
         enabledPlugins: ['frontend_message-plugin_1.0.0', 'frontend_contact-plugin_1.0.0'], // 默认启用消息和联系人插件，笔记插件默认不启用
-        pluginOrder: ['frontend_message-plugin_1.0.0', 'frontend_contact-plugin_1.0.0', 'frontend_note-plugin_1.0.0'],
+        pluginOrder: [
+          'frontend_message-plugin_1.0.0',
+          'frontend_contact-plugin_1.0.0',
+          'frontend_note-plugin_1.0.0'
+        ],
         coreMenuOrder: ['workspace', 'p2p', 'settings'] // 核心菜单项的默认顺序
       } as MenuConfig
     }
   },
-  
+
   getters: {
     // 获取所有菜单项（核心 + 启用的插件）
     allMenuItems: (state) => {
       // 按配置的顺序排列核心菜单项
       const orderedCoreItems = state.menuConfig.coreMenuOrder
-        .map(coreId => state.coreMenuItems.find(item => item.id === coreId))
+        .map((coreId) => state.coreMenuItems.find((item) => item.id === coreId))
         .filter(Boolean) as MenuItem[]
-      
-      const enabledPluginItems = state.pluginMenuItems.filter(item => 
+
+      const enabledPluginItems = state.pluginMenuItems.filter((item) =>
         state.menuConfig.enabledPlugins.includes(item.pluginId || '')
       )
-      
+
       // 按配置的顺序排列插件菜单项
       const orderedPluginItems = state.menuConfig.pluginOrder
-        .map(pluginId => enabledPluginItems.find(item => item.pluginId === pluginId))
+        .map((pluginId) => enabledPluginItems.find((item) => item.pluginId === pluginId))
         .filter(Boolean) as MenuItem[]
-      
+
       return [...orderedCoreItems, ...orderedPluginItems]
     },
-    
+
     // 获取启用的插件菜单项
     enabledPluginMenuItems: (state) => {
-      return state.pluginMenuItems.filter(item => 
+      return state.pluginMenuItems.filter((item) =>
         state.menuConfig.enabledPlugins.includes(item.pluginId || '')
       )
     }
   },
-  
+
   actions: {
     // 加载菜单配置
     loadMenuConfig() {
@@ -123,15 +134,15 @@ export const useMenuStore = defineStore('menu', {
       const savedConfig = storage.get('menuConfig', defaultConfig)
       this.menuConfig = savedConfig
     },
-    
+
     // 保存菜单配置
     saveMenuConfig() {
       storage.set('menuConfig', this.menuConfig, null)
     },
-    
+
     // 添加插件菜单项
     addPluginMenuItem(item: MenuItem) {
-      const existingIndex = this.pluginMenuItems.findIndex(existing => existing.id === item.id)
+      const existingIndex = this.pluginMenuItems.findIndex((existing) => existing.id === item.id)
       if (existingIndex >= 0) {
         // 更新现有项
         this.pluginMenuItems[existingIndex] = item
@@ -140,21 +151,21 @@ export const useMenuStore = defineStore('menu', {
         this.pluginMenuItems.push(item)
       }
     },
-    
+
     // 移除插件菜单项
     removePluginMenuItem(itemId: string) {
-      const index = this.pluginMenuItems.findIndex(item => item.id === itemId)
+      const index = this.pluginMenuItems.findIndex((item) => item.id === itemId)
       if (index >= 0) {
         this.pluginMenuItems.splice(index, 1)
       }
-      
+
       // 同时从配置中移除
-      const pluginId = this.pluginMenuItems.find(item => item.id === itemId)?.pluginId
+      const pluginId = this.pluginMenuItems.find((item) => item.id === itemId)?.pluginId
       if (pluginId) {
         this.disablePluginInMenu(pluginId)
       }
     },
-    
+
     // 启用插件在菜单中显示
     enablePluginInMenu(pluginId: string) {
       if (!this.menuConfig.enabledPlugins.includes(pluginId)) {
@@ -163,60 +174,60 @@ export const useMenuStore = defineStore('menu', {
         this.saveMenuConfig()
       }
     },
-    
+
     // 禁用插件在菜单中显示
     disablePluginInMenu(pluginId: string) {
       const enabledIndex = this.menuConfig.enabledPlugins.indexOf(pluginId)
       if (enabledIndex >= 0) {
         this.menuConfig.enabledPlugins.splice(enabledIndex, 1)
       }
-      
+
       const orderIndex = this.menuConfig.pluginOrder.indexOf(pluginId)
       if (orderIndex >= 0) {
         this.menuConfig.pluginOrder.splice(orderIndex, 1)
       }
-      
+
       this.saveMenuConfig()
     },
-    
+
     // 更新插件顺序
     updatePluginOrder(newOrder: string[]) {
       this.menuConfig.pluginOrder = newOrder
       this.saveMenuConfig()
     },
-    
+
     // 移动插件位置
     movePlugin(pluginId: string, direction: 'up' | 'down') {
       const currentIndex = this.menuConfig.pluginOrder.indexOf(pluginId)
       if (currentIndex === -1) return
-      
+
       const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
       if (newIndex < 0 || newIndex >= this.menuConfig.pluginOrder.length) return
-      
+
       // 交换位置
       const temp = this.menuConfig.pluginOrder[currentIndex]
       this.menuConfig.pluginOrder[currentIndex] = this.menuConfig.pluginOrder[newIndex]
       this.menuConfig.pluginOrder[newIndex] = temp
-      
+
       this.saveMenuConfig()
     },
-    
+
     // 移动核心菜单项位置
     moveCoreMenu(menuId: string, direction: 'up' | 'down') {
       const currentIndex = this.menuConfig.coreMenuOrder.indexOf(menuId)
       if (currentIndex === -1) return
-      
+
       const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
       if (newIndex < 0 || newIndex >= this.menuConfig.coreMenuOrder.length) return
-      
+
       // 交换位置
       const temp = this.menuConfig.coreMenuOrder[currentIndex]
       this.menuConfig.coreMenuOrder[currentIndex] = this.menuConfig.coreMenuOrder[newIndex]
       this.menuConfig.coreMenuOrder[newIndex] = temp
-      
+
       this.saveMenuConfig()
     },
-    
+
     // 重置菜单配置
     resetMenuConfig() {
       this.menuConfig = {
@@ -226,7 +237,7 @@ export const useMenuStore = defineStore('menu', {
       }
       this.saveMenuConfig()
     },
-    
+
     // 检查插件是否在菜单中启用
     isPluginEnabledInMenu(pluginId: string): boolean {
       return this.menuConfig.enabledPlugins.includes(pluginId)

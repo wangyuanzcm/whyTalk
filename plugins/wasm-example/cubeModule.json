@@ -5,24 +5,9 @@
   "author": "Why-Talk Team",
   "main": "index.html",
   "type": "system",
-  "permissions": [
-    "system.info",
-    "storage.read",
-    "storage.write"
-  ],
-  "functions": [
-    "add",
-    "multiply",
-    "greet",
-    "process_data"
-  ],
-  "exports": [
-    "add",
-    "multiply",
-    "greet",
-    "process_data",
-    "memory"
-  ],
+  "permissions": ["system.info", "storage.read", "storage.write"],
+  "functions": ["add", "multiply", "greet", "process_data"],
+  "exports": ["add", "multiply", "greet", "process_data", "memory"],
   "ui": {
     "components": [
       {

@@ -22,7 +22,7 @@ const onClose = () => {
 
 <template>
   <div>
-    <div class="reward" v-show="isShow">
+    <div v-show="isShow" class="reward">
       <div class="title">
         <span>开源支持</span>
         <n-icon :size="18" :component="Close" @click="onClose" />

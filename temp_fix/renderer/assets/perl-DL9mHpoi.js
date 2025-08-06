@@ -1,28 +1,25 @@
 function look(stream, c) {
-  return stream.string.charAt(stream.pos + (c || 0));
+  return stream.string.charAt(stream.pos + (c || 0))
 }
 function prefix(stream, c) {
   if (c) {
-    var x = stream.pos - c;
-    return stream.string.substr(x >= 0 ? x : 0, c);
+    var x = stream.pos - c
+    return stream.string.substr(x >= 0 ? x : 0, c)
   } else {
-    return stream.string.substr(0, stream.pos - 1);
+    return stream.string.substr(0, stream.pos - 1)
   }
 }
 function suffix(stream, c) {
-  var y = stream.string.length;
-  var x = y - stream.pos + 1;
-  return stream.string.substr(stream.pos, c && c < y ? c : x);
+  var y = stream.string.length
+  var x = y - stream.pos + 1
+  return stream.string.substr(stream.pos, c && c < y ? c : x)
 }
 function eatSuffix(stream, c) {
-  var x = stream.pos + c;
-  var y;
-  if (x <= 0)
-    stream.pos = 0;
-  else if (x >= (y = stream.string.length - 1))
-    stream.pos = y;
-  else
-    stream.pos = x;
+  var x = stream.pos + c
+  var y
+  if (x <= 0) stream.pos = 0
+  else if (x >= (y = stream.string.length - 1)) stream.pos = y
+  else stream.pos = x
 }
 var PERL = {
   //   null - magic touch
@@ -33,245 +30,245 @@ var PERL = {
   //   5 - builtin (predefined)
   //   [x,y] - x=1,2,3; y=must be defined if x{...}
   //      PERL operators
-  "->": 4,
-  "++": 4,
-  "--": 4,
-  "**": 4,
+  '->': 4,
+  '++': 4,
+  '--': 4,
+  '**': 4,
   //   ! ~ \ and unary + and -
-  "=~": 4,
-  "!~": 4,
-  "*": 4,
-  "/": 4,
-  "%": 4,
-  "x": 4,
-  "+": 4,
-  "-": 4,
-  ".": 4,
-  "<<": 4,
-  ">>": 4,
+  '=~': 4,
+  '!~': 4,
+  '*': 4,
+  '/': 4,
+  '%': 4,
+  x: 4,
+  '+': 4,
+  '-': 4,
+  '.': 4,
+  '<<': 4,
+  '>>': 4,
   //   named unary operators
-  "<": 4,
-  ">": 4,
-  "<=": 4,
-  ">=": 4,
-  "lt": 4,
-  "gt": 4,
-  "le": 4,
-  "ge": 4,
-  "==": 4,
-  "!=": 4,
-  "<=>": 4,
-  "eq": 4,
-  "ne": 4,
-  "cmp": 4,
-  "~~": 4,
-  "&": 4,
-  "|": 4,
-  "^": 4,
-  "&&": 4,
-  "||": 4,
-  "//": 4,
-  "..": 4,
-  "...": 4,
-  "?": 4,
-  ":": 4,
-  "=": 4,
-  "+=": 4,
-  "-=": 4,
-  "*=": 4,
+  '<': 4,
+  '>': 4,
+  '<=': 4,
+  '>=': 4,
+  lt: 4,
+  gt: 4,
+  le: 4,
+  ge: 4,
+  '==': 4,
+  '!=': 4,
+  '<=>': 4,
+  eq: 4,
+  ne: 4,
+  cmp: 4,
+  '~~': 4,
+  '&': 4,
+  '|': 4,
+  '^': 4,
+  '&&': 4,
+  '||': 4,
+  '//': 4,
+  '..': 4,
+  '...': 4,
+  '?': 4,
+  ':': 4,
+  '=': 4,
+  '+=': 4,
+  '-=': 4,
+  '*=': 4,
   //   etc. ???
-  ",": 4,
-  "=>": 4,
-  "::": 4,
+  ',': 4,
+  '=>': 4,
+  '::': 4,
   //   list operators (rightward)
-  "not": 4,
-  "and": 4,
-  "or": 4,
-  "xor": 4,
+  not: 4,
+  and: 4,
+  or: 4,
+  xor: 4,
   //      PERL predefined variables (I know, what this is a paranoid idea, but may be needed for people, who learn PERL, and for me as well, ...and may be for you?;)
-  "BEGIN": [5, 1],
-  "END": [5, 1],
-  "PRINT": [5, 1],
-  "PRINTF": [5, 1],
-  "GETC": [5, 1],
-  "READ": [5, 1],
-  "READLINE": [5, 1],
-  "DESTROY": [5, 1],
-  "TIE": [5, 1],
-  "TIEHANDLE": [5, 1],
-  "UNTIE": [5, 1],
-  "STDIN": 5,
-  "STDIN_TOP": 5,
-  "STDOUT": 5,
-  "STDOUT_TOP": 5,
-  "STDERR": 5,
-  "STDERR_TOP": 5,
-  "$ARG": 5,
-  "$_": 5,
-  "@ARG": 5,
-  "@_": 5,
-  "$LIST_SEPARATOR": 5,
+  BEGIN: [5, 1],
+  END: [5, 1],
+  PRINT: [5, 1],
+  PRINTF: [5, 1],
+  GETC: [5, 1],
+  READ: [5, 1],
+  READLINE: [5, 1],
+  DESTROY: [5, 1],
+  TIE: [5, 1],
+  TIEHANDLE: [5, 1],
+  UNTIE: [5, 1],
+  STDIN: 5,
+  STDIN_TOP: 5,
+  STDOUT: 5,
+  STDOUT_TOP: 5,
+  STDERR: 5,
+  STDERR_TOP: 5,
+  $ARG: 5,
+  $_: 5,
+  '@ARG': 5,
+  '@_': 5,
+  $LIST_SEPARATOR: 5,
   '$"': 5,
-  "$PROCESS_ID": 5,
-  "$PID": 5,
-  "$$": 5,
-  "$REAL_GROUP_ID": 5,
-  "$GID": 5,
-  "$(": 5,
-  "$EFFECTIVE_GROUP_ID": 5,
-  "$EGID": 5,
-  "$)": 5,
-  "$PROGRAM_NAME": 5,
-  "$0": 5,
-  "$SUBSCRIPT_SEPARATOR": 5,
-  "$SUBSEP": 5,
-  "$;": 5,
-  "$REAL_USER_ID": 5,
-  "$UID": 5,
-  "$<": 5,
-  "$EFFECTIVE_USER_ID": 5,
-  "$EUID": 5,
-  "$>": 5,
-  "$a": 5,
-  "$b": 5,
-  "$COMPILING": 5,
-  "$^C": 5,
-  "$DEBUGGING": 5,
-  "$^D": 5,
-  "${^ENCODING}": 5,
-  "$ENV": 5,
-  "%ENV": 5,
-  "$SYSTEM_FD_MAX": 5,
-  "$^F": 5,
-  "@F": 5,
-  "${^GLOBAL_PHASE}": 5,
-  "$^H": 5,
-  "%^H": 5,
-  "@INC": 5,
-  "%INC": 5,
-  "$INPLACE_EDIT": 5,
-  "$^I": 5,
-  "$^M": 5,
-  "$OSNAME": 5,
-  "$^O": 5,
-  "${^OPEN}": 5,
-  "$PERLDB": 5,
-  "$^P": 5,
-  "$SIG": 5,
-  "%SIG": 5,
-  "$BASETIME": 5,
-  "$^T": 5,
-  "${^TAINT}": 5,
-  "${^UNICODE}": 5,
-  "${^UTF8CACHE}": 5,
-  "${^UTF8LOCALE}": 5,
-  "$PERL_VERSION": 5,
-  "$^V": 5,
-  "${^WIN32_SLOPPY_STAT}": 5,
-  "$EXECUTABLE_NAME": 5,
-  "$^X": 5,
-  "$1": 5,
+  $PROCESS_ID: 5,
+  $PID: 5,
+  $$: 5,
+  $REAL_GROUP_ID: 5,
+  $GID: 5,
+  '$(': 5,
+  $EFFECTIVE_GROUP_ID: 5,
+  $EGID: 5,
+  '$)': 5,
+  $PROGRAM_NAME: 5,
+  $0: 5,
+  $SUBSCRIPT_SEPARATOR: 5,
+  $SUBSEP: 5,
+  '$;': 5,
+  $REAL_USER_ID: 5,
+  $UID: 5,
+  '$<': 5,
+  $EFFECTIVE_USER_ID: 5,
+  $EUID: 5,
+  '$>': 5,
+  $a: 5,
+  $b: 5,
+  $COMPILING: 5,
+  '$^C': 5,
+  $DEBUGGING: 5,
+  '$^D': 5,
+  '${^ENCODING}': 5,
+  $ENV: 5,
+  '%ENV': 5,
+  $SYSTEM_FD_MAX: 5,
+  '$^F': 5,
+  '@F': 5,
+  '${^GLOBAL_PHASE}': 5,
+  '$^H': 5,
+  '%^H': 5,
+  '@INC': 5,
+  '%INC': 5,
+  $INPLACE_EDIT: 5,
+  '$^I': 5,
+  '$^M': 5,
+  $OSNAME: 5,
+  '$^O': 5,
+  '${^OPEN}': 5,
+  $PERLDB: 5,
+  '$^P': 5,
+  $SIG: 5,
+  '%SIG': 5,
+  $BASETIME: 5,
+  '$^T': 5,
+  '${^TAINT}': 5,
+  '${^UNICODE}': 5,
+  '${^UTF8CACHE}': 5,
+  '${^UTF8LOCALE}': 5,
+  $PERL_VERSION: 5,
+  '$^V': 5,
+  '${^WIN32_SLOPPY_STAT}': 5,
+  $EXECUTABLE_NAME: 5,
+  '$^X': 5,
+  $1: 5,
   // - regexp $1, $2...
-  "$MATCH": 5,
-  "$&": 5,
-  "${^MATCH}": 5,
-  "$PREMATCH": 5,
-  "$`": 5,
-  "${^PREMATCH}": 5,
-  "$POSTMATCH": 5,
+  $MATCH: 5,
+  '$&': 5,
+  '${^MATCH}': 5,
+  $PREMATCH: 5,
+  '$`': 5,
+  '${^PREMATCH}': 5,
+  $POSTMATCH: 5,
   "$'": 5,
-  "${^POSTMATCH}": 5,
-  "$LAST_PAREN_MATCH": 5,
-  "$+": 5,
-  "$LAST_SUBMATCH_RESULT": 5,
-  "$^N": 5,
-  "@LAST_MATCH_END": 5,
-  "@+": 5,
-  "%LAST_PAREN_MATCH": 5,
-  "%+": 5,
-  "@LAST_MATCH_START": 5,
-  "@-": 5,
-  "%LAST_MATCH_START": 5,
-  "%-": 5,
-  "$LAST_REGEXP_CODE_RESULT": 5,
-  "$^R": 5,
-  "${^RE_DEBUG_FLAGS}": 5,
-  "${^RE_TRIE_MAXBUF}": 5,
-  "$ARGV": 5,
-  "@ARGV": 5,
-  "ARGV": 5,
-  "ARGVOUT": 5,
-  "$OUTPUT_FIELD_SEPARATOR": 5,
-  "$OFS": 5,
-  "$,": 5,
-  "$INPUT_LINE_NUMBER": 5,
-  "$NR": 5,
-  "$.": 5,
-  "$INPUT_RECORD_SEPARATOR": 5,
-  "$RS": 5,
-  "$/": 5,
-  "$OUTPUT_RECORD_SEPARATOR": 5,
-  "$ORS": 5,
-  "$\\": 5,
-  "$OUTPUT_AUTOFLUSH": 5,
-  "$|": 5,
-  "$ACCUMULATOR": 5,
-  "$^A": 5,
-  "$FORMAT_FORMFEED": 5,
-  "$^L": 5,
-  "$FORMAT_PAGE_NUMBER": 5,
-  "$%": 5,
-  "$FORMAT_LINES_LEFT": 5,
-  "$-": 5,
-  "$FORMAT_LINE_BREAK_CHARACTERS": 5,
-  "$:": 5,
-  "$FORMAT_LINES_PER_PAGE": 5,
-  "$=": 5,
-  "$FORMAT_TOP_NAME": 5,
-  "$^": 5,
-  "$FORMAT_NAME": 5,
-  "$~": 5,
-  "${^CHILD_ERROR_NATIVE}": 5,
-  "$EXTENDED_OS_ERROR": 5,
-  "$^E": 5,
-  "$EXCEPTIONS_BEING_CAUGHT": 5,
-  "$^S": 5,
-  "$WARNING": 5,
-  "$^W": 5,
-  "${^WARNING_BITS}": 5,
-  "$OS_ERROR": 5,
-  "$ERRNO": 5,
-  "$!": 5,
-  "%OS_ERROR": 5,
-  "%ERRNO": 5,
-  "%!": 5,
-  "$CHILD_ERROR": 5,
-  "$?": 5,
-  "$EVAL_ERROR": 5,
-  "$@": 5,
-  "$OFMT": 5,
-  "$#": 5,
-  "$*": 5,
-  "$ARRAY_BASE": 5,
-  "$[": 5,
-  "$OLD_PERL_VERSION": 5,
-  "$]": 5,
+  '${^POSTMATCH}': 5,
+  $LAST_PAREN_MATCH: 5,
+  '$+': 5,
+  $LAST_SUBMATCH_RESULT: 5,
+  '$^N': 5,
+  '@LAST_MATCH_END': 5,
+  '@+': 5,
+  '%LAST_PAREN_MATCH': 5,
+  '%+': 5,
+  '@LAST_MATCH_START': 5,
+  '@-': 5,
+  '%LAST_MATCH_START': 5,
+  '%-': 5,
+  $LAST_REGEXP_CODE_RESULT: 5,
+  '$^R': 5,
+  '${^RE_DEBUG_FLAGS}': 5,
+  '${^RE_TRIE_MAXBUF}': 5,
+  $ARGV: 5,
+  '@ARGV': 5,
+  ARGV: 5,
+  ARGVOUT: 5,
+  $OUTPUT_FIELD_SEPARATOR: 5,
+  $OFS: 5,
+  '$,': 5,
+  $INPUT_LINE_NUMBER: 5,
+  $NR: 5,
+  '$.': 5,
+  $INPUT_RECORD_SEPARATOR: 5,
+  $RS: 5,
+  '$/': 5,
+  $OUTPUT_RECORD_SEPARATOR: 5,
+  $ORS: 5,
+  '$\\': 5,
+  $OUTPUT_AUTOFLUSH: 5,
+  '$|': 5,
+  $ACCUMULATOR: 5,
+  '$^A': 5,
+  $FORMAT_FORMFEED: 5,
+  '$^L': 5,
+  $FORMAT_PAGE_NUMBER: 5,
+  '$%': 5,
+  $FORMAT_LINES_LEFT: 5,
+  '$-': 5,
+  $FORMAT_LINE_BREAK_CHARACTERS: 5,
+  '$:': 5,
+  $FORMAT_LINES_PER_PAGE: 5,
+  '$=': 5,
+  $FORMAT_TOP_NAME: 5,
+  '$^': 5,
+  $FORMAT_NAME: 5,
+  '$~': 5,
+  '${^CHILD_ERROR_NATIVE}': 5,
+  $EXTENDED_OS_ERROR: 5,
+  '$^E': 5,
+  $EXCEPTIONS_BEING_CAUGHT: 5,
+  '$^S': 5,
+  $WARNING: 5,
+  '$^W': 5,
+  '${^WARNING_BITS}': 5,
+  $OS_ERROR: 5,
+  $ERRNO: 5,
+  '$!': 5,
+  '%OS_ERROR': 5,
+  '%ERRNO': 5,
+  '%!': 5,
+  $CHILD_ERROR: 5,
+  '$?': 5,
+  $EVAL_ERROR: 5,
+  '$@': 5,
+  $OFMT: 5,
+  '$#': 5,
+  '$*': 5,
+  $ARRAY_BASE: 5,
+  '$[': 5,
+  $OLD_PERL_VERSION: 5,
+  '$]': 5,
   //      PERL blocks
-  "if": [1, 1],
+  if: [1, 1],
   elsif: [1, 1],
-  "else": [1, 1],
-  "while": [1, 1],
+  else: [1, 1],
+  while: [1, 1],
   unless: [1, 1],
-  "for": [1, 1],
+  for: [1, 1],
   foreach: [1, 1],
   //      PERL functions
-  "abs": 1,
+  abs: 1,
   // - absolute value function
   accept: 1,
   // - accept an incoming socket connect
   alarm: 1,
   // - schedule a SIGALRM
-  "atan2": 1,
+  atan2: 1,
   // - arctangent of Y/X in the range -PI to PI
   bind: 1,
   // - binds an address to a socket
@@ -281,7 +278,7 @@ var PERL = {
   // - create an object
   bootstrap: 1,
   //
-  "break": 1,
+  break: 1,
   // - break out of a "given" block
   caller: 1,
   // - get context of the current subroutine call
@@ -305,9 +302,9 @@ var PERL = {
   // - close directory handle
   connect: 1,
   // - connect to a remote socket
-  "continue": [1, 1],
+  continue: [1, 1],
   // - optional trailing block in a while or foreach
-  "cos": 1,
+  cos: 1,
   // - cosine function
   crypt: 1,
   // - one-way passwd-style encryption
@@ -315,15 +312,15 @@ var PERL = {
   // - breaks binding on a tied dbm file
   dbmopen: 1,
   // - create binding on a tied dbm file
-  "default": 1,
+  default: 1,
   //
   defined: 1,
   // - test whether a value, variable, or function is defined
-  "delete": 1,
+  delete: 1,
   // - deletes a value from a hash
   die: 1,
   // - raise an exception or bail out
-  "do": 1,
+  do: 1,
   // - turn a BLOCK into a TERM
   dump: 1,
   // - create an immediate core dump
@@ -343,15 +340,15 @@ var PERL = {
   // - be done using services file
   eof: 1,
   // - test a filehandle for its end
-  "eval": 1,
+  eval: 1,
   // - catch exceptions or compile and run code
-  "exec": 1,
+  exec: 1,
   // - abandon this program to run another
   exists: 1,
   // - test whether a hash key is present
   exit: 1,
   // - terminate this program
-  "exp": 1,
+  exp: 1,
   // - raise I to a power
   fcntl: 1,
   // - file control system call
@@ -423,21 +420,21 @@ var PERL = {
   // - expand filenames using wildcards
   gmtime: 1,
   // - convert UNIX time into record or string using Greenwich time
-  "goto": 1,
+  goto: 1,
   // - create spaghetti code
   grep: 1,
   // - locate elements in a list test true against a given criterion
   hex: 1,
   // - convert a string to a hexadecimal number
-  "import": 1,
+  import: 1,
   // - patch a module's namespace into your own
   index: 1,
   // - find a substring within a string
-  "int": 1,
+  int: 1,
   // - get the integer portion of a number
   ioctl: 1,
   // - system-dependent device control system call
-  "join": 1,
+  join: 1,
   // - join a list into a string using a separator
   keys: 1,
   // - retrieve list of indices from a hash
@@ -451,7 +448,7 @@ var PERL = {
   // - return a string with just the next letter in lower case
   length: 1,
   // - return the number of bytes in a string
-  "link": 1,
+  link: 1,
   // - create a hard link in the filesystem
   listen: 1,
   // - register your socket as a server
@@ -461,7 +458,7 @@ var PERL = {
   // - convert UNIX time into record or string using local time
   lock: 1,
   // - get a thread lock on a variable, subroutine, or method
-  "log": 1,
+  log: 1,
   // - retrieve the natural logarithm for a number
   lstat: 1,
   // - stat a symbolic link
@@ -481,7 +478,7 @@ var PERL = {
   // - send a SysV IPC message to a message queue
   my: 2,
   // - declare and assign a local variable (lexical scoping)
-  "new": 1,
+  new: 1,
   //
   next: 1,
   // - iterate a block prematurely
@@ -499,7 +496,7 @@ var PERL = {
   // - declare and assign a package variable (lexical scoping)
   pack: 1,
   // - convert a list into a binary representation
-  "package": 1,
+  package: 1,
   // - declare a separate global namespace
   pipe: 1,
   // - open a pair of connected filehandles
@@ -551,7 +548,7 @@ var PERL = {
   // - load in external functions from a library at runtime
   reset: 1,
   // - clear all variables of a given name
-  "return": 1,
+  return: 1,
   // - get out of a function early
   reverse: 1,
   // - flip a string or a list
@@ -611,7 +608,7 @@ var PERL = {
   // - write SysV shared memory
   shutdown: 1,
   // - close down just half of a socket connection
-  "sin": 1,
+  sin: 1,
   // - return the sine of a number
   sleep: 1,
   // - block for some number of seconds
@@ -619,15 +616,15 @@ var PERL = {
   // - create a socket
   socketpair: 1,
   // - create a pair of sockets
-  "sort": 1,
+  sort: 1,
   // - sort a list of values
   splice: 1,
   // - add or remove elements anywhere in an array
-  "split": 1,
+  split: 1,
   // - split up a string using a regexp delimiter
   sprintf: 1,
   // - formatted print into a string
-  "sqrt": 1,
+  sqrt: 1,
   // - square root function
   srand: 1,
   // - seed the random number generator
@@ -637,9 +634,9 @@ var PERL = {
   // - declare and assign a state variable (persistent lexical scoping)
   study: 1,
   // - optimize input data for repeated searches
-  "sub": 1,
+  sub: 1,
   // - declare a subroutine, possibly anonymously
-  "substr": 1,
+  substr: 1,
   // - get or alter a portion of a string
   symlink: 1,
   // - create a symbolic link to a file
@@ -708,398 +705,367 @@ var PERL = {
   write: 1,
   // - print a picture record
   y: null
-};
-var RXstyle = "string.special";
-var RXmodifiers = /[goseximacplud]/;
+}
+var RXstyle = 'string.special'
+var RXmodifiers = /[goseximacplud]/
 function tokenChain(stream, state, chain, style, tail) {
-  state.chain = null;
-  state.style = null;
-  state.tail = null;
-  state.tokenize = function(stream2, state2) {
-    var e = false, c, i = 0;
-    while (c = stream2.next()) {
+  state.chain = null
+  state.style = null
+  state.tail = null
+  state.tokenize = function (stream2, state2) {
+    var e = false,
+      c,
+      i = 0
+    while ((c = stream2.next())) {
       if (c === chain[i] && !e) {
         if (chain[++i] !== void 0) {
-          state2.chain = chain[i];
-          state2.style = style;
-          state2.tail = tail;
-        } else if (tail)
-          stream2.eatWhile(tail);
-        state2.tokenize = tokenPerl;
-        return style;
+          state2.chain = chain[i]
+          state2.style = style
+          state2.tail = tail
+        } else if (tail) stream2.eatWhile(tail)
+        state2.tokenize = tokenPerl
+        return style
       }
-      e = !e && c == "\\";
+      e = !e && c == '\\'
     }
-    return style;
-  };
-  return state.tokenize(stream, state);
+    return style
+  }
+  return state.tokenize(stream, state)
 }
 function tokenSOMETHING(stream, state, string) {
-  state.tokenize = function(stream2, state2) {
-    if (stream2.string == string)
-      state2.tokenize = tokenPerl;
-    stream2.skipToEnd();
-    return "string";
-  };
-  return state.tokenize(stream, state);
+  state.tokenize = function (stream2, state2) {
+    if (stream2.string == string) state2.tokenize = tokenPerl
+    stream2.skipToEnd()
+    return 'string'
+  }
+  return state.tokenize(stream, state)
 }
 function tokenPerl(stream, state) {
-  if (stream.eatSpace())
-    return null;
-  if (state.chain)
-    return tokenChain(stream, state, state.chain, state.style, state.tail);
-  if (stream.match(/^(\-?((\d[\d_]*)?\.\d+(e[+-]?\d+)?|\d+\.\d*)|0x[\da-fA-F_]+|0b[01_]+|\d[\d_]*(e[+-]?\d+)?)/))
-    return "number";
+  if (stream.eatSpace()) return null
+  if (state.chain) return tokenChain(stream, state, state.chain, state.style, state.tail)
+  if (
+    stream.match(
+      /^(\-?((\d[\d_]*)?\.\d+(e[+-]?\d+)?|\d+\.\d*)|0x[\da-fA-F_]+|0b[01_]+|\d[\d_]*(e[+-]?\d+)?)/
+    )
+  )
+    return 'number'
   if (stream.match(/^<<(?=[_a-zA-Z])/)) {
-    stream.eatWhile(/\w/);
-    return tokenSOMETHING(stream, state, stream.current().substr(2));
+    stream.eatWhile(/\w/)
+    return tokenSOMETHING(stream, state, stream.current().substr(2))
   }
   if (stream.sol() && stream.match(/^\=item(?!\w)/)) {
-    return tokenSOMETHING(stream, state, "=cut");
+    return tokenSOMETHING(stream, state, '=cut')
   }
-  var ch = stream.next();
+  var ch = stream.next()
   if (ch == '"' || ch == "'") {
-    if (prefix(stream, 3) == "<<" + ch) {
-      var p = stream.pos;
-      stream.eatWhile(/\w/);
-      var n = stream.current().substr(1);
-      if (n && stream.eat(ch))
-        return tokenSOMETHING(stream, state, n);
-      stream.pos = p;
+    if (prefix(stream, 3) == '<<' + ch) {
+      var p = stream.pos
+      stream.eatWhile(/\w/)
+      var n = stream.current().substr(1)
+      if (n && stream.eat(ch)) return tokenSOMETHING(stream, state, n)
+      stream.pos = p
     }
-    return tokenChain(stream, state, [ch], "string");
+    return tokenChain(stream, state, [ch], 'string')
   }
-  if (ch == "q") {
-    var c = look(stream, -2);
+  if (ch == 'q') {
+    var c = look(stream, -2)
     if (!(c && /\w/.test(c))) {
-      c = look(stream, 0);
-      if (c == "x") {
-        c = look(stream, 1);
-        if (c == "(") {
-          eatSuffix(stream, 2);
-          return tokenChain(stream, state, [")"], RXstyle, RXmodifiers);
+      c = look(stream, 0)
+      if (c == 'x') {
+        c = look(stream, 1)
+        if (c == '(') {
+          eatSuffix(stream, 2)
+          return tokenChain(stream, state, [')'], RXstyle, RXmodifiers)
         }
-        if (c == "[") {
-          eatSuffix(stream, 2);
-          return tokenChain(stream, state, ["]"], RXstyle, RXmodifiers);
+        if (c == '[') {
+          eatSuffix(stream, 2)
+          return tokenChain(stream, state, [']'], RXstyle, RXmodifiers)
         }
-        if (c == "{") {
-          eatSuffix(stream, 2);
-          return tokenChain(stream, state, ["}"], RXstyle, RXmodifiers);
+        if (c == '{') {
+          eatSuffix(stream, 2)
+          return tokenChain(stream, state, ['}'], RXstyle, RXmodifiers)
         }
-        if (c == "<") {
-          eatSuffix(stream, 2);
-          return tokenChain(stream, state, [">"], RXstyle, RXmodifiers);
-        }
-        if (/[\^'"!~\/]/.test(c)) {
-          eatSuffix(stream, 1);
-          return tokenChain(stream, state, [stream.eat(c)], RXstyle, RXmodifiers);
-        }
-      } else if (c == "q") {
-        c = look(stream, 1);
-        if (c == "(") {
-          eatSuffix(stream, 2);
-          return tokenChain(stream, state, [")"], "string");
-        }
-        if (c == "[") {
-          eatSuffix(stream, 2);
-          return tokenChain(stream, state, ["]"], "string");
-        }
-        if (c == "{") {
-          eatSuffix(stream, 2);
-          return tokenChain(stream, state, ["}"], "string");
-        }
-        if (c == "<") {
-          eatSuffix(stream, 2);
-          return tokenChain(stream, state, [">"], "string");
+        if (c == '<') {
+          eatSuffix(stream, 2)
+          return tokenChain(stream, state, ['>'], RXstyle, RXmodifiers)
         }
         if (/[\^'"!~\/]/.test(c)) {
-          eatSuffix(stream, 1);
-          return tokenChain(stream, state, [stream.eat(c)], "string");
+          eatSuffix(stream, 1)
+          return tokenChain(stream, state, [stream.eat(c)], RXstyle, RXmodifiers)
         }
-      } else if (c == "w") {
-        c = look(stream, 1);
-        if (c == "(") {
-          eatSuffix(stream, 2);
-          return tokenChain(stream, state, [")"], "bracket");
+      } else if (c == 'q') {
+        c = look(stream, 1)
+        if (c == '(') {
+          eatSuffix(stream, 2)
+          return tokenChain(stream, state, [')'], 'string')
         }
-        if (c == "[") {
-          eatSuffix(stream, 2);
-          return tokenChain(stream, state, ["]"], "bracket");
+        if (c == '[') {
+          eatSuffix(stream, 2)
+          return tokenChain(stream, state, [']'], 'string')
         }
-        if (c == "{") {
-          eatSuffix(stream, 2);
-          return tokenChain(stream, state, ["}"], "bracket");
+        if (c == '{') {
+          eatSuffix(stream, 2)
+          return tokenChain(stream, state, ['}'], 'string')
         }
-        if (c == "<") {
-          eatSuffix(stream, 2);
-          return tokenChain(stream, state, [">"], "bracket");
-        }
-        if (/[\^'"!~\/]/.test(c)) {
-          eatSuffix(stream, 1);
-          return tokenChain(stream, state, [stream.eat(c)], "bracket");
-        }
-      } else if (c == "r") {
-        c = look(stream, 1);
-        if (c == "(") {
-          eatSuffix(stream, 2);
-          return tokenChain(stream, state, [")"], RXstyle, RXmodifiers);
-        }
-        if (c == "[") {
-          eatSuffix(stream, 2);
-          return tokenChain(stream, state, ["]"], RXstyle, RXmodifiers);
-        }
-        if (c == "{") {
-          eatSuffix(stream, 2);
-          return tokenChain(stream, state, ["}"], RXstyle, RXmodifiers);
-        }
-        if (c == "<") {
-          eatSuffix(stream, 2);
-          return tokenChain(stream, state, [">"], RXstyle, RXmodifiers);
+        if (c == '<') {
+          eatSuffix(stream, 2)
+          return tokenChain(stream, state, ['>'], 'string')
         }
         if (/[\^'"!~\/]/.test(c)) {
-          eatSuffix(stream, 1);
-          return tokenChain(stream, state, [stream.eat(c)], RXstyle, RXmodifiers);
+          eatSuffix(stream, 1)
+          return tokenChain(stream, state, [stream.eat(c)], 'string')
+        }
+      } else if (c == 'w') {
+        c = look(stream, 1)
+        if (c == '(') {
+          eatSuffix(stream, 2)
+          return tokenChain(stream, state, [')'], 'bracket')
+        }
+        if (c == '[') {
+          eatSuffix(stream, 2)
+          return tokenChain(stream, state, [']'], 'bracket')
+        }
+        if (c == '{') {
+          eatSuffix(stream, 2)
+          return tokenChain(stream, state, ['}'], 'bracket')
+        }
+        if (c == '<') {
+          eatSuffix(stream, 2)
+          return tokenChain(stream, state, ['>'], 'bracket')
+        }
+        if (/[\^'"!~\/]/.test(c)) {
+          eatSuffix(stream, 1)
+          return tokenChain(stream, state, [stream.eat(c)], 'bracket')
+        }
+      } else if (c == 'r') {
+        c = look(stream, 1)
+        if (c == '(') {
+          eatSuffix(stream, 2)
+          return tokenChain(stream, state, [')'], RXstyle, RXmodifiers)
+        }
+        if (c == '[') {
+          eatSuffix(stream, 2)
+          return tokenChain(stream, state, [']'], RXstyle, RXmodifiers)
+        }
+        if (c == '{') {
+          eatSuffix(stream, 2)
+          return tokenChain(stream, state, ['}'], RXstyle, RXmodifiers)
+        }
+        if (c == '<') {
+          eatSuffix(stream, 2)
+          return tokenChain(stream, state, ['>'], RXstyle, RXmodifiers)
+        }
+        if (/[\^'"!~\/]/.test(c)) {
+          eatSuffix(stream, 1)
+          return tokenChain(stream, state, [stream.eat(c)], RXstyle, RXmodifiers)
         }
       } else if (/[\^'"!~\/(\[{<]/.test(c)) {
-        if (c == "(") {
-          eatSuffix(stream, 1);
-          return tokenChain(stream, state, [")"], "string");
+        if (c == '(') {
+          eatSuffix(stream, 1)
+          return tokenChain(stream, state, [')'], 'string')
         }
-        if (c == "[") {
-          eatSuffix(stream, 1);
-          return tokenChain(stream, state, ["]"], "string");
+        if (c == '[') {
+          eatSuffix(stream, 1)
+          return tokenChain(stream, state, [']'], 'string')
         }
-        if (c == "{") {
-          eatSuffix(stream, 1);
-          return tokenChain(stream, state, ["}"], "string");
+        if (c == '{') {
+          eatSuffix(stream, 1)
+          return tokenChain(stream, state, ['}'], 'string')
         }
-        if (c == "<") {
-          eatSuffix(stream, 1);
-          return tokenChain(stream, state, [">"], "string");
+        if (c == '<') {
+          eatSuffix(stream, 1)
+          return tokenChain(stream, state, ['>'], 'string')
         }
         if (/[\^'"!~\/]/.test(c)) {
-          return tokenChain(stream, state, [stream.eat(c)], "string");
+          return tokenChain(stream, state, [stream.eat(c)], 'string')
         }
       }
     }
   }
-  if (ch == "m") {
-    var c = look(stream, -2);
+  if (ch == 'm') {
+    var c = look(stream, -2)
     if (!(c && /\w/.test(c))) {
-      c = stream.eat(/[(\[{<\^'"!~\/]/);
+      c = stream.eat(/[(\[{<\^'"!~\/]/)
       if (c) {
         if (/[\^'"!~\/]/.test(c)) {
-          return tokenChain(stream, state, [c], RXstyle, RXmodifiers);
+          return tokenChain(stream, state, [c], RXstyle, RXmodifiers)
         }
-        if (c == "(") {
-          return tokenChain(stream, state, [")"], RXstyle, RXmodifiers);
+        if (c == '(') {
+          return tokenChain(stream, state, [')'], RXstyle, RXmodifiers)
         }
-        if (c == "[") {
-          return tokenChain(stream, state, ["]"], RXstyle, RXmodifiers);
+        if (c == '[') {
+          return tokenChain(stream, state, [']'], RXstyle, RXmodifiers)
         }
-        if (c == "{") {
-          return tokenChain(stream, state, ["}"], RXstyle, RXmodifiers);
+        if (c == '{') {
+          return tokenChain(stream, state, ['}'], RXstyle, RXmodifiers)
         }
-        if (c == "<") {
-          return tokenChain(stream, state, [">"], RXstyle, RXmodifiers);
+        if (c == '<') {
+          return tokenChain(stream, state, ['>'], RXstyle, RXmodifiers)
         }
       }
     }
   }
-  if (ch == "s") {
-    var c = /[\/>\]})\w]/.test(look(stream, -2));
+  if (ch == 's') {
+    var c = /[\/>\]})\w]/.test(look(stream, -2))
     if (!c) {
-      c = stream.eat(/[(\[{<\^'"!~\/]/);
+      c = stream.eat(/[(\[{<\^'"!~\/]/)
       if (c) {
-        if (c == "[")
-          return tokenChain(stream, state, ["]", "]"], RXstyle, RXmodifiers);
-        if (c == "{")
-          return tokenChain(stream, state, ["}", "}"], RXstyle, RXmodifiers);
-        if (c == "<")
-          return tokenChain(stream, state, [">", ">"], RXstyle, RXmodifiers);
-        if (c == "(")
-          return tokenChain(stream, state, [")", ")"], RXstyle, RXmodifiers);
-        return tokenChain(stream, state, [c, c], RXstyle, RXmodifiers);
+        if (c == '[') return tokenChain(stream, state, [']', ']'], RXstyle, RXmodifiers)
+        if (c == '{') return tokenChain(stream, state, ['}', '}'], RXstyle, RXmodifiers)
+        if (c == '<') return tokenChain(stream, state, ['>', '>'], RXstyle, RXmodifiers)
+        if (c == '(') return tokenChain(stream, state, [')', ')'], RXstyle, RXmodifiers)
+        return tokenChain(stream, state, [c, c], RXstyle, RXmodifiers)
       }
     }
   }
-  if (ch == "y") {
-    var c = /[\/>\]})\w]/.test(look(stream, -2));
+  if (ch == 'y') {
+    var c = /[\/>\]})\w]/.test(look(stream, -2))
     if (!c) {
-      c = stream.eat(/[(\[{<\^'"!~\/]/);
+      c = stream.eat(/[(\[{<\^'"!~\/]/)
       if (c) {
-        if (c == "[")
-          return tokenChain(stream, state, ["]", "]"], RXstyle, RXmodifiers);
-        if (c == "{")
-          return tokenChain(stream, state, ["}", "}"], RXstyle, RXmodifiers);
-        if (c == "<")
-          return tokenChain(stream, state, [">", ">"], RXstyle, RXmodifiers);
-        if (c == "(")
-          return tokenChain(stream, state, [")", ")"], RXstyle, RXmodifiers);
-        return tokenChain(stream, state, [c, c], RXstyle, RXmodifiers);
+        if (c == '[') return tokenChain(stream, state, [']', ']'], RXstyle, RXmodifiers)
+        if (c == '{') return tokenChain(stream, state, ['}', '}'], RXstyle, RXmodifiers)
+        if (c == '<') return tokenChain(stream, state, ['>', '>'], RXstyle, RXmodifiers)
+        if (c == '(') return tokenChain(stream, state, [')', ')'], RXstyle, RXmodifiers)
+        return tokenChain(stream, state, [c, c], RXstyle, RXmodifiers)
       }
     }
   }
-  if (ch == "t") {
-    var c = /[\/>\]})\w]/.test(look(stream, -2));
+  if (ch == 't') {
+    var c = /[\/>\]})\w]/.test(look(stream, -2))
     if (!c) {
-      c = stream.eat("r");
+      c = stream.eat('r')
       if (c) {
-        c = stream.eat(/[(\[{<\^'"!~\/]/);
+        c = stream.eat(/[(\[{<\^'"!~\/]/)
         if (c) {
-          if (c == "[")
-            return tokenChain(stream, state, ["]", "]"], RXstyle, RXmodifiers);
-          if (c == "{")
-            return tokenChain(stream, state, ["}", "}"], RXstyle, RXmodifiers);
-          if (c == "<")
-            return tokenChain(stream, state, [">", ">"], RXstyle, RXmodifiers);
-          if (c == "(")
-            return tokenChain(stream, state, [")", ")"], RXstyle, RXmodifiers);
-          return tokenChain(stream, state, [c, c], RXstyle, RXmodifiers);
+          if (c == '[') return tokenChain(stream, state, [']', ']'], RXstyle, RXmodifiers)
+          if (c == '{') return tokenChain(stream, state, ['}', '}'], RXstyle, RXmodifiers)
+          if (c == '<') return tokenChain(stream, state, ['>', '>'], RXstyle, RXmodifiers)
+          if (c == '(') return tokenChain(stream, state, [')', ')'], RXstyle, RXmodifiers)
+          return tokenChain(stream, state, [c, c], RXstyle, RXmodifiers)
         }
       }
     }
   }
-  if (ch == "`") {
-    return tokenChain(stream, state, [ch], "builtin");
+  if (ch == '`') {
+    return tokenChain(stream, state, [ch], 'builtin')
   }
-  if (ch == "/") {
-    if (!/~\s*$/.test(prefix(stream)))
-      return "operator";
-    else
-      return tokenChain(stream, state, [ch], RXstyle, RXmodifiers);
+  if (ch == '/') {
+    if (!/~\s*$/.test(prefix(stream))) return 'operator'
+    else return tokenChain(stream, state, [ch], RXstyle, RXmodifiers)
   }
-  if (ch == "$") {
-    var p = stream.pos;
-    if (stream.eatWhile(/\d/) || stream.eat("{") && stream.eatWhile(/\d/) && stream.eat("}"))
-      return "builtin";
-    else
-      stream.pos = p;
+  if (ch == '$') {
+    var p = stream.pos
+    if (stream.eatWhile(/\d/) || (stream.eat('{') && stream.eatWhile(/\d/) && stream.eat('}')))
+      return 'builtin'
+    else stream.pos = p
   }
   if (/[$@%]/.test(ch)) {
-    var p = stream.pos;
-    if (stream.eat("^") && stream.eat(/[A-Z]/) || !/[@$%&]/.test(look(stream, -2)) && stream.eat(/[=|\\\-#?@;:&`~\^!\[\]*'"$+.,\/<>()]/)) {
-      var c = stream.current();
-      if (PERL[c])
-        return "builtin";
+    var p = stream.pos
+    if (
+      (stream.eat('^') && stream.eat(/[A-Z]/)) ||
+      (!/[@$%&]/.test(look(stream, -2)) && stream.eat(/[=|\\\-#?@;:&`~\^!\[\]*'"$+.,\/<>()]/))
+    ) {
+      var c = stream.current()
+      if (PERL[c]) return 'builtin'
     }
-    stream.pos = p;
+    stream.pos = p
   }
   if (/[$@%&]/.test(ch)) {
-    if (stream.eatWhile(/[\w$]/) || stream.eat("{") && stream.eatWhile(/[\w$]/) && stream.eat("}")) {
-      var c = stream.current();
-      if (PERL[c])
-        return "builtin";
-      else
-        return "variable";
+    if (
+      stream.eatWhile(/[\w$]/) ||
+      (stream.eat('{') && stream.eatWhile(/[\w$]/) && stream.eat('}'))
+    ) {
+      var c = stream.current()
+      if (PERL[c]) return 'builtin'
+      else return 'variable'
     }
   }
-  if (ch == "#") {
-    if (look(stream, -2) != "$") {
-      stream.skipToEnd();
-      return "comment";
+  if (ch == '#') {
+    if (look(stream, -2) != '$') {
+      stream.skipToEnd()
+      return 'comment'
     }
   }
   if (/[:+\-\^*$&%@=<>!?|\/~\.]/.test(ch)) {
-    var p = stream.pos;
-    stream.eatWhile(/[:+\-\^*$&%@=<>!?|\/~\.]/);
-    if (PERL[stream.current()])
-      return "operator";
-    else
-      stream.pos = p;
+    var p = stream.pos
+    stream.eatWhile(/[:+\-\^*$&%@=<>!?|\/~\.]/)
+    if (PERL[stream.current()]) return 'operator'
+    else stream.pos = p
   }
-  if (ch == "_") {
+  if (ch == '_') {
     if (stream.pos == 1) {
-      if (suffix(stream, 6) == "_END__") {
-        return tokenChain(stream, state, ["\0"], "comment");
-      } else if (suffix(stream, 7) == "_DATA__") {
-        return tokenChain(stream, state, ["\0"], "builtin");
-      } else if (suffix(stream, 7) == "_C__") {
-        return tokenChain(stream, state, ["\0"], "string");
+      if (suffix(stream, 6) == '_END__') {
+        return tokenChain(stream, state, ['\0'], 'comment')
+      } else if (suffix(stream, 7) == '_DATA__') {
+        return tokenChain(stream, state, ['\0'], 'builtin')
+      } else if (suffix(stream, 7) == '_C__') {
+        return tokenChain(stream, state, ['\0'], 'string')
       }
     }
   }
   if (/\w/.test(ch)) {
-    var p = stream.pos;
-    if (look(stream, -2) == "{" && (look(stream, 0) == "}" || stream.eatWhile(/\w/) && look(stream, 0) == "}"))
-      return "string";
-    else
-      stream.pos = p;
+    var p = stream.pos
+    if (
+      look(stream, -2) == '{' &&
+      (look(stream, 0) == '}' || (stream.eatWhile(/\w/) && look(stream, 0) == '}'))
+    )
+      return 'string'
+    else stream.pos = p
   }
   if (/[A-Z]/.test(ch)) {
-    var l = look(stream, -2);
-    var p = stream.pos;
-    stream.eatWhile(/[A-Z_]/);
+    var l = look(stream, -2)
+    var p = stream.pos
+    stream.eatWhile(/[A-Z_]/)
     if (/[\da-z]/.test(look(stream, 0))) {
-      stream.pos = p;
+      stream.pos = p
     } else {
-      var c = PERL[stream.current()];
-      if (!c)
-        return "meta";
-      if (c[1])
-        c = c[0];
-      if (l != ":") {
-        if (c == 1)
-          return "keyword";
-        else if (c == 2)
-          return "def";
-        else if (c == 3)
-          return "atom";
-        else if (c == 4)
-          return "operator";
-        else if (c == 5)
-          return "builtin";
-        else
-          return "meta";
-      } else
-        return "meta";
+      var c = PERL[stream.current()]
+      if (!c) return 'meta'
+      if (c[1]) c = c[0]
+      if (l != ':') {
+        if (c == 1) return 'keyword'
+        else if (c == 2) return 'def'
+        else if (c == 3) return 'atom'
+        else if (c == 4) return 'operator'
+        else if (c == 5) return 'builtin'
+        else return 'meta'
+      } else return 'meta'
     }
   }
   if (/[a-zA-Z_]/.test(ch)) {
-    var l = look(stream, -2);
-    stream.eatWhile(/\w/);
-    var c = PERL[stream.current()];
-    if (!c)
-      return "meta";
-    if (c[1])
-      c = c[0];
-    if (l != ":") {
-      if (c == 1)
-        return "keyword";
-      else if (c == 2)
-        return "def";
-      else if (c == 3)
-        return "atom";
-      else if (c == 4)
-        return "operator";
-      else if (c == 5)
-        return "builtin";
-      else
-        return "meta";
-    } else
-      return "meta";
+    var l = look(stream, -2)
+    stream.eatWhile(/\w/)
+    var c = PERL[stream.current()]
+    if (!c) return 'meta'
+    if (c[1]) c = c[0]
+    if (l != ':') {
+      if (c == 1) return 'keyword'
+      else if (c == 2) return 'def'
+      else if (c == 3) return 'atom'
+      else if (c == 4) return 'operator'
+      else if (c == 5) return 'builtin'
+      else return 'meta'
+    } else return 'meta'
   }
-  return null;
+  return null
 }
 const perl = {
-  name: "perl",
-  startState: function() {
+  name: 'perl',
+  startState: function () {
     return {
       tokenize: tokenPerl,
       chain: null,
       style: null,
       tail: null
-    };
+    }
   },
-  token: function(stream, state) {
-    return (state.tokenize || tokenPerl)(stream, state);
+  token: function (stream, state) {
+    return (state.tokenize || tokenPerl)(stream, state)
   },
   languageData: {
-    commentTokens: { line: "#" },
-    wordChars: "$"
+    commentTokens: { line: '#' },
+    wordChars: '$'
   }
-};
-export {
-  perl
-};
+}
+export { perl }

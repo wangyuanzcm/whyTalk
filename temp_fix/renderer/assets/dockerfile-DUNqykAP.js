@@ -1,65 +1,68 @@
-import { s as simpleMode } from "./simple-mode-zrLq6ojR.js";
-var from = "from";
-var fromRegex = new RegExp("^(\\s*)\\b(" + from + ")\\b", "i");
-var shells = ["run", "cmd", "entrypoint", "shell"];
-var shellsAsArrayRegex = new RegExp("^(\\s*)(" + shells.join("|") + ")(\\s+\\[)", "i");
-var expose = "expose";
-var exposeRegex = new RegExp("^(\\s*)(" + expose + ")(\\s+)", "i");
+import { s as simpleMode } from './simple-mode-zrLq6ojR.js'
+var from = 'from'
+var fromRegex = new RegExp('^(\\s*)\\b(' + from + ')\\b', 'i')
+var shells = ['run', 'cmd', 'entrypoint', 'shell']
+var shellsAsArrayRegex = new RegExp('^(\\s*)(' + shells.join('|') + ')(\\s+\\[)', 'i')
+var expose = 'expose'
+var exposeRegex = new RegExp('^(\\s*)(' + expose + ')(\\s+)', 'i')
 var others = [
-  "arg",
-  "from",
-  "maintainer",
-  "label",
-  "env",
-  "add",
-  "copy",
-  "volume",
-  "user",
-  "workdir",
-  "onbuild",
-  "stopsignal",
-  "healthcheck",
-  "shell"
-];
-var instructions = [from, expose].concat(shells).concat(others), instructionRegex = "(" + instructions.join("|") + ")", instructionOnlyLine = new RegExp("^(\\s*)" + instructionRegex + "(\\s*)(#.*)?$", "i"), instructionWithArguments = new RegExp("^(\\s*)" + instructionRegex + "(\\s+)", "i");
+  'arg',
+  'from',
+  'maintainer',
+  'label',
+  'env',
+  'add',
+  'copy',
+  'volume',
+  'user',
+  'workdir',
+  'onbuild',
+  'stopsignal',
+  'healthcheck',
+  'shell'
+]
+var instructions = [from, expose].concat(shells).concat(others),
+  instructionRegex = '(' + instructions.join('|') + ')',
+  instructionOnlyLine = new RegExp('^(\\s*)' + instructionRegex + '(\\s*)(#.*)?$', 'i'),
+  instructionWithArguments = new RegExp('^(\\s*)' + instructionRegex + '(\\s+)', 'i')
 const dockerFile = simpleMode({
   start: [
     // Block comment: This is a line starting with a comment
     {
       regex: /^\s*#.*$/,
       sol: true,
-      token: "comment"
+      token: 'comment'
     },
     {
       regex: fromRegex,
-      token: [null, "keyword"],
+      token: [null, 'keyword'],
       sol: true,
-      next: "from"
+      next: 'from'
     },
     // Highlight an instruction without any arguments (for convenience)
     {
       regex: instructionOnlyLine,
-      token: [null, "keyword", null, "error"],
+      token: [null, 'keyword', null, 'error'],
       sol: true
     },
     {
       regex: shellsAsArrayRegex,
-      token: [null, "keyword", null],
+      token: [null, 'keyword', null],
       sol: true,
-      next: "array"
+      next: 'array'
     },
     {
       regex: exposeRegex,
-      token: [null, "keyword", null],
+      token: [null, 'keyword', null],
       sol: true,
-      next: "expose"
+      next: 'expose'
     },
     // Highlight an instruction followed by arguments
     {
       regex: instructionWithArguments,
-      token: [null, "keyword", null],
+      token: [null, 'keyword', null],
       sol: true,
-      next: "arguments"
+      next: 'arguments'
     },
     {
       regex: /./,
@@ -70,44 +73,44 @@ const dockerFile = simpleMode({
     {
       regex: /\s*$/,
       token: null,
-      next: "start"
+      next: 'start'
     },
     {
       // Line comment without instruction arguments is an error
       regex: /(\s*)(#.*)$/,
-      token: [null, "error"],
-      next: "start"
+      token: [null, 'error'],
+      next: 'start'
     },
     {
       regex: /(\s*\S+\s+)(as)/i,
-      token: [null, "keyword"],
-      next: "start"
+      token: [null, 'keyword'],
+      next: 'start'
     },
     // Fail safe return to start
     {
       token: null,
-      next: "start"
+      next: 'start'
     }
   ],
   single: [
     {
       regex: /(?:[^\\']|\\.)/,
-      token: "string"
+      token: 'string'
     },
     {
       regex: /'/,
-      token: "string",
+      token: 'string',
       pop: true
     }
   ],
   double: [
     {
       regex: /(?:[^\\"]|\\.)/,
-      token: "string"
+      token: 'string'
     },
     {
       regex: /"/,
-      token: "string",
+      token: 'string',
       pop: true
     }
   ],
@@ -115,27 +118,27 @@ const dockerFile = simpleMode({
     {
       regex: /\]/,
       token: null,
-      next: "start"
+      next: 'start'
     },
     {
       regex: /"(?:[^\\"]|\\.)*"?/,
-      token: "string"
+      token: 'string'
     }
   ],
   expose: [
     {
       regex: /\d+$/,
-      token: "number",
-      next: "start"
+      token: 'number',
+      next: 'start'
     },
     {
       regex: /[^\d]+$/,
       token: null,
-      next: "start"
+      next: 'start'
     },
     {
       regex: /\d+/,
-      token: "number"
+      token: 'number'
     },
     {
       regex: /[^\d]+/,
@@ -144,34 +147,34 @@ const dockerFile = simpleMode({
     // Fail safe return to start
     {
       token: null,
-      next: "start"
+      next: 'start'
     }
   ],
   arguments: [
     {
       regex: /^\s*#.*$/,
       sol: true,
-      token: "comment"
+      token: 'comment'
     },
     {
       regex: /"(?:[^\\"]|\\.)*"?$/,
-      token: "string",
-      next: "start"
+      token: 'string',
+      next: 'start'
     },
     {
       regex: /"/,
-      token: "string",
-      push: "double"
+      token: 'string',
+      push: 'double'
     },
     {
       regex: /'(?:[^\\']|\\.)*'?$/,
-      token: "string",
-      next: "start"
+      token: 'string',
+      next: 'start'
     },
     {
       regex: /'/,
-      token: "string",
-      push: "single"
+      token: 'string',
+      push: 'single'
     },
     {
       regex: /[^#"']+[\\`]$/,
@@ -180,7 +183,7 @@ const dockerFile = simpleMode({
     {
       regex: /[^#"']+$/,
       token: null,
-      next: "start"
+      next: 'start'
     },
     {
       regex: /[^#"']+/,
@@ -189,13 +192,11 @@ const dockerFile = simpleMode({
     // Fail safe return to start
     {
       token: null,
-      next: "start"
+      next: 'start'
     }
   ],
   languageData: {
-    commentTokens: { line: "#" }
+    commentTokens: { line: '#' }
   }
-});
-export {
-  dockerFile
-};
+})
+export { dockerFile }

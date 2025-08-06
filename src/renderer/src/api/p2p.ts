@@ -71,10 +71,7 @@ export const sendP2PMessage = (data: {
 }
 
 // 创建P2P群组
-export const createP2PGroup = (data: {
-  name: string
-  description?: string
-}): Promise<any> => {
+export const createP2PGroup = (data: { name: string; description?: string }): Promise<any> => {
   return post('/api/v1/p2p/group/create', data)
 }
 

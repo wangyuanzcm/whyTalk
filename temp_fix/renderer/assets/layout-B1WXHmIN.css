@@ -6,7 +6,8 @@ body[data-v-dff988b4] {
   width: 200px;
   height: 38px;
   font-size: 34px;
-  font-family: Times New Roman,
+  font-family:
+    Times New Roman,
     Georgia,
     Serif;
   color: #2196f3;
@@ -75,9 +76,9 @@ body[data-v-dff988b4] {
   cursor: pointer;
 }
 @media screen and (max-height: 500px) {
-.copyright[data-v-dff988b4] {
+  .copyright[data-v-dff988b4] {
     display: none;
-}
+  }
 }
 .fly-box .fly[data-v-dff988b4] {
   pointer-events: none;
@@ -121,15 +122,15 @@ body[data-v-dff988b4] {
   animation: move-dff988b4 3.5s linear infinite;
 }
 @keyframes move-dff988b4 {
-0% {
+  0% {
     transform: translateY(0px);
-}
-50% {
+  }
+  50% {
     transform: translateY(25px);
-}
-100% {
+  }
+  100% {
     transform: translateY(0px);
-}
+  }
 }
 html[theme-mode='dark'] .login-box[data-v-dff988b4] {
   border: 1px solid #393939;

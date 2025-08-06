@@ -50,7 +50,7 @@ const defaultPages = [
     value: '/note'
   },
   {
-    label: 'P2P网络',
+    label: '网络',
     value: '/p2p'
   }
 ]

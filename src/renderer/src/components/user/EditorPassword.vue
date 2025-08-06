@@ -77,18 +77,18 @@ const onValidate = (e: any) => {
   >
     <n-form ref="formRef" :model="state" :rules="rules">
       <n-form-item label="登录密码" path="old_password">
-        <n-input placeholder="请填写登录密码" type="password" v-model:value="state.old_password" />
+        <n-input v-model:value="state.old_password" placeholder="请填写登录密码" type="password" />
       </n-form-item>
 
       <n-form-item label="设置新密码" path="new_password">
-        <n-input placeholder="请填写新密码" type="password" v-model:value="state.new_password" />
+        <n-input v-model:value="state.new_password" placeholder="请填写新密码" type="password" />
       </n-form-item>
 
       <n-form-item label="确认新密码" path="new_password2">
         <n-input
+          v-model:value="state.new_password2"
           placeholder="请再次填写新密码"
           type="password"
-          v-model:value="state.new_password2"
         />
       </n-form-item>
     </n-form>

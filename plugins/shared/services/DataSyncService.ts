@@ -23,7 +23,7 @@ export class DataSyncService {
   private subscribers: Map<string, SyncSubscriber[]> = new Map()
   private syncInterval: NodeJS.Timeout | null = null
   private lastSyncTime: string = ''
-  
+
   private constructor(pluginId: string = 'data-sync-service') {
     this.api = PluginDataAPI.getInstance(pluginId)
     this.initializeSync()
@@ -52,7 +52,7 @@ export class DataSyncService {
 
       // 启动定期同步
       this.startPeriodicSync()
-      
+
       console.log('数据同步服务初始化完成')
     } catch (error) {
       console.error('初始化数据同步服务失败:', error)
@@ -86,16 +86,16 @@ export class DataSyncService {
     if (!this.subscribers.has(eventType)) {
       this.subscribers.set(eventType, [])
     }
-    
+
     const subscribers = this.subscribers.get(eventType)!
-    const existingIndex = subscribers.findIndex(s => s.pluginId === subscriber.pluginId)
-    
+    const existingIndex = subscribers.findIndex((s) => s.pluginId === subscriber.pluginId)
+
     if (existingIndex >= 0) {
       subscribers[existingIndex] = subscriber
     } else {
       subscribers.push(subscriber)
     }
-    
+
     console.log(`插件 ${subscriber.pluginId} 订阅了事件 ${eventType}`)
   }
 
@@ -105,7 +105,7 @@ export class DataSyncService {
   unsubscribe(eventType: string, pluginId: string): void {
     const subscribers = this.subscribers.get(eventType)
     if (subscribers) {
-      const filteredSubscribers = subscribers.filter(s => s.pluginId !== pluginId)
+      const filteredSubscribers = subscribers.filter((s) => s.pluginId !== pluginId)
       this.subscribers.set(eventType, filteredSubscribers)
       console.log(`插件 ${pluginId} 取消订阅事件 ${eventType}`)
     }
@@ -118,13 +118,13 @@ export class DataSyncService {
     try {
       // 保存事件到共享数据
       await this.saveEventToHistory(event)
-      
+
       // 通知订阅者
       const subscribers = this.subscribers.get(event.type) || []
       const allSubscribers = this.subscribers.get('*') || []
-      
+
       const allNotifications = [...subscribers, ...allSubscribers]
-      
+
       for (const subscriber of allNotifications) {
         try {
           // 不通知事件源插件
@@ -135,7 +135,7 @@ export class DataSyncService {
           console.error(`通知订阅者 ${subscriber.pluginId} 失败:`, error)
         }
       }
-      
+
       console.log(`发布事件 ${event.type}，通知了 ${allNotifications.length} 个订阅者`)
     } catch (error) {
       console.error('发布同步事件失败:', error)
@@ -150,22 +150,22 @@ export class DataSyncService {
       // 获取当前共享的联系人数据
       const currentResult = await this.api.getSharedData<ContactWithGroup[]>('contacts', 'cache')
       const currentContacts = currentResult.success && currentResult.data ? currentResult.data : []
-      
+
       // 比较数据变化
       const changes = this.compareContacts(currentContacts, contacts)
-      
+
       if (changes.length === 0) {
         console.log('联系人数据无变化，跳过同步')
         return true
       }
-      
+
       // 更新共享数据
       const updateResult = await this.api.setSharedData('contacts', 'cache', contacts)
       if (!updateResult.success) {
         console.error('更新共享联系人数据失败:', updateResult.error)
         return false
       }
-      
+
       // 发布变化事件
       for (const change of changes) {
         await this.publishEvent({
@@ -175,10 +175,10 @@ export class DataSyncService {
           source
         })
       }
-      
+
       // 更新同步时间
       await this.updateSyncTime()
-      
+
       console.log(`同步联系人数据完成，共 ${changes.length} 个变化`)
       return true
     } catch (error) {
@@ -206,7 +206,7 @@ export class DataSyncService {
   async forceSyncAll(): Promise<boolean> {
     try {
       console.log('开始强制同步所有数据...')
-      
+
       // 发布强制同步事件
       await this.publishEvent({
         type: 'data_sync',
@@ -214,10 +214,10 @@ export class DataSyncService {
         timestamp: new Date().toISOString(),
         source: 'data-sync-service'
       })
-      
+
       // 更新同步时间
       await this.updateSyncTime()
-      
+
       console.log('强制同步完成')
       return true
     } catch (error) {
@@ -233,10 +233,10 @@ export class DataSyncService {
     try {
       // 检查是否有新的同步事件
       const events = await this.getRecentEvents()
-      
+
       if (events.length > 0) {
         console.log(`检测到 ${events.length} 个新的同步事件`)
-        
+
         // 处理每个事件
         for (const event of events) {
           await this.processEvent(event)
@@ -255,9 +255,9 @@ export class DataSyncService {
       // 通知相关订阅者
       const subscribers = this.subscribers.get(event.type) || []
       const allSubscribers = this.subscribers.get('*') || []
-      
+
       const allNotifications = [...subscribers, ...allSubscribers]
-      
+
       for (const subscriber of allNotifications) {
         try {
           if (subscriber.pluginId !== event.source) {
@@ -275,7 +275,10 @@ export class DataSyncService {
   /**
    * 比较联系人数据变化
    */
-  private compareContacts(oldContacts: ContactWithGroup[], newContacts: ContactWithGroup[]): Array<{
+  private compareContacts(
+    oldContacts: ContactWithGroup[],
+    newContacts: ContactWithGroup[]
+  ): Array<{
     type: 'contact_added' | 'contact_updated' | 'contact_deleted'
     data: ContactWithGroup
   }> {
@@ -283,14 +286,14 @@ export class DataSyncService {
       type: 'contact_added' | 'contact_updated' | 'contact_deleted'
       data: ContactWithGroup
     }> = []
-    
-    const oldMap = new Map(oldContacts.map(c => [c.id, c]))
-    const newMap = new Map(newContacts.map(c => [c.id, c]))
-    
+
+    const oldMap = new Map(oldContacts.map((c) => [c.id, c]))
+    const newMap = new Map(newContacts.map((c) => [c.id, c]))
+
     // 检查新增和更新
     for (const newContact of newContacts) {
       const oldContact = oldMap.get(newContact.id)
-      
+
       if (!oldContact) {
         // 新增联系人
         changes.push({
@@ -305,7 +308,7 @@ export class DataSyncService {
         })
       }
     }
-    
+
     // 检查删除
     for (const oldContact of oldContacts) {
       if (!newMap.has(oldContact.id)) {
@@ -315,7 +318,7 @@ export class DataSyncService {
         })
       }
     }
-    
+
     return changes
   }
 
@@ -325,19 +328,26 @@ export class DataSyncService {
   private isContactChanged(oldContact: ContactWithGroup, newContact: ContactWithGroup): boolean {
     // 比较关键字段
     const fieldsToCompare = [
-      'nickname', 'avatar', 'remark', 'status', 'is_pinned', 
-      'group_id', 'tags', 'notes', 'updated_at'
+      'nickname',
+      'avatar',
+      'remark',
+      'status',
+      'is_pinned',
+      'group_id',
+      'tags',
+      'notes',
+      'updated_at'
     ]
-    
+
     for (const field of fieldsToCompare) {
       const oldValue = (oldContact as any)[field]
       const newValue = (newContact as any)[field]
-      
+
       if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
         return true
       }
     }
-    
+
     return false
   }
 
@@ -348,15 +358,15 @@ export class DataSyncService {
     try {
       const historyResult = await this.api.getSharedData<SyncEvent[]>('sync', 'event_history')
       const history = historyResult.success && historyResult.data ? historyResult.data : []
-      
+
       // 添加新事件
       history.push(event)
-      
+
       // 保持最近100个事件
       if (history.length > 100) {
         history.splice(0, history.length - 100)
       }
-      
+
       await this.api.setSharedData('sync', 'event_history', history)
     } catch (error) {
       console.error('保存事件历史失败:', error)
@@ -370,9 +380,9 @@ export class DataSyncService {
     try {
       const historyResult = await this.api.getSharedData<SyncEvent[]>('sync', 'event_history')
       const history = historyResult.success && historyResult.data ? historyResult.data : []
-      
+
       // 返回上次同步时间之后的事件
-      return history.filter(event => event.timestamp > this.lastSyncTime)
+      return history.filter((event) => event.timestamp > this.lastSyncTime)
     } catch (error) {
       console.error('获取最近事件失败:', error)
       return []
@@ -403,18 +413,18 @@ export class DataSyncService {
     try {
       const historyResult = await this.api.getSharedData<SyncEvent[]>('sync', 'event_history')
       const history = historyResult.success && historyResult.data ? historyResult.data : []
-      
-      const recentEvents = history.filter(event => {
+
+      const recentEvents = history.filter((event) => {
         const eventTime = new Date(event.timestamp)
         const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000)
         return eventTime > oneHourAgo
       })
-      
+
       let subscriberCount = 0
-      this.subscribers.forEach(subscribers => {
+      this.subscribers.forEach((subscribers) => {
         subscriberCount += subscribers.length
       })
-      
+
       return {
         lastSyncTime: this.lastSyncTime,
         totalEvents: history.length,
@@ -439,14 +449,12 @@ export class DataSyncService {
     try {
       const historyResult = await this.api.getSharedData<SyncEvent[]>('sync', 'event_history')
       const history = historyResult.success && historyResult.data ? historyResult.data : []
-      
+
       const cutoffTime = new Date(Date.now() - daysToKeep * 24 * 60 * 60 * 1000)
-      const filteredHistory = history.filter(event => 
-        new Date(event.timestamp) > cutoffTime
-      )
-      
+      const filteredHistory = history.filter((event) => new Date(event.timestamp) > cutoffTime)
+
       await this.api.setSharedData('sync', 'event_history', filteredHistory)
-      
+
       console.log(`清理历史事件完成，保留 ${filteredHistory.length} 个事件`)
       return true
     } catch (error) {
@@ -470,27 +478,34 @@ export const createDataSyncService = (pluginId?: string) => {
   return DataSyncService.getInstance(pluginId)
 }
 
-export const subscribeToContactChanges = (pluginId: string, callback: (event: SyncEvent) => void) => {
+export const subscribeToContactChanges = (
+  pluginId: string,
+  callback: (event: SyncEvent) => void
+) => {
   const syncService = DataSyncService.getInstance()
-  
+
   // 订阅所有联系人相关事件
   const eventTypes = ['contact_added', 'contact_updated', 'contact_deleted', 'contact_pinned']
-  
-  eventTypes.forEach(eventType => {
+
+  eventTypes.forEach((eventType) => {
     syncService.subscribe(eventType, { pluginId, callback })
   })
-  
+
   return () => {
     // 返回取消订阅函数
-    eventTypes.forEach(eventType => {
+    eventTypes.forEach((eventType) => {
       syncService.unsubscribe(eventType, pluginId)
     })
   }
 }
 
-export const publishContactChange = async (type: 'contact_added' | 'contact_updated' | 'contact_deleted' | 'contact_pinned', contact: ContactWithGroup, source: string) => {
+export const publishContactChange = async (
+  type: 'contact_added' | 'contact_updated' | 'contact_deleted' | 'contact_pinned',
+  contact: ContactWithGroup,
+  source: string
+) => {
   const syncService = DataSyncService.getInstance()
-  
+
   await syncService.publishEvent({
     type,
     data: contact,

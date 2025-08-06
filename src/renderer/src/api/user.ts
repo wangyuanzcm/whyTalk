@@ -58,7 +58,9 @@ interface ServUserDetailResponse {
 }
 
 // 查询用户信息服务接口
-export const ServUserDetail = createIpcApi<EmptyRequest, ServUserDetailResponse>('/api/v1/user/detail')
+export const ServUserDetail = createIpcApi<EmptyRequest, ServUserDetailResponse>(
+  '/api/v1/user/detail'
+)
 
 // 获取用户设置信息服务接口
 export const ServeUserSetting = createIpcApi<EmptyRequest, any>('/api/v1/user/setting')

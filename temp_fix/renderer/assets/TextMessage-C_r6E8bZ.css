@@ -15,7 +15,26 @@
   word-wrap: break-word;
   font-size: 13px;
   padding: 3px 5px;
-  font-family: system, -apple-system, BlinkMacSystemFont, PingFang SC, Segoe UI, Microsoft YaHei, wenquanyi micro hei, Hiragino Sans GB, Hiragino Sans GB W3, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, Helvetica, Arial, sans-serif;
+  font-family:
+    system,
+    -apple-system,
+    BlinkMacSystemFont,
+    PingFang SC,
+    Segoe UI,
+    Microsoft YaHei,
+    wenquanyi micro hei,
+    Hiragino Sans GB,
+    Hiragino Sans GB W3,
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    Fira Sans,
+    Droid Sans,
+    Helvetica Neue,
+    Helvetica,
+    Arial,
+    sans-serif;
   line-height: 1.8;
 }
 .immsg-text pre[data-v-16442278] .emoji {

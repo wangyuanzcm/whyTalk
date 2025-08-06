@@ -71,12 +71,12 @@ const onClickAccount = (type: number) => {
   console.log('onClickAccount called, type:', type)
   console.log('window.electron:', window.electron)
   console.log('window.electron?.ipcRenderer:', window.electron?.ipcRenderer)
-  
+
   if (!window.electron || !window.electron.ipcRenderer) {
     message.error('IPC API 不可用，请检查 Electron 预加载脚本')
     return
   }
-  
+
   switch (type) {
     case 0:
       // 实际存在的测试用户
@@ -116,8 +116,8 @@ const onClickAccount = (type: number) => {
       <n-form ref="formRef" size="large" :model="model" :rules="rules">
         <n-form-item path="username" :show-label="false">
           <n-input
-            placeholder="请输入手机号"
             v-model:value="model.username"
+            placeholder="请输入手机号"
             :maxlength="11"
             @keydown.enter="onValidate"
           />
@@ -125,10 +125,10 @@ const onClickAccount = (type: number) => {
 
         <n-form-item path="password" :show-label="false">
           <n-input
+            v-model:value="model.password"
             placeholder="请输入密码"
             type="password"
             show-password-on="click"
-            v-model:value="model.password"
             @keydown.enter="onValidate"
           />
         </n-form-item>
@@ -139,8 +139,8 @@ const onClickAccount = (type: number) => {
           block
           text-color="#ffffff"
           class="mt-t20"
-          @click="onValidate"
           :loading="loading"
+          @click="onValidate"
         >
           立即登录
         </n-button>
@@ -159,11 +159,21 @@ const onClickAccount = (type: number) => {
         <span style="color: #ccc; font-weight: 300"> 测试账号</span>
       </n-divider>
       <div class="preview-account">
-        <p @click="onClickAccount(0)" style="color: #67C23A; font-weight: bold;">✓ 测试用户: 138****8000 / 密码: 123456 (可用)</p>
-        <p @click="onClickAccount(1)" style="color: #67C23A; font-weight: bold;">✓ Alice: 138****8001 / 密码: 123456 (可用)</p>
-        <p @click="onClickAccount(2)" style="color: #67C23A; font-weight: bold;">✓ Bob: 138****8002 / 密码: 123456 (可用)</p>
-        <p @click="onClickAccount(3)" style="color: #67C23A; font-weight: bold;">✓ Charlie: 138****8003 / 密码: 123456 (可用)</p>
-        <p @click="onClickAccount(4)" style="color: #67C23A; font-weight: bold;">✓ Diana: 138****8004 / 密码: 123456 (可用)</p>
+        <p style="color: #67c23a; font-weight: bold" @click="onClickAccount(0)">
+          ✓ 测试用户: 138****8000 / 密码: 123456 (可用)
+        </p>
+        <p style="color: #67c23a; font-weight: bold" @click="onClickAccount(1)">
+          ✓ Alice: 138****8001 / 密码: 123456 (可用)
+        </p>
+        <p style="color: #67c23a; font-weight: bold" @click="onClickAccount(2)">
+          ✓ Bob: 138****8002 / 密码: 123456 (可用)
+        </p>
+        <p style="color: #67c23a; font-weight: bold" @click="onClickAccount(3)">
+          ✓ Charlie: 138****8003 / 密码: 123456 (可用)
+        </p>
+        <p style="color: #67c23a; font-weight: bold" @click="onClickAccount(4)">
+          ✓ Diana: 138****8004 / 密码: 123456 (可用)
+        </p>
       </div>
     </footer>
   </section>

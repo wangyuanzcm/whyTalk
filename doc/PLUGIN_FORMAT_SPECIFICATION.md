@@ -108,12 +108,12 @@ my-hybrid-plugin/
     "url": "https://github.com/user/plugin.git"
   },
   "keywords": ["chat", "utility", "productivity"],
-  
+
   "type": "frontend",
   "main": "index.html",
   "icon": "assets/icons/icon.png",
   "menuTitle": "插件菜单标题",
-  
+
   "permissions": [
     "storage",
     "notifications",
@@ -128,12 +128,12 @@ my-hybrid-plugin/
     "messages",
     "conversations"
   ],
-  
+
   "dependencies": {
     "vue": "^3.0.0",
     "naive-ui": "^2.0.0"
   },
-  
+
   "routes": [
     {
       "path": "/",
@@ -144,7 +144,7 @@ my-hybrid-plugin/
       "component": "SettingsView"
     }
   ],
-  
+
   "ui": {
     "width": 800,
     "height": 600,
@@ -156,22 +156,18 @@ my-hybrid-plugin/
     "transparent": false,
     "webSecurity": true
   },
-  
+
   "settings": {
     "page": "settings.html",
     "title": "插件设置",
     "icon": "assets/icons/settings.png"
   },
-  
+
   "systemPlugin": {
     "wasmFile": "plugin.wasm",
-    "exports": [
-      "init",
-      "process_data",
-      "cleanup"
-    ]
+    "exports": ["init", "process_data", "cleanup"]
   },
-  
+
   "lifecycle": {
     "onInstall": "handleInstall",
     "onUninstall": "handleUninstall",
@@ -179,7 +175,7 @@ my-hybrid-plugin/
     "onDisable": "handleDisable",
     "onUpdate": "handleUpdate"
   },
-  
+
   "metadata": {
     "category": "productivity",
     "tags": ["note", "collaboration"],
@@ -194,58 +190,58 @@ my-hybrid-plugin/
 
 #### 基础信息
 
-| 字段 | 类型 | 必需 | 说明 |
-|------|------|------|------|
-| `name` | string | ✓ | 插件名称，必须唯一 |
-| `version` | string | ✓ | 版本号，遵循语义化版本 |
-| `description` | string | ✓ | 插件描述 |
-| `author` | string | ✓ | 作者信息 |
-| `license` | string | - | 许可证类型 |
-| `homepage` | string | - | 主页地址 |
-| `repository` | object | - | 代码仓库信息 |
-| `keywords` | string[] | - | 关键词标签 |
+| 字段          | 类型     | 必需 | 说明                   |
+| ------------- | -------- | ---- | ---------------------- |
+| `name`        | string   | ✓    | 插件名称，必须唯一     |
+| `version`     | string   | ✓    | 版本号，遵循语义化版本 |
+| `description` | string   | ✓    | 插件描述               |
+| `author`      | string   | ✓    | 作者信息               |
+| `license`     | string   | -    | 许可证类型             |
+| `homepage`    | string   | -    | 主页地址               |
+| `repository`  | object   | -    | 代码仓库信息           |
+| `keywords`    | string[] | -    | 关键词标签             |
 
 #### 插件配置
 
-| 字段 | 类型 | 必需 | 说明 |
-|------|------|------|------|
-| `type` | string | ✓ | 插件类型：`frontend`、`system`、`hybrid` |
-| `main` | string | ✓ | 主入口文件路径 |
-| `icon` | string | - | 插件图标路径 |
-| `menuTitle` | string | - | 菜单显示标题 |
+| 字段        | 类型   | 必需 | 说明                                     |
+| ----------- | ------ | ---- | ---------------------------------------- |
+| `type`      | string | ✓    | 插件类型：`frontend`、`system`、`hybrid` |
+| `main`      | string | ✓    | 主入口文件路径                           |
+| `icon`      | string | -    | 插件图标路径                             |
+| `menuTitle` | string | -    | 菜单显示标题                             |
 
 #### 权限配置
 
-| 权限 | 说明 |
-|------|------|
-| `storage` | 数据存储权限 |
-| `database` | 数据库访问权限 |
-| `shared_data` | 共享数据访问权限 |
-| `ipc` | IPC 通信权限 |
-| `p2p` | P2P 通信权限 |
-| `network` | 网络访问权限 |
-| `file_system` | 文件系统访问权限 |
-| `notifications` | 通知权限 |
-| `clipboard` | 剪贴板权限 |
-| `window_control` | 窗口控制权限 |
-| `system_info` | 系统信息权限 |
-| `contacts` | 联系人访问权限 |
-| `messages` | 消息访问权限 |
-| `conversations` | 会话访问权限 |
+| 权限             | 说明             |
+| ---------------- | ---------------- |
+| `storage`        | 数据存储权限     |
+| `database`       | 数据库访问权限   |
+| `shared_data`    | 共享数据访问权限 |
+| `ipc`            | IPC 通信权限     |
+| `p2p`            | P2P 通信权限     |
+| `network`        | 网络访问权限     |
+| `file_system`    | 文件系统访问权限 |
+| `notifications`  | 通知权限         |
+| `clipboard`      | 剪贴板权限       |
+| `window_control` | 窗口控制权限     |
+| `system_info`    | 系统信息权限     |
+| `contacts`       | 联系人访问权限   |
+| `messages`       | 消息访问权限     |
+| `conversations`  | 会话访问权限     |
 
 #### UI 配置
 
-| 字段 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| `width` | number | 800 | 窗口宽度 |
-| `height` | number | 600 | 窗口高度 |
-| `resizable` | boolean | true | 是否可调整大小 |
-| `minimizable` | boolean | true | 是否可最小化 |
-| `maximizable` | boolean | true | 是否可最大化 |
-| `alwaysOnTop` | boolean | false | 是否置顶显示 |
-| `frame` | boolean | true | 是否显示窗口边框 |
-| `transparent` | boolean | false | 是否透明背景 |
-| `webSecurity` | boolean | true | 是否启用 Web 安全 |
+| 字段          | 类型    | 默认值 | 说明              |
+| ------------- | ------- | ------ | ----------------- |
+| `width`       | number  | 800    | 窗口宽度          |
+| `height`      | number  | 600    | 窗口高度          |
+| `resizable`   | boolean | true   | 是否可调整大小    |
+| `minimizable` | boolean | true   | 是否可最小化      |
+| `maximizable` | boolean | true   | 是否可最大化      |
+| `alwaysOnTop` | boolean | false  | 是否置顶显示      |
+| `frame`       | boolean | true   | 是否显示窗口边框  |
+| `transparent` | boolean | false  | 是否透明背景      |
+| `webSecurity` | boolean | true   | 是否启用 Web 安全 |
 
 ## 前端插件开发
 
@@ -256,34 +252,34 @@ my-hybrid-plugin/
 ```html
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>我的插件</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
     <div id="app">
-        <header class="plugin-header">
-            <h1>我的插件</h1>
-            <div class="plugin-actions">
-                <button id="settingsBtn">设置</button>
-            </div>
-        </header>
-        
-        <main class="plugin-content">
-            <!-- 插件主要内容 -->
-        </main>
-        
-        <footer class="plugin-footer">
-            <div class="status-bar">
-                <span id="statusText">就绪</span>
-            </div>
-        </footer>
+      <header class="plugin-header">
+        <h1>我的插件</h1>
+        <div class="plugin-actions">
+          <button id="settingsBtn">设置</button>
+        </div>
+      </header>
+
+      <main class="plugin-content">
+        <!-- 插件主要内容 -->
+      </main>
+
+      <footer class="plugin-footer">
+        <div class="status-bar">
+          <span id="statusText">就绪</span>
+        </div>
+      </footer>
     </div>
-    
+
     <script src="script.js"></script>
-</body>
+  </body>
 </html>
 ```
 
@@ -291,132 +287,132 @@ my-hybrid-plugin/
 
 ```javascript
 class MyPlugin {
-    constructor() {
-        this.pluginId = 'my-plugin'
-        this.api = window.electronAPI
-        this.pluginAPI = window.PluginAPI
-        this.initialized = false
+  constructor() {
+    this.pluginId = 'my-plugin'
+    this.api = window.electronAPI
+    this.pluginAPI = window.PluginAPI
+    this.initialized = false
+  }
+
+  async init() {
+    try {
+      // 检查权限
+      await this.checkPermissions()
+
+      // 初始化 UI
+      this.initUI()
+
+      // 加载数据
+      await this.loadData()
+
+      // 设置事件监听
+      this.setupEventListeners()
+
+      this.initialized = true
+      this.updateStatus('插件已就绪')
+    } catch (error) {
+      console.error('插件初始化失败:', error)
+      this.updateStatus('初始化失败')
     }
-    
-    async init() {
-        try {
-            // 检查权限
-            await this.checkPermissions()
-            
-            // 初始化 UI
-            this.initUI()
-            
-            // 加载数据
-            await this.loadData()
-            
-            // 设置事件监听
-            this.setupEventListeners()
-            
-            this.initialized = true
-            this.updateStatus('插件已就绪')
-        } catch (error) {
-            console.error('插件初始化失败:', error)
-            this.updateStatus('初始化失败')
+  }
+
+  async checkPermissions() {
+    const requiredPermissions = ['storage', 'notifications']
+
+    for (const permission of requiredPermissions) {
+      const hasPermission = await this.pluginAPI.permissions.check(permission)
+      if (!hasPermission) {
+        const granted = await this.pluginAPI.permissions.request(permission)
+        if (!granted) {
+          throw new Error(`缺少必要权限: ${permission}`)
         }
+      }
     }
-    
-    async checkPermissions() {
-        const requiredPermissions = ['storage', 'notifications']
-        
-        for (const permission of requiredPermissions) {
-            const hasPermission = await this.pluginAPI.permissions.check(permission)
-            if (!hasPermission) {
-                const granted = await this.pluginAPI.permissions.request(permission)
-                if (!granted) {
-                    throw new Error(`缺少必要权限: ${permission}`)
-                }
-            }
-        }
+  }
+
+  initUI() {
+    // 初始化用户界面
+    const settingsBtn = document.getElementById('settingsBtn')
+    settingsBtn.addEventListener('click', () => this.openSettings())
+  }
+
+  async loadData() {
+    try {
+      // 加载插件数据
+      const config = await this.pluginAPI.storage.getData('config')
+      if (config.success && config.data) {
+        this.applyConfig(config.data)
+      }
+    } catch (error) {
+      console.error('加载数据失败:', error)
     }
-    
-    initUI() {
-        // 初始化用户界面
-        const settingsBtn = document.getElementById('settingsBtn')
-        settingsBtn.addEventListener('click', () => this.openSettings())
+  }
+
+  setupEventListeners() {
+    // 监听 P2P 消息
+    this.api.p2p.onMessage((message) => {
+      this.handleP2PMessage(message)
+    })
+
+    // 监听联系人变化
+    this.api.p2p.onContactUpdate((contact) => {
+      this.handleContactUpdate(contact)
+    })
+  }
+
+  async handleP2PMessage(message) {
+    // 处理 P2P 消息
+    console.log('收到 P2P 消息:', message)
+
+    // 显示通知
+    await this.pluginAPI.notifications.show('新消息', {
+      body: message.content,
+      icon: 'assets/icons/message.png'
+    })
+  }
+
+  handleContactUpdate(contact) {
+    // 处理联系人更新
+    console.log('联系人更新:', contact)
+  }
+
+  async saveData(key, value) {
+    try {
+      const result = await this.pluginAPI.storage.setData(key, value)
+      if (!result.success) {
+        throw new Error(result.error)
+      }
+    } catch (error) {
+      console.error('保存数据失败:', error)
     }
-    
-    async loadData() {
-        try {
-            // 加载插件数据
-            const config = await this.pluginAPI.storage.getData('config')
-            if (config.success && config.data) {
-                this.applyConfig(config.data)
-            }
-        } catch (error) {
-            console.error('加载数据失败:', error)
-        }
+  }
+
+  async openSettings() {
+    // 打开设置页面
+    // 可以通过路由或新窗口实现
+  }
+
+  updateStatus(text) {
+    const statusElement = document.getElementById('statusText')
+    if (statusElement) {
+      statusElement.textContent = text
     }
-    
-    setupEventListeners() {
-        // 监听 P2P 消息
-        this.api.p2p.onMessage((message) => {
-            this.handleP2PMessage(message)
-        })
-        
-        // 监听联系人变化
-        this.api.p2p.onContactUpdate((contact) => {
-            this.handleContactUpdate(contact)
-        })
-    }
-    
-    async handleP2PMessage(message) {
-        // 处理 P2P 消息
-        console.log('收到 P2P 消息:', message)
-        
-        // 显示通知
-        await this.pluginAPI.notifications.show('新消息', {
-            body: message.content,
-            icon: 'assets/icons/message.png'
-        })
-    }
-    
-    handleContactUpdate(contact) {
-        // 处理联系人更新
-        console.log('联系人更新:', contact)
-    }
-    
-    async saveData(key, value) {
-        try {
-            const result = await this.pluginAPI.storage.setData(key, value)
-            if (!result.success) {
-                throw new Error(result.error)
-            }
-        } catch (error) {
-            console.error('保存数据失败:', error)
-        }
-    }
-    
-    async openSettings() {
-        // 打开设置页面
-        // 可以通过路由或新窗口实现
-    }
-    
-    updateStatus(text) {
-        const statusElement = document.getElementById('statusText')
-        if (statusElement) {
-            statusElement.textContent = text
-        }
-    }
-    
-    // 插件生命周期方法
-    async onEnable() {
-        console.log('插件已启用')
-    }
-    
-    async onDisable() {
-        console.log('插件已禁用')
-    }
-    
-    async onUninstall() {
-        // 清理数据
-        await this.pluginAPI.storage.deleteData('config')
-        console.log('插件已卸载')
-    }
+  }
+
+  // 插件生命周期方法
+  async onEnable() {
+    console.log('插件已启用')
+  }
+
+  async onDisable() {
+    console.log('插件已禁用')
+  }
+
+  async onUninstall() {
+    // 清理数据
+    await this.pluginAPI.storage.deleteData('config')
+    console.log('插件已卸载')
+  }
 }
 
 // 插件实例
@@ -424,7 +420,7 @@ const myPlugin = new MyPlugin()
 
 // 页面加载完成后初始化插件
 document.addEventListener('DOMContentLoaded', () => {
-    myPlugin.init()
+  myPlugin.init()
 })
 
 // 暴露插件实例供基座调用
@@ -436,81 +432,81 @@ window.pluginInstance = myPlugin
 ```css
 /* 插件基础样式 */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-color: #f5f5f5;
-    color: #333;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #f5f5f5;
+  color: #333;
 }
 
 #app {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 }
 
 .plugin-header {
-    background-color: #fff;
-    border-bottom: 1px solid #e0e0e0;
-    padding: 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  background-color: #fff;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .plugin-header h1 {
-    font-size: 18px;
-    font-weight: 600;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .plugin-actions button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
 }
 
 .plugin-actions button:hover {
-    background-color: #0056b3;
+  background-color: #0056b3;
 }
 
 .plugin-content {
-    flex: 1;
-    padding: 16px;
-    overflow-y: auto;
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
 }
 
 .plugin-footer {
-    background-color: #fff;
-    border-top: 1px solid #e0e0e0;
-    padding: 8px 16px;
+  background-color: #fff;
+  border-top: 1px solid #e0e0e0;
+  padding: 8px 16px;
 }
 
 .status-bar {
-    font-size: 12px;
-    color: #666;
+  font-size: 12px;
+  color: #666;
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-    .plugin-header {
-        padding: 12px;
-    }
-    
-    .plugin-header h1 {
-        font-size: 16px;
-    }
-    
-    .plugin-content {
-        padding: 12px;
-    }
+  .plugin-header {
+    padding: 12px;
+  }
+
+  .plugin-header h1 {
+    font-size: 16px;
+  }
+
+  .plugin-content {
+    padding: 12px;
+  }
 }
 ```
 
@@ -565,11 +561,11 @@ pub fn init(config_json: &str) -> String {
         Ok(c) => c,
         Err(e) => return format!("{{\"success\": false, \"error\": \"{}\"}}", e),
     };
-    
+
     unsafe {
         PLUGIN_STATE = Some(config);
     }
-    
+
     "{\"success\": true}".to_string()
 }
 
@@ -580,7 +576,7 @@ pub fn process_data(input_json: &str) -> String {
         Ok(v) => v,
         Err(e) => return format!("{{\"success\": false, \"error\": \"{}\"}}", e),
     };
-    
+
     // 处理数据逻辑
     let result = match input["operation"].as_str() {
         Some("transform") => transform_data(&input["data"]),
@@ -588,7 +584,7 @@ pub fn process_data(input_json: &str) -> String {
         Some("analyze") => analyze_data(&input["data"]),
         _ => return "{\"success\": false, \"error\": \"Unknown operation\"}".to_string(),
     };
-    
+
     format!("{{\"success\": true, \"data\": {}}}", result)
 }
 
@@ -613,7 +609,7 @@ fn analyze_data(data: &serde_json::Value) -> String {
         "size": data.to_string().len(),
         "timestamp": js_sys::Date::now()
     });
-    
+
     serde_json::to_string(&analysis).unwrap_or_default()
 }
 
@@ -623,7 +619,7 @@ pub fn cleanup() -> String {
     unsafe {
         PLUGIN_STATE = None;
     }
-    
+
     "{\"success\": true}".to_string()
 }
 
@@ -697,16 +693,16 @@ echo 构建完成: plugin.wasm
 ```json
 {
   "permissions": [
-    "storage",      // 数据存储
-    "database",     // 数据库访问
-    "ipc",          // IPC 通信
-    "p2p",          // P2P 通信
-    "network",      // 网络访问
-    "file_system",  // 文件系统
+    "storage", // 数据存储
+    "database", // 数据库访问
+    "ipc", // IPC 通信
+    "p2p", // P2P 通信
+    "network", // 网络访问
+    "file_system", // 文件系统
     "notifications", // 通知
-    "clipboard",    // 剪贴板
-    "contacts",     // 联系人
-    "messages"      // 消息
+    "clipboard", // 剪贴板
+    "contacts", // 联系人
+    "messages" // 消息
   ]
 }
 ```
@@ -718,11 +714,11 @@ echo 构建完成: plugin.wasm
 const hasPermission = await window.PluginAPI.permissions.check('storage')
 
 if (!hasPermission) {
-    // 请求权限
-    const granted = await window.PluginAPI.permissions.request('storage')
-    if (!granted) {
-        throw new Error('用户拒绝了存储权限')
-    }
+  // 请求权限
+  const granted = await window.PluginAPI.permissions.request('storage')
+  if (!granted) {
+    throw new Error('用户拒绝了存储权限')
+  }
 }
 ```
 
@@ -740,15 +736,15 @@ if (!hasPermission) {
 ```javascript
 // 保存数据
 const result = await window.PluginAPI.storage.setData('user_preferences', {
-    theme: 'dark',
-    language: 'zh-CN',
-    notifications: true
+  theme: 'dark',
+  language: 'zh-CN',
+  notifications: true
 })
 
 // 读取数据
 const data = await window.PluginAPI.storage.getData('user_preferences')
 if (data.success) {
-    console.log('用户偏好:', data.data)
+  console.log('用户偏好:', data.data)
 }
 
 // 删除数据
@@ -781,16 +777,16 @@ const contacts = await window.PluginAPI.storage.getCachedContacts()
 ```javascript
 // 发送直接消息
 const result = await window.electronAPI.p2p.sendDirectMessage({
-    to: 'peer-id-123',
-    content: 'Hello, World!',
-    messageType: 1
+  to: 'peer-id-123',
+  content: 'Hello, World!',
+  messageType: 1
 })
 
 // 发送群组消息
 await window.electronAPI.p2p.sendGroupMessage({
-    groupId: 'group-456',
-    content: 'Group message',
-    messageType: 1
+  groupId: 'group-456',
+  content: 'Group message',
+  messageType: 1
 })
 
 // 获取联系人列表
@@ -802,11 +798,9 @@ const contacts = await window.electronAPI.p2p.getContacts()
 ```javascript
 // 选择文件
 const files = await window.PluginAPI.file.selectFile({
-    title: '选择图片',
-    filters: [
-        { name: '图片', extensions: ['jpg', 'png', 'gif'] }
-    ],
-    multiSelections: true
+  title: '选择图片',
+  filters: [{ name: '图片', extensions: ['jpg', 'png', 'gif'] }],
+  multiSelections: true
 })
 
 // 读取文件内容
@@ -821,10 +815,10 @@ await window.PluginAPI.file.writeText('/path/to/file.txt', 'Hello, World!')
 ```javascript
 // 显示通知
 await window.PluginAPI.notifications.show('新消息', {
-    body: '您有一条新消息',
-    icon: 'assets/icons/message.png',
-    tag: 'message-notification',
-    requireInteraction: true
+  body: '您有一条新消息',
+  icon: 'assets/icons/message.png',
+  tag: 'message-notification',
+  requireInteraction: true
 })
 ```
 
@@ -834,27 +828,27 @@ await window.PluginAPI.notifications.show('新消息', {
 
 ```javascript
 class PluginErrorHandler {
-    static async safeCall(fn, fallback = null) {
-        try {
-            return await fn()
-        } catch (error) {
-            console.error('插件操作失败:', error)
-            return fallback
-        }
+  static async safeCall(fn, fallback = null) {
+    try {
+      return await fn()
+    } catch (error) {
+      console.error('插件操作失败:', error)
+      return fallback
     }
-    
-    static handleAPIError(response) {
-        if (!response.success) {
-            throw new Error(response.error || '未知错误')
-        }
-        return response.data
+  }
+
+  static handleAPIError(response) {
+    if (!response.success) {
+      throw new Error(response.error || '未知错误')
     }
+    return response.data
+  }
 }
 
 // 使用示例
 const data = await PluginErrorHandler.safeCall(async () => {
-    const response = await window.PluginAPI.storage.getData('config')
-    return PluginErrorHandler.handleAPIError(response)
+  const response = await window.PluginAPI.storage.getData('config')
+  return PluginErrorHandler.handleAPIError(response)
 }, {})
 ```
 
@@ -862,39 +856,42 @@ const data = await PluginErrorHandler.safeCall(async () => {
 
 ```javascript
 class PluginPerformance {
-    constructor() {
-        this.cache = new Map()
-        this.debounceTimers = new Map()
+  constructor() {
+    this.cache = new Map()
+    this.debounceTimers = new Map()
+  }
+
+  // 缓存机制
+  async getCachedData(key, fetcher, ttl = 60000) {
+    const cached = this.cache.get(key)
+    if (cached && Date.now() - cached.timestamp < ttl) {
+      return cached.data
     }
-    
-    // 缓存机制
-    async getCachedData(key, fetcher, ttl = 60000) {
-        const cached = this.cache.get(key)
-        if (cached && Date.now() - cached.timestamp < ttl) {
-            return cached.data
-        }
-        
-        const data = await fetcher()
-        this.cache.set(key, {
-            data,
-            timestamp: Date.now()
-        })
-        
-        return data
+
+    const data = await fetcher()
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now()
+    })
+
+    return data
+  }
+
+  // 防抖处理
+  debounce(key, fn, delay = 300) {
+    const timer = this.debounceTimers.get(key)
+    if (timer) {
+      clearTimeout(timer)
     }
-    
-    // 防抖处理
-    debounce(key, fn, delay = 300) {
-        const timer = this.debounceTimers.get(key)
-        if (timer) {
-            clearTimeout(timer)
-        }
-        
-        this.debounceTimers.set(key, setTimeout(() => {
-            fn()
-            this.debounceTimers.delete(key)
-        }, delay))
-    }
+
+    this.debounceTimers.set(
+      key,
+      setTimeout(() => {
+        fn()
+        this.debounceTimers.delete(key)
+      }, delay)
+    )
+  }
 }
 ```
 
@@ -902,27 +899,27 @@ class PluginPerformance {
 
 ```javascript
 class PluginI18n {
-    constructor() {
-        this.locale = 'zh-CN'
-        this.messages = {}
+  constructor() {
+    this.locale = 'zh-CN'
+    this.messages = {}
+  }
+
+  async loadMessages(locale) {
+    try {
+      const response = await fetch(`./locales/${locale}.json`)
+      this.messages[locale] = await response.json()
+      this.locale = locale
+    } catch (error) {
+      console.warn(`无法加载语言包: ${locale}`)
     }
-    
-    async loadMessages(locale) {
-        try {
-            const response = await fetch(`./locales/${locale}.json`)
-            this.messages[locale] = await response.json()
-            this.locale = locale
-        } catch (error) {
-            console.warn(`无法加载语言包: ${locale}`)
-        }
-    }
-    
-    t(key, params = {}) {
-        const message = this.messages[this.locale]?.[key] || key
-        return message.replace(/\{(\w+)\}/g, (match, param) => {
-            return params[param] || match
-        })
-    }
+  }
+
+  t(key, params = {}) {
+    const message = this.messages[this.locale]?.[key] || key
+    return message.replace(/\{(\w+)\}/g, (match, param) => {
+      return params[param] || match
+    })
+  }
 }
 ```
 
@@ -931,26 +928,26 @@ class PluginI18n {
 ```css
 /* CSS 变量定义 */
 :root {
-    --primary-color: #007bff;
-    --secondary-color: #6c757d;
-    --background-color: #ffffff;
-    --text-color: #333333;
-    --border-color: #e0e0e0;
+  --primary-color: #007bff;
+  --secondary-color: #6c757d;
+  --background-color: #ffffff;
+  --text-color: #333333;
+  --border-color: #e0e0e0;
 }
 
-[data-theme="dark"] {
-    --primary-color: #0d6efd;
-    --secondary-color: #6c757d;
-    --background-color: #1a1a1a;
-    --text-color: #ffffff;
-    --border-color: #333333;
+[data-theme='dark'] {
+  --primary-color: #0d6efd;
+  --secondary-color: #6c757d;
+  --background-color: #1a1a1a;
+  --text-color: #ffffff;
+  --border-color: #333333;
 }
 
 /* 使用 CSS 变量 */
 .plugin-header {
-    background-color: var(--background-color);
-    color: var(--text-color);
-    border-bottom: 1px solid var(--border-color);
+  background-color: var(--background-color);
+  color: var(--text-color);
+  border-bottom: 1px solid var(--border-color);
 }
 ```
 
@@ -961,6 +958,7 @@ class PluginI18n {
 这是一个完整的笔记插件示例，展示了前端插件的最佳实践：
 
 **功能特性：**
+
 - 笔记创建、编辑、删除
 - P2P 协作功能
 - 数据持久化存储
@@ -968,12 +966,14 @@ class PluginI18n {
 - 实时同步
 
 **技术栈：**
+
 - 原生 JavaScript
 - CSS3 动画
 - IndexedDB 本地存储
 - WebSocket 实时通信
 
 **文件结构：**
+
 ```
 note-plugin/
 ├── cubeModule.json
@@ -990,12 +990,14 @@ note-plugin/
 这是一个系统插件示例，展示了 WASM 插件的开发模式：
 
 **功能特性：**
+
 - 系统资源监控
 - 性能数据收集
 - 后台数据处理
 - 定时任务执行
 
 **技术栈：**
+
 - Rust + WebAssembly
 - 系统 API 调用
 - 数据分析算法
@@ -1007,15 +1009,15 @@ note-plugin/
 ```javascript
 // 启用调试模式
 if (process.env.NODE_ENV === 'development') {
-    window.PluginAPI.debug.enable()
-    
-    // 添加调试信息
-    window.PluginAPI.debug.log('插件初始化开始')
-    
-    // 性能监控
-    window.PluginAPI.debug.startTimer('init')
-    // ... 初始化代码
-    window.PluginAPI.debug.endTimer('init')
+  window.PluginAPI.debug.enable()
+
+  // 添加调试信息
+  window.PluginAPI.debug.log('插件初始化开始')
+
+  // 性能监控
+  window.PluginAPI.debug.startTimer('init')
+  // ... 初始化代码
+  window.PluginAPI.debug.endTimer('init')
 }
 ```
 
@@ -1024,19 +1026,16 @@ if (process.env.NODE_ENV === 'development') {
 ```javascript
 // 插件测试框架
 class PluginTester {
-    static async testAPI(apiName, params, expected) {
-        try {
-            const result = await window.PluginAPI[apiName](...params)
-            console.assert(
-                JSON.stringify(result) === JSON.stringify(expected),
-                `API ${apiName} 测试失败`
-            )
-            return true
-        } catch (error) {
-            console.error(`API ${apiName} 测试异常:`, error)
-            return false
-        }
+  static async testAPI(apiName, params, expected) {
+    try {
+      const result = await window.PluginAPI[apiName](...params)
+      console.assert(JSON.stringify(result) === JSON.stringify(expected), `API ${apiName} 测试失败`)
+      return true
+    } catch (error) {
+      console.error(`API ${apiName} 测试异常:`, error)
+      return false
     }
+  }
 }
 
 // 测试用例
@@ -1058,6 +1057,7 @@ tar -czf my-plugin.tar.gz my-plugin/
 ### 版本管理
 
 遵循语义化版本控制：
+
 - **主版本号**：不兼容的 API 更改
 - **次版本号**：向后兼容的功能性新增
 - **修订号**：向后兼容的问题修正

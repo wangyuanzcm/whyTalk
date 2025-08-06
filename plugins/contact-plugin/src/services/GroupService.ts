@@ -115,7 +115,7 @@ export class GroupService extends EventEmitter {
         url: '/api/v1/group/list',
         data: { user_id: userId }
       })
-      
+
       if (response.success) {
         return response.data.items || []
       } else {
@@ -128,7 +128,10 @@ export class GroupService extends EventEmitter {
   }
 
   // 创建群组
-  public async createGroup(userId: number, data: GroupCreateRequest): Promise<{ group_id: number }> {
+  public async createGroup(
+    userId: number,
+    data: GroupCreateRequest
+  ): Promise<{ group_id: number }> {
     try {
       const response = await window.electronAPI.invoke('plugin-api-call', {
         pluginId: this.pluginId,
@@ -136,7 +139,7 @@ export class GroupService extends EventEmitter {
         url: '/api/v1/group/create',
         data: { user_id: userId, ...data }
       })
-      
+
       if (response.success) {
         this.emit('group:created', data)
         return response.data
@@ -158,7 +161,7 @@ export class GroupService extends EventEmitter {
         url: '/api/v1/group/detail',
         data: { user_id: userId, group_id: groupId }
       })
-      
+
       if (response.success) {
         return response.data
       } else {
@@ -171,7 +174,11 @@ export class GroupService extends EventEmitter {
   }
 
   // 更新群组信息
-  public async updateGroup(userId: number, groupId: number, data: GroupUpdateRequest): Promise<void> {
+  public async updateGroup(
+    userId: number,
+    groupId: number,
+    data: GroupUpdateRequest
+  ): Promise<void> {
     try {
       const response = await window.electronAPI.invoke('plugin-api-call', {
         pluginId: this.pluginId,
@@ -179,11 +186,11 @@ export class GroupService extends EventEmitter {
         url: '/api/v1/group/update',
         data: { user_id: userId, group_id: groupId, ...data }
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '更新群组信息失败')
       }
-      
+
       this.emit('group:updated', { groupId, ...data })
     } catch (error) {
       console.error('Failed to update group:', error)
@@ -192,7 +199,11 @@ export class GroupService extends EventEmitter {
   }
 
   // 邀请成员加入群组
-  public async inviteMembers(userId: number, groupId: number, data: GroupMemberRequest): Promise<void> {
+  public async inviteMembers(
+    userId: number,
+    groupId: number,
+    data: GroupMemberRequest
+  ): Promise<void> {
     try {
       const response = await window.electronAPI.invoke('plugin-api-call', {
         pluginId: this.pluginId,
@@ -200,11 +211,11 @@ export class GroupService extends EventEmitter {
         url: '/api/v1/group/invite',
         data: { user_id: userId, group_id: groupId, user_ids: data.user_ids }
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '邀请成员失败')
       }
-      
+
       this.emit('group:members-invited', { groupId, userIds: data.user_ids })
     } catch (error) {
       console.error('Failed to invite members:', error)
@@ -213,7 +224,11 @@ export class GroupService extends EventEmitter {
   }
 
   // 移除群组成员
-  public async removeMembers(userId: number, groupId: number, data: GroupMemberRequest): Promise<void> {
+  public async removeMembers(
+    userId: number,
+    groupId: number,
+    data: GroupMemberRequest
+  ): Promise<void> {
     try {
       const response = await window.electronAPI.invoke('plugin-api-call', {
         pluginId: this.pluginId,
@@ -221,11 +236,11 @@ export class GroupService extends EventEmitter {
         url: '/api/v1/group/member/remove',
         data: { user_id: userId, group_id: groupId, user_ids: data.user_ids }
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '移除成员失败')
       }
-      
+
       this.emit('group:members-removed', { groupId, userIds: data.user_ids })
     } catch (error) {
       console.error('Failed to remove members:', error)
@@ -242,11 +257,11 @@ export class GroupService extends EventEmitter {
         url: '/api/v1/group/secede',
         data: { user_id: userId, group_id: groupId }
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '退出群组失败')
       }
-      
+
       this.emit('group:left', { groupId })
     } catch (error) {
       console.error('Failed to leave group:', error)
@@ -263,11 +278,11 @@ export class GroupService extends EventEmitter {
         url: '/api/v1/group/dismiss',
         data: { user_id: userId, group_id: groupId }
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '解散群组失败')
       }
-      
+
       this.emit('group:dismissed', { groupId })
     } catch (error) {
       console.error('Failed to dismiss group:', error)
@@ -284,7 +299,7 @@ export class GroupService extends EventEmitter {
         url: '/api/v1/group/member/list',
         data: { user_id: userId, group_id: groupId }
       })
-      
+
       if (response.success) {
         return response.data || []
       } else {
@@ -297,7 +312,12 @@ export class GroupService extends EventEmitter {
   }
 
   // 设置群组成员禁言
-  public async muteGroupMember(userId: number, groupId: number, memberId: number, duration: number): Promise<void> {
+  public async muteGroupMember(
+    userId: number,
+    groupId: number,
+    memberId: number,
+    duration: number
+  ): Promise<void> {
     try {
       const response = await window.electronAPI.invoke('plugin-api-call', {
         pluginId: this.pluginId,
@@ -305,11 +325,11 @@ export class GroupService extends EventEmitter {
         url: '/api/v1/group/member/mute',
         data: { user_id: userId, group_id: groupId, member_id: memberId, duration }
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '设置禁言失败')
       }
-      
+
       this.emit('group:member-muted', { groupId, memberId, duration })
     } catch (error) {
       console.error('Failed to mute group member:', error)
@@ -318,7 +338,12 @@ export class GroupService extends EventEmitter {
   }
 
   // 设置群组成员角色
-  public async setMemberRole(userId: number, groupId: number, memberId: number, role: string): Promise<void> {
+  public async setMemberRole(
+    userId: number,
+    groupId: number,
+    memberId: number,
+    role: string
+  ): Promise<void> {
     try {
       const response = await window.electronAPI.invoke('plugin-api-call', {
         pluginId: this.pluginId,
@@ -326,11 +351,11 @@ export class GroupService extends EventEmitter {
         url: '/api/v1/group/member/role',
         data: { user_id: userId, group_id: groupId, member_id: memberId, role }
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '设置角色失败')
       }
-      
+
       this.emit('group:member-role-changed', { groupId, memberId, role })
     } catch (error) {
       console.error('Failed to set member role:', error)
@@ -347,7 +372,7 @@ export class GroupService extends EventEmitter {
         url: '/api/v1/group/notice/list',
         data: { user_id: userId, group_id: groupId }
       })
-      
+
       if (response.success) {
         return response.data.items || []
       } else {
@@ -360,7 +385,11 @@ export class GroupService extends EventEmitter {
   }
 
   // 创建群公告
-  public async createGroupNotice(userId: number, groupId: number, data: GroupNoticeRequest): Promise<void> {
+  public async createGroupNotice(
+    userId: number,
+    groupId: number,
+    data: GroupNoticeRequest
+  ): Promise<void> {
     try {
       const response = await window.electronAPI.invoke('plugin-api-call', {
         pluginId: this.pluginId,
@@ -368,11 +397,11 @@ export class GroupService extends EventEmitter {
         url: '/api/v1/group/notice/create',
         data: { user_id: userId, group_id: groupId, ...data }
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '创建群公告失败')
       }
-      
+
       this.emit('group:notice-created', { groupId, ...data })
     } catch (error) {
       console.error('Failed to create group notice:', error)
@@ -389,11 +418,11 @@ export class GroupService extends EventEmitter {
         url: '/api/v1/group/notice/delete',
         data: { user_id: userId, group_id: groupId, notice_id: noticeId }
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '删除群公告失败')
       }
-      
+
       this.emit('group:notice-deleted', { groupId, noticeId })
     } catch (error) {
       console.error('Failed to delete group notice:', error)
@@ -410,7 +439,7 @@ export class GroupService extends EventEmitter {
         url: '/api/v1/group/vote/list',
         data: { user_id: userId, group_id: groupId }
       })
-      
+
       if (response.success) {
         return response.data.items || []
       } else {
@@ -423,7 +452,11 @@ export class GroupService extends EventEmitter {
   }
 
   // 创建群投票
-  public async createGroupVote(userId: number, groupId: number, data: GroupVoteRequest): Promise<void> {
+  public async createGroupVote(
+    userId: number,
+    groupId: number,
+    data: GroupVoteRequest
+  ): Promise<void> {
     try {
       const response = await window.electronAPI.invoke('plugin-api-call', {
         pluginId: this.pluginId,
@@ -431,11 +464,11 @@ export class GroupService extends EventEmitter {
         url: '/api/v1/group/vote/create',
         data: { user_id: userId, group_id: groupId, ...data }
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '创建群投票失败')
       }
-      
+
       this.emit('group:vote-created', { groupId, ...data })
     } catch (error) {
       console.error('Failed to create group vote:', error)
@@ -452,7 +485,7 @@ export class GroupService extends EventEmitter {
         url: '/api/v1/group/overt-list',
         data: { keyword, limit }
       })
-      
+
       if (response.success) {
         return response.data.items || []
       } else {

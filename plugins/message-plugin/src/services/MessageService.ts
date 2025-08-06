@@ -106,7 +106,7 @@ export class MessageService extends EventEmitter {
           ...data
         }
       })
-      
+
       if (response.success) {
         const message = response.data
         this.emit('message:sent', message)
@@ -132,11 +132,11 @@ export class MessageService extends EventEmitter {
           message_id: messageId
         }
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '撤回消息失败')
       }
-      
+
       this.emit('message:recalled', messageId)
     } catch (error) {
       console.error('Failed to recall message:', error)
@@ -156,11 +156,11 @@ export class MessageService extends EventEmitter {
           message_id: messageId
         }
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '删除消息失败')
       }
-      
+
       this.emit('message:deleted', messageId)
     } catch (error) {
       console.error('Failed to delete message:', error)
@@ -180,11 +180,11 @@ export class MessageService extends EventEmitter {
           message_id: messageId
         }
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '标记已读失败')
       }
-      
+
       this.emit('message:read', messageId)
     } catch (error) {
       console.error('Failed to mark message as read:', error)
@@ -211,7 +211,7 @@ export class MessageService extends EventEmitter {
           offset
         }
       })
-      
+
       if (response.success) {
         return {
           messages: response.data.items || [],
@@ -228,7 +228,10 @@ export class MessageService extends EventEmitter {
   }
 
   // 搜索消息
-  public async searchMessages(userId: string, params: SearchMessageRequest): Promise<MessageHistory> {
+  public async searchMessages(
+    userId: string,
+    params: SearchMessageRequest
+  ): Promise<MessageHistory> {
     try {
       const response = await window.electronAPI.invoke('plugin-api-call', {
         pluginId: this.pluginId,
@@ -239,7 +242,7 @@ export class MessageService extends EventEmitter {
           ...params
         }
       })
-      
+
       if (response.success) {
         return {
           messages: response.data.items || [],
@@ -272,7 +275,7 @@ export class MessageService extends EventEmitter {
           offset
         }
       })
-      
+
       if (response.success) {
         return response.data || []
       } else {
@@ -338,14 +341,14 @@ export class MessageService extends EventEmitter {
     try {
       const formData = new FormData()
       formData.append('file', file)
-      
+
       const response = await window.electronAPI.invoke('plugin-api-call', {
         pluginId: this.pluginId,
         method: 'POST',
         url: '/api/v1/upload/file',
         data: formData
       })
-      
+
       if (response.success) {
         return {
           url: response.data.url,
@@ -366,14 +369,14 @@ export class MessageService extends EventEmitter {
     try {
       const formData = new FormData()
       formData.append('audio', audioBlob, 'audio.wav')
-      
+
       const response = await window.electronAPI.invoke('plugin-api-call', {
         pluginId: this.pluginId,
         method: 'POST',
         url: '/api/v1/upload/audio',
         data: formData
       })
-      
+
       if (response.success) {
         return {
           url: response.data.url,
@@ -389,18 +392,20 @@ export class MessageService extends EventEmitter {
   }
 
   // 图片上传相关
-  public async uploadImage(imageFile: File): Promise<{ url: string; width: number; height: number }> {
+  public async uploadImage(
+    imageFile: File
+  ): Promise<{ url: string; width: number; height: number }> {
     try {
       const formData = new FormData()
       formData.append('image', imageFile)
-      
+
       const response = await window.electronAPI.invoke('plugin-api-call', {
         pluginId: this.pluginId,
         method: 'POST',
         url: '/api/v1/upload/image',
         data: formData
       })
-      
+
       if (response.success) {
         return {
           url: response.data.url,
@@ -428,7 +433,7 @@ export class MessageService extends EventEmitter {
           public_key: recipientPublicKey
         }
       })
-      
+
       if (response.success) {
         return response.data.encrypted
       } else {
@@ -451,7 +456,7 @@ export class MessageService extends EventEmitter {
           public_key: senderPublicKey
         }
       })
-      
+
       if (response.success) {
         return response.data.decrypted
       } else {
@@ -472,11 +477,11 @@ export class MessageService extends EventEmitter {
         url: '/api/v1/message/sync',
         data: {}
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '同步消息状态失败')
       }
-      
+
       this.emit('message:synced')
     } catch (error) {
       console.error('Failed to sync message status:', error)
@@ -493,11 +498,11 @@ export class MessageService extends EventEmitter {
         url: '/api/v1/message/cleanup',
         data: { days }
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '清理过期消息失败')
       }
-      
+
       this.emit('message:cleaned')
     } catch (error) {
       console.error('Failed to cleanup expired messages:', error)

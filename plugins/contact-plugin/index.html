@@ -1,656 +1,674 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>通讯录插件</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f5f5;
-            height: 100vh;
-            overflow: hidden;
-        }
-        
-        .contact-container {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            background: white;
-        }
-        
-        /* 头部区域 */
-        .contact-header {
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 16px;
-            border-bottom: 1px solid #e0e0e0;
-            background: #fafafa;
-        }
-        
-        .group-tabs {
-            display: flex;
-            align-items: center;
-            flex: 1;
-            height: 100%;
-            margin-right: 30px;
-            overflow-x: auto;
-        }
-        
-        .group-tab {
-            display: flex;
-            align-items: center;
-            padding: 8px 16px;
-            cursor: pointer;
-            white-space: nowrap;
-            border-bottom: 2px solid transparent;
-            transition: all 0.2s;
-        }
-        
-        .group-tab:hover {
-            background: #f0f0f0;
-        }
-        
-        .group-tab.active {
-            border-bottom-color: #2196f3;
-            color: #2196f3;
-        }
-        
-        .group-name {
-            font-weight: 500;
-            margin-right: 4px;
-        }
-        
-        .group-count {
-            font-size: 12px;
-            color: #666;
-        }
-        
-        .header-tools {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            width: 300px;
-            flex-shrink: 0;
-        }
-        
-        .search-box {
-            flex: 1;
-            padding: 8px 12px;
-            border: 1px solid #d0d0d0;
-            border-radius: 20px;
-            font-size: 14px;
-            outline: none;
-        }
-        
-        .search-box:focus {
-            border-color: #2196f3;
-        }
-        
-        .action-btn {
-            padding: 8px;
-            border: 1px solid #d0d0d0;
-            border-radius: 50%;
-            background: white;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.2s;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .action-btn:hover {
-            background: #f0f0f0;
-            transform: scale(1.05);
-        }
-        
-        /* 主内容区域 */
-        .contact-content {
-            flex: 1;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .loading-state {
-            display: none;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            flex-direction: column;
-            color: #666;
-        }
-        
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #2196f3;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 16px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        
-        /* 联系人列表样式 */
-        .contact-list {
-            height: 100%;
-            overflow-y: auto;
-            padding: 8px 0;
-        }
-        
-        .contact-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 16px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            border-bottom: 1px solid #f8f8f8;
-            position: relative;
-        }
-        
-        .contact-item:hover {
-            background: #f8f8f8;
-        }
-        
-        .contact-item.active {
-            background: #e3f2fd;
-        }
-        
-        .contact-item.pinned {
-            background: #fff3e0;
-        }
-        
-        .contact-item.pinned::before {
-            content: "📌";
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            font-size: 12px;
-        }
-        
-        .contact-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #2196f3;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            margin-right: 12px;
-            font-size: 16px;
-            position: relative;
-        }
-        
-        .online-indicator {
-            position: absolute;
-            bottom: 2px;
-            right: 2px;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #4caf50;
-            border: 2px solid white;
-        }
-        
-        .contact-info {
-            flex: 1;
-            min-width: 0;
-        }
-        
-        .contact-name {
-            font-weight: 500;
-            margin-bottom: 4px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        
-        .contact-meta {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            color: #666;
-        }
-        
-        .contact-status {
-            font-size: 12px;
-            color: #666;
-        }
-        
-        .contact-status.online {
-            color: #4caf50;
-        }
-        
-        .contact-category {
-            background: #e3f2fd;
-            color: #1976d2;
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 10px;
-        }
-        
-        .contact-actions {
-            display: flex;
-            gap: 4px;
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-        
-        .contact-item:hover .contact-actions {
-            opacity: 1;
-        }
-        
-        .action-icon {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: #f0f0f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.2s;
-        }
-        
-        .action-icon:hover {
-            background: #e0e0e0;
-            transform: scale(1.1);
-        }
-        
-        /* 分类管理样式 */
-        .category-management {
-            height: 100%;
-            overflow-y: auto;
-            padding: 16px;
-        }
-        
-        .category-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-        
-        .category-title {
-            font-size: 18px;
-            font-weight: 500;
-        }
-        
-        .add-category-btn {
-            padding: 8px 16px;
-            background: #2196f3;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background 0.2s;
-        }
-        
-        .add-category-btn:hover {
-            background: #1976d2;
-        }
-        
-        .category-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        
-        .category-item {
-            display: flex;
-            align-items: center;
-            padding: 12px;
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            transition: all 0.2s;
-        }
-        
-        .category-item:hover {
-            border-color: #2196f3;
-            box-shadow: 0 2px 4px rgba(33, 150, 243, 0.1);
-        }
-        
-        .category-color {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            margin-right: 12px;
-            border: 2px solid white;
-            box-shadow: 0 0 0 1px #e0e0e0;
-        }
-        
-        .category-name {
-            flex: 1;
-            font-weight: 500;
-        }
-        
-        .category-count {
-            color: #666;
-            font-size: 12px;
-            margin-right: 12px;
-        }
-        
-        .category-actions {
-            display: flex;
-            gap: 4px;
-        }
-        
-        .category-action {
-            width: 28px;
-            height: 28px;
-            border-radius: 4px;
-            background: #f5f5f5;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            transition: all 0.2s;
-        }
-        
-        .category-action:hover {
-            background: #e0e0e0;
-        }
-        
-        .category-action.edit:hover {
-            background: #e3f2fd;
-            color: #2196f3;
-        }
-        
-        .category-action.delete:hover {
-            background: #ffebee;
-            color: #f44336;
-        }
-        
-        /* 模态框样式 */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        
-        .modal.show {
-            display: flex;
-        }
-        
-        .modal-content {
-            background: white;
-            border-radius: 8px;
-            padding: 24px;
-            width: 400px;
-            max-width: 90vw;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        
-        .modal-header {
-            font-size: 18px;
-            font-weight: 500;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            color: #666;
-            padding: 4px;
-        }
-        
-        .modal-close:hover {
-            color: #333;
-        }
-        
-        .form-group {
-            margin-bottom: 16px;
-        }
-        
-        .form-label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 500;
-            color: #333;
-        }
-        
-        .form-input {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #d0d0d0;
-            border-radius: 4px;
-            font-size: 14px;
-            outline: none;
-        }
-        
-        .form-input:focus {
-            border-color: #2196f3;
-        }
-        
-        .form-actions {
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-            margin-top: 20px;
-        }
-        
-        .btn {
-            padding: 8px 16px;
-            border: 1px solid #d0d0d0;
-            border-radius: 4px;
-            background: white;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-        
-        .btn:hover {
-            background: #f0f0f0;
-        }
-        
-        .btn.primary {
-            background: #2196f3;
-            color: white;
-            border-color: #2196f3;
-        }
-        
-        .btn.primary:hover {
-            background: #1976d2;
-        }
-        
-        .btn.danger {
-            background: #f44336;
-            color: white;
-            border-color: #f44336;
-        }
-        
-        .btn.danger:hover {
-            background: #d32f2f;
-        }
-        
-        /* 空状态样式 */
-        .empty-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: #666;
-            text-align: center;
-        }
-        
-        .empty-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-            opacity: 0.5;
-        }
-        
-        .empty-text {
-            font-size: 16px;
-            margin-bottom: 8px;
-        }
-        
-        .empty-subtext {
-            font-size: 14px;
-            opacity: 0.7;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: #f5f5f5;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      .contact-container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        background: white;
+      }
+
+      /* 头部区域 */
+      .contact-header {
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        border-bottom: 1px solid #e0e0e0;
+        background: #fafafa;
+      }
+
+      .group-tabs {
+        display: flex;
+        align-items: center;
+        flex: 1;
+        height: 100%;
+        margin-right: 30px;
+        overflow-x: auto;
+      }
+
+      .group-tab {
+        display: flex;
+        align-items: center;
+        padding: 8px 16px;
+        cursor: pointer;
+        white-space: nowrap;
+        border-bottom: 2px solid transparent;
+        transition: all 0.2s;
+      }
+
+      .group-tab:hover {
+        background: #f0f0f0;
+      }
+
+      .group-tab.active {
+        border-bottom-color: #2196f3;
+        color: #2196f3;
+      }
+
+      .group-name {
+        font-weight: 500;
+        margin-right: 4px;
+      }
+
+      .group-count {
+        font-size: 12px;
+        color: #666;
+      }
+
+      .header-tools {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 300px;
+        flex-shrink: 0;
+      }
+
+      .search-box {
+        flex: 1;
+        padding: 8px 12px;
+        border: 1px solid #d0d0d0;
+        border-radius: 20px;
+        font-size: 14px;
+        outline: none;
+      }
+
+      .search-box:focus {
+        border-color: #2196f3;
+      }
+
+      .action-btn {
+        padding: 8px;
+        border: 1px solid #d0d0d0;
+        border-radius: 50%;
+        background: white;
+        cursor: pointer;
+        font-size: 16px;
+        transition: all 0.2s;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .action-btn:hover {
+        background: #f0f0f0;
+        transform: scale(1.05);
+      }
+
+      /* 主内容区域 */
+      .contact-content {
+        flex: 1;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .loading-state {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        flex-direction: column;
+        color: #666;
+      }
+
+      .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #2196f3;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 16px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* 联系人列表样式 */
+      .contact-list {
+        height: 100%;
+        overflow-y: auto;
+        padding: 8px 0;
+      }
+
+      .contact-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        border-bottom: 1px solid #f8f8f8;
+        position: relative;
+      }
+
+      .contact-item:hover {
+        background: #f8f8f8;
+      }
+
+      .contact-item.active {
+        background: #e3f2fd;
+      }
+
+      .contact-item.pinned {
+        background: #fff3e0;
+      }
+
+      .contact-item.pinned::before {
+        content: '📌';
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        font-size: 12px;
+      }
+
+      .contact-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #2196f3;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        margin-right: 12px;
+        font-size: 16px;
+        position: relative;
+      }
+
+      .online-indicator {
+        position: absolute;
+        bottom: 2px;
+        right: 2px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #4caf50;
+        border: 2px solid white;
+      }
+
+      .contact-info {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .contact-name {
+        font-weight: 500;
+        margin-bottom: 4px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .contact-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: #666;
+      }
+
+      .contact-status {
+        font-size: 12px;
+        color: #666;
+      }
+
+      .contact-status.online {
+        color: #4caf50;
+      }
+
+      .contact-category {
+        background: #e3f2fd;
+        color: #1976d2;
+        padding: 2px 6px;
+        border-radius: 10px;
+        font-size: 10px;
+      }
+
+      .contact-actions {
+        display: flex;
+        gap: 4px;
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+
+      .contact-item:hover .contact-actions {
+        opacity: 1;
+      }
+
+      .action-icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 12px;
+        transition: all 0.2s;
+      }
+
+      .action-icon:hover {
+        background: #e0e0e0;
+        transform: scale(1.1);
+      }
+
+      /* 分类管理样式 */
+      .category-management {
+        height: 100%;
+        overflow-y: auto;
+        padding: 16px;
+      }
+
+      .category-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+
+      .category-title {
+        font-size: 18px;
+        font-weight: 500;
+      }
+
+      .add-category-btn {
+        padding: 8px 16px;
+        background: #2196f3;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.2s;
+      }
+
+      .add-category-btn:hover {
+        background: #1976d2;
+      }
+
+      .category-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .category-item {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        transition: all 0.2s;
+      }
+
+      .category-item:hover {
+        border-color: #2196f3;
+        box-shadow: 0 2px 4px rgba(33, 150, 243, 0.1);
+      }
+
+      .category-color {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        margin-right: 12px;
+        border: 2px solid white;
+        box-shadow: 0 0 0 1px #e0e0e0;
+      }
+
+      .category-name {
+        flex: 1;
+        font-weight: 500;
+      }
+
+      .category-count {
+        color: #666;
+        font-size: 12px;
+        margin-right: 12px;
+      }
+
+      .category-actions {
+        display: flex;
+        gap: 4px;
+      }
+
+      .category-action {
+        width: 28px;
+        height: 28px;
+        border-radius: 4px;
+        background: #f5f5f5;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        transition: all 0.2s;
+      }
+
+      .category-action:hover {
+        background: #e0e0e0;
+      }
+
+      .category-action.edit:hover {
+        background: #e3f2fd;
+        color: #2196f3;
+      }
+
+      .category-action.delete:hover {
+        background: #ffebee;
+        color: #f44336;
+      }
+
+      /* 模态框样式 */
+      .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+
+      .modal.show {
+        display: flex;
+      }
+
+      .modal-content {
+        background: white;
+        border-radius: 8px;
+        padding: 24px;
+        width: 400px;
+        max-width: 90vw;
+        max-height: 80vh;
+        overflow-y: auto;
+      }
+
+      .modal-header {
+        font-size: 18px;
+        font-weight: 500;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .modal-close {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        color: #666;
+        padding: 4px;
+      }
+
+      .modal-close:hover {
+        color: #333;
+      }
+
+      .form-group {
+        margin-bottom: 16px;
+      }
+
+      .form-label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 500;
+        color: #333;
+      }
+
+      .form-input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #d0d0d0;
+        border-radius: 4px;
+        font-size: 14px;
+        outline: none;
+      }
+
+      .form-input:focus {
+        border-color: #2196f3;
+      }
+
+      .form-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 20px;
+      }
+
+      .btn {
+        padding: 8px 16px;
+        border: 1px solid #d0d0d0;
+        border-radius: 4px;
+        background: white;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s;
+      }
+
+      .btn:hover {
+        background: #f0f0f0;
+      }
+
+      .btn.primary {
+        background: #2196f3;
+        color: white;
+        border-color: #2196f3;
+      }
+
+      .btn.primary:hover {
+        background: #1976d2;
+      }
+
+      .btn.danger {
+        background: #f44336;
+        color: white;
+        border-color: #f44336;
+      }
+
+      .btn.danger:hover {
+        background: #d32f2f;
+      }
+
+      /* 空状态样式 */
+      .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: #666;
+        text-align: center;
+      }
+
+      .empty-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+      }
+
+      .empty-text {
+        font-size: 16px;
+        margin-bottom: 8px;
+      }
+
+      .empty-subtext {
+        font-size: 14px;
+        opacity: 0.7;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="contact-container">
-        <!-- 头部区域 -->
-        <div class="contact-header">
-            <!-- 分组标签 -->
-            <div class="group-tabs" id="groupTabs">
-                <!-- 分组标签将在这里动态生成 -->
-            </div>
-            
-            <!-- 头部工具栏 -->
-            <div class="header-tools">
-                <input type="text" class="search-box" placeholder="搜索联系人..." id="searchInput">
-                <button class="action-btn" id="groupManageBtn" title="分组管理">⚙️</button>
-                <button class="action-btn" id="categoryManageBtn" title="联系人分类管理">🏷️</button>
-            </div>
+      <!-- 头部区域 -->
+      <div class="contact-header">
+        <!-- 分组标签 -->
+        <div class="group-tabs" id="groupTabs">
+          <!-- 分组标签将在这里动态生成 -->
         </div>
-        
-        <!-- 主内容区域 -->
-        <div class="contact-content">
-            <!-- 加载状态 -->
-            <div class="loading-state" id="loadingState">
-                <div class="loading-spinner"></div>
-                <div>正在加载联系人...</div>
-            </div>
-            
-            <!-- 联系人列表 -->
-            <div class="contact-list" id="contactList" style="display: none;">
-                <!-- 联系人项将在这里动态生成 -->
-            </div>
-            
-            <!-- 分类管理界面 -->
-            <div class="category-management" id="categoryManagement" style="display: none;">
-                <div class="category-header">
-                    <div class="category-title">联系人分类管理</div>
-                    <button class="add-category-btn" id="addCategoryBtn">添加分类</button>
-                </div>
-                <div class="category-list" id="categoryList">
-                    <!-- 分类项将在这里动态生成 -->
-                </div>
-            </div>
-            
-            <!-- 空状态 -->
-            <div class="empty-state" id="emptyState" style="display: none;">
-                <div class="empty-icon">👥</div>
-                <div class="empty-text">暂无联系人</div>
-                <div class="empty-subtext">点击右上角按钮添加联系人</div>
-            </div>
+
+        <!-- 头部工具栏 -->
+        <div class="header-tools">
+          <input type="text" class="search-box" placeholder="搜索联系人..." id="searchInput" />
+          <button class="action-btn" id="groupManageBtn" title="分组管理">⚙️</button>
+          <button class="action-btn" id="categoryManageBtn" title="联系人分类管理">🏷️</button>
         </div>
+      </div>
+
+      <!-- 主内容区域 -->
+      <div class="contact-content">
+        <!-- 加载状态 -->
+        <div class="loading-state" id="loadingState">
+          <div class="loading-spinner"></div>
+          <div>正在加载联系人...</div>
+        </div>
+
+        <!-- 联系人列表 -->
+        <div class="contact-list" id="contactList" style="display: none">
+          <!-- 联系人项将在这里动态生成 -->
+        </div>
+
+        <!-- 分类管理界面 -->
+        <div class="category-management" id="categoryManagement" style="display: none">
+          <div class="category-header">
+            <div class="category-title">联系人分类管理</div>
+            <button class="add-category-btn" id="addCategoryBtn">添加分类</button>
+          </div>
+          <div class="category-list" id="categoryList">
+            <!-- 分类项将在这里动态生成 -->
+          </div>
+        </div>
+
+        <!-- 空状态 -->
+        <div class="empty-state" id="emptyState" style="display: none">
+          <div class="empty-icon">👥</div>
+          <div class="empty-text">暂无联系人</div>
+          <div class="empty-subtext">点击右上角按钮添加联系人</div>
+        </div>
+      </div>
     </div>
-    
+
     <!-- 分组管理模态框 -->
     <div class="modal" id="groupManageModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span>分组管理</span>
-                <button class="modal-close" id="closeGroupManageModal">×</button>
-            </div>
-            <div class="form-group">
-                <label class="form-label">分组名称</label>
-                <input type="text" class="form-input" id="groupNameInput" placeholder="请输入分组名称">
-            </div>
-            <div class="form-group">
-                <label class="form-label">分组描述</label>
-                <input type="text" class="form-input" id="groupDescInput" placeholder="请输入分组描述">
-            </div>
-            <div class="form-actions">
-                <button class="btn" id="cancelGroupManageBtn">取消</button>
-                <button class="btn primary" id="confirmGroupManageBtn">保存</button>
-            </div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <span>分组管理</span>
+          <button class="modal-close" id="closeGroupManageModal">×</button>
         </div>
+        <div class="form-group">
+          <label class="form-label">分组名称</label>
+          <input type="text" class="form-input" id="groupNameInput" placeholder="请输入分组名称" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">分组描述</label>
+          <input type="text" class="form-input" id="groupDescInput" placeholder="请输入分组描述" />
+        </div>
+        <div class="form-actions">
+          <button class="btn" id="cancelGroupManageBtn">取消</button>
+          <button class="btn primary" id="confirmGroupManageBtn">保存</button>
+        </div>
+      </div>
     </div>
-    
+
     <!-- 分类管理模态框 -->
     <div class="modal" id="categoryModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span id="categoryModalTitle">添加分类</span>
-                <button class="modal-close" id="closeCategoryModal">×</button>
-            </div>
-            <div class="form-group">
-                <label class="form-label">分类名称</label>
-                <input type="text" class="form-input" id="categoryNameInput" placeholder="请输入分类名称">
-            </div>
-            <div class="form-group">
-                <label class="form-label">分类颜色</label>
-                <input type="color" class="form-input" id="categoryColorInput" value="#2196f3">
-            </div>
-            <div class="form-group">
-                <label class="form-label">分类描述</label>
-                <input type="text" class="form-input" id="categoryDescInput" placeholder="请输入分类描述">
-            </div>
-            <div class="form-actions">
-                <button class="btn" id="cancelCategoryBtn">取消</button>
-                <button class="btn primary" id="confirmCategoryBtn">保存</button>
-            </div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <span id="categoryModalTitle">添加分类</span>
+          <button class="modal-close" id="closeCategoryModal">×</button>
         </div>
+        <div class="form-group">
+          <label class="form-label">分类名称</label>
+          <input
+            type="text"
+            class="form-input"
+            id="categoryNameInput"
+            placeholder="请输入分类名称"
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label">分类颜色</label>
+          <input type="color" class="form-input" id="categoryColorInput" value="#2196f3" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">分类描述</label>
+          <input
+            type="text"
+            class="form-input"
+            id="categoryDescInput"
+            placeholder="请输入分类描述"
+          />
+        </div>
+        <div class="form-actions">
+          <button class="btn" id="cancelCategoryBtn">取消</button>
+          <button class="btn primary" id="confirmCategoryBtn">保存</button>
+        </div>
+      </div>
     </div>
-    
+
     <!-- 联系人操作模态框 -->
     <div class="modal" id="contactActionModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span id="contactActionTitle">联系人操作</span>
-                <button class="modal-close" id="closeContactActionModal">×</button>
-            </div>
-            <div class="form-group">
-                <label class="form-label">备注名称</label>
-                <input type="text" class="form-input" id="contactRemarkInput" placeholder="请输入备注名称">
-            </div>
-            <div class="form-group">
-                <label class="form-label">联系人分类</label>
-                <select class="form-input" id="contactCategorySelect">
-                    <option value="">请选择分类</option>
-                </select>
-            </div>
-            <div class="form-actions">
-                <button class="btn danger" id="deleteContactBtn">删除联系人</button>
-                <button class="btn" id="cancelContactActionBtn">取消</button>
-                <button class="btn primary" id="confirmContactActionBtn">保存</button>
-            </div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <span id="contactActionTitle">联系人操作</span>
+          <button class="modal-close" id="closeContactActionModal">×</button>
         </div>
+        <div class="form-group">
+          <label class="form-label">备注名称</label>
+          <input
+            type="text"
+            class="form-input"
+            id="contactRemarkInput"
+            placeholder="请输入备注名称"
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label">联系人分类</label>
+          <select class="form-input" id="contactCategorySelect">
+            <option value="">请选择分类</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button class="btn danger" id="deleteContactBtn">删除联系人</button>
+          <button class="btn" id="cancelContactActionBtn">取消</button>
+          <button class="btn primary" id="confirmContactActionBtn">保存</button>
+        </div>
+      </div>
     </div>
-    
+
     <script src="script.js"></script>
-</body>
+  </body>
 </html>

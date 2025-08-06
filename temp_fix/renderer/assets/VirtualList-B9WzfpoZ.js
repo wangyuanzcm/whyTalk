@@ -1,6 +1,26 @@
-import { a1 as ref, z as computed, bj as useMemo, bk as provide, t as defineComponent, ba as inject, u as h, bi as VResizeObserver, v as mergeProps, dm as c, dn as useSsrAdapter, dp as cssrAnchorMetaName, a2 as onMounted, dU as onActivated, dw as onDeactivated, b7 as toRef, c8 as depx, B as pxfy, bo as beforeNextFrameOnce } from "./index-CP-MMhae.js";
+import {
+  a1 as ref,
+  z as computed,
+  bj as useMemo,
+  bk as provide,
+  t as defineComponent,
+  ba as inject,
+  u as h,
+  bi as VResizeObserver,
+  v as mergeProps,
+  dm as c,
+  dn as useSsrAdapter,
+  dp as cssrAnchorMetaName,
+  a2 as onMounted,
+  dU as onActivated,
+  dw as onDeactivated,
+  b7 as toRef,
+  c8 as depx,
+  B as pxfy,
+  bo as beforeNextFrameOnce
+} from './index-CP-MMhae.js'
 function lowBit(n) {
-  return n & -n;
+  return n & -n
 }
 class FinweckTree {
   /**
@@ -8,13 +28,13 @@ class FinweckTree {
    * @param min min value of the array
    */
   constructor(l, min) {
-    this.l = l;
-    this.min = min;
-    const ft = new Array(l + 1);
+    this.l = l
+    this.min = min
+    const ft = new Array(l + 1)
     for (let i = 0; i < l + 1; ++i) {
-      ft[i] = 0;
+      ft[i] = 0
     }
-    this.ft = ft;
+    this.ft = ft
   }
   /**
    * Add arr[i] by n, start from 0
@@ -22,13 +42,12 @@ class FinweckTree {
    * @param n the value to be added
    */
   add(i, n) {
-    if (n === 0)
-      return;
-    const { l, ft } = this;
-    i += 1;
+    if (n === 0) return
+    const { l, ft } = this
+    i += 1
     while (i <= l) {
-      ft[i] += n;
-      i += lowBit(i);
+      ft[i] += n
+      i += lowBit(i)
     }
   }
   /**
@@ -37,7 +56,7 @@ class FinweckTree {
    * @returns value of the index
    */
   get(i) {
-    return this.sum(i + 1) - this.sum(i);
+    return this.sum(i + 1) - this.sum(i)
   }
   /**
    * Get the sum of first i elements
@@ -45,19 +64,16 @@ class FinweckTree {
    * @returns the sum of first i elements
    */
   sum(i) {
-    if (i === void 0)
-      i = this.l;
-    if (i <= 0)
-      return 0;
-    const { ft, min, l } = this;
-    if (i > l)
-      throw new Error("[FinweckTree.sum]: `i` is larger than length.");
-    let ret = i * min;
+    if (i === void 0) i = this.l
+    if (i <= 0) return 0
+    const { ft, min, l } = this
+    if (i > l) throw new Error('[FinweckTree.sum]: `i` is larger than length.')
+    let ret = i * min
     while (i > 0) {
-      ret += ft[i];
-      i -= lowBit(i);
+      ret += ft[i]
+      i -= lowBit(i)
     }
-    return ret;
+    return ret
   }
   /**
    * Get the largest count of head elements whose sum are <= threshold
@@ -65,89 +81,89 @@ class FinweckTree {
    * @returns the largest count of head elements whose sum are <= threshold
    */
   getBound(threshold) {
-    let l = 0;
-    let r = this.l;
+    let l = 0
+    let r = this.l
     while (r > l) {
-      const m = Math.floor((l + r) / 2);
-      const sumM = this.sum(m);
+      const m = Math.floor((l + r) / 2)
+      const sumM = this.sum(m)
       if (sumM > threshold) {
-        r = m;
-        continue;
+        r = m
+        continue
       } else if (sumM < threshold) {
         if (l === m) {
-          if (this.sum(l + 1) <= threshold)
-            return l + 1;
-          return m;
+          if (this.sum(l + 1) <= threshold) return l + 1
+          return m
         }
-        l = m;
+        l = m
       } else {
-        return m;
+        return m
       }
     }
-    return l;
+    return l
   }
 }
-let maybeTouch;
+let maybeTouch
 function ensureMaybeTouch() {
-  if (typeof document === "undefined")
-    return false;
+  if (typeof document === 'undefined') return false
   if (maybeTouch === void 0) {
-    if ("matchMedia" in window) {
-      maybeTouch = window.matchMedia("(pointer:coarse)").matches;
+    if ('matchMedia' in window) {
+      maybeTouch = window.matchMedia('(pointer:coarse)').matches
     } else {
-      maybeTouch = false;
+      maybeTouch = false
     }
   }
-  return maybeTouch;
+  return maybeTouch
 }
-let wheelScale;
+let wheelScale
 function ensureWheelScale() {
-  if (typeof document === "undefined")
-    return 1;
+  if (typeof document === 'undefined') return 1
   if (wheelScale === void 0) {
-    wheelScale = "chrome" in window ? window.devicePixelRatio : 1;
+    wheelScale = 'chrome' in window ? window.devicePixelRatio : 1
   }
-  return wheelScale;
+  return wheelScale
 }
-const xScrollInjextionKey = "VVirtualListXScroll";
+const xScrollInjextionKey = 'VVirtualListXScroll'
 function setupXScroll({ columnsRef, renderColRef, renderItemWithColsRef }) {
-  const listWidthRef = ref(0);
-  const scrollLeftRef = ref(0);
+  const listWidthRef = ref(0)
+  const scrollLeftRef = ref(0)
   const xFinweckTreeRef = computed(() => {
-    const columns = columnsRef.value;
+    const columns = columnsRef.value
     if (columns.length === 0) {
-      return null;
+      return null
     }
-    const ft = new FinweckTree(columns.length, 0);
+    const ft = new FinweckTree(columns.length, 0)
     columns.forEach((column, index) => {
-      ft.add(index, column.width);
-    });
-    return ft;
-  });
+      ft.add(index, column.width)
+    })
+    return ft
+  })
   const startIndexRef = useMemo(() => {
-    const xFinweckTree = xFinweckTreeRef.value;
+    const xFinweckTree = xFinweckTreeRef.value
     if (xFinweckTree !== null) {
-      return Math.max(xFinweckTree.getBound(scrollLeftRef.value) - 1, 0);
+      return Math.max(xFinweckTree.getBound(scrollLeftRef.value) - 1, 0)
     } else {
-      return 0;
+      return 0
     }
-  });
+  })
   const getLeft = (index) => {
-    const xFinweckTree = xFinweckTreeRef.value;
+    const xFinweckTree = xFinweckTreeRef.value
     if (xFinweckTree !== null) {
-      return xFinweckTree.sum(index);
+      return xFinweckTree.sum(index)
     } else {
-      return 0;
+      return 0
     }
-  };
+  }
   const endIndexRef = useMemo(() => {
-    const xFinweckTree = xFinweckTreeRef.value;
+    const xFinweckTree = xFinweckTreeRef.value
     if (xFinweckTree !== null) {
-      return Math.min(xFinweckTree.getBound(scrollLeftRef.value + listWidthRef.value) + 1, columnsRef.value.length - 1);
+      return Math.min(
+        xFinweckTree.getBound(scrollLeftRef.value + listWidthRef.value) + 1,
+        columnsRef.value.length - 1
+      )
     } else {
-      return 0;
+      return 0
     }
-  });
+  })
   provide(xScrollInjextionKey, {
     startIndexRef,
     endIndexRef,
@@ -155,14 +171,14 @@ function setupXScroll({ columnsRef, renderColRef, renderItemWithColsRef }) {
     renderColRef,
     renderItemWithColsRef,
     getLeft
-  });
+  })
   return {
     listWidthRef,
     scrollLeftRef
-  };
+  }
 }
 const VirtualListRow = defineComponent({
-  name: "VirtualListRow",
+  name: 'VirtualListRow',
   props: {
     index: { type: Number, required: true },
     item: {
@@ -171,10 +187,8 @@ const VirtualListRow = defineComponent({
     }
   },
   setup() {
-    const { startIndexRef, endIndexRef, columnsRef, getLeft, renderColRef, renderItemWithColsRef } = (
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const { startIndexRef, endIndexRef, columnsRef, getLeft, renderColRef, renderItemWithColsRef } =
       inject(xScrollInjextionKey)
-    );
     return {
       startIndex: startIndexRef,
       endIndex: endIndexRef,
@@ -182,10 +196,10 @@ const VirtualListRow = defineComponent({
       renderCol: renderColRef,
       renderItemWithCols: renderItemWithColsRef,
       getLeft
-    };
+    }
   },
   render() {
-    const { startIndex, endIndex, columns, renderCol, renderItemWithCols, getLeft, item } = this;
+    const { startIndex, endIndex, columns, renderCol, renderItemWithCols, getLeft, item } = this
     if (renderItemWithCols != null) {
       return renderItemWithCols({
         itemIndex: this.index,
@@ -194,38 +208,46 @@ const VirtualListRow = defineComponent({
         allColumns: columns,
         item,
         getLeft
-      });
+      })
     }
     if (renderCol != null) {
-      const items = [];
+      const items = []
       for (let i = startIndex; i <= endIndex; ++i) {
-        const column = columns[i];
-        items.push(renderCol({ column, left: getLeft(i), item }));
+        const column = columns[i]
+        items.push(renderCol({ column, left: getLeft(i), item }))
       }
-      return items;
+      return items
     }
-    return null;
+    return null
   }
-});
-const styles = c(".v-vl", {
-  maxHeight: "inherit",
-  height: "100%",
-  overflow: "auto",
-  minWidth: "1px"
-  // a zero width container won't be scrollable
-}, [
-  c("&:not(.v-vl--show-scrollbar)", {
-    scrollbarWidth: "none"
-  }, [
-    c("&::-webkit-scrollbar, &::-webkit-scrollbar-track-piece, &::-webkit-scrollbar-thumb", {
-      width: 0,
-      height: 0,
-      display: "none"
-    })
-  ])
-]);
+})
+const styles = c(
+  '.v-vl',
+  {
+    maxHeight: 'inherit',
+    height: '100%',
+    overflow: 'auto',
+    minWidth: '1px'
+    // a zero width container won't be scrollable
+  },
+  [
+    c(
+      '&:not(.v-vl--show-scrollbar)',
+      {
+        scrollbarWidth: 'none'
+      },
+      [
+        c('&::-webkit-scrollbar, &::-webkit-scrollbar-track-piece, &::-webkit-scrollbar-thumb', {
+          width: 0,
+          height: 0,
+          display: 'none'
+        })
+      ]
+    )
+  ]
+)
 const VVirtualList = defineComponent({
-  name: "VirtualList",
+  name: 'VirtualList',
   inheritAttrs: false,
   props: {
     showScrollbar: {
@@ -251,7 +273,7 @@ const VVirtualList = defineComponent({
     itemsStyle: [String, Object],
     visibleItemsTag: {
       type: [String, Object],
-      default: "div"
+      default: 'div'
     },
     visibleItemsProps: Object,
     ignoreItemResize: Boolean,
@@ -262,7 +284,7 @@ const VVirtualList = defineComponent({
     defaultScrollIndex: Number,
     keyField: {
       type: String,
-      default: "key"
+      default: 'key'
     },
     // Whether it is a good API?
     // ResizeObserver + footer & header is not enough.
@@ -277,152 +299,152 @@ const VVirtualList = defineComponent({
     }
   },
   setup(props) {
-    const ssrAdapter = useSsrAdapter();
+    const ssrAdapter = useSsrAdapter()
     styles.mount({
-      id: "vueuc/virtual-list",
+      id: 'vueuc/virtual-list',
       head: true,
       anchorMetaName: cssrAnchorMetaName,
       ssr: ssrAdapter
-    });
+    })
     onMounted(() => {
-      const { defaultScrollIndex, defaultScrollKey } = props;
+      const { defaultScrollIndex, defaultScrollKey } = props
       if (defaultScrollIndex !== void 0 && defaultScrollIndex !== null) {
-        scrollTo({ index: defaultScrollIndex });
+        scrollTo({ index: defaultScrollIndex })
       } else if (defaultScrollKey !== void 0 && defaultScrollKey !== null) {
-        scrollTo({ key: defaultScrollKey });
+        scrollTo({ key: defaultScrollKey })
       }
-    });
-    let isDeactivated = false;
-    let activateStateInitialized = false;
+    })
+    let isDeactivated = false
+    let activateStateInitialized = false
     onActivated(() => {
-      isDeactivated = false;
+      isDeactivated = false
       if (!activateStateInitialized) {
-        activateStateInitialized = true;
-        return;
+        activateStateInitialized = true
+        return
       }
-      scrollTo({ top: scrollTopRef.value, left: scrollLeftRef.value });
-    });
+      scrollTo({ top: scrollTopRef.value, left: scrollLeftRef.value })
+    })
     onDeactivated(() => {
-      isDeactivated = true;
+      isDeactivated = true
       if (!activateStateInitialized) {
-        activateStateInitialized = true;
+        activateStateInitialized = true
       }
-    });
+    })
     const totalWidthRef = useMemo(() => {
       if (props.renderCol == null && props.renderItemWithCols == null) {
-        return void 0;
+        return void 0
       }
-      if (props.columns.length === 0)
-        return void 0;
-      let width = 0;
+      if (props.columns.length === 0) return void 0
+      let width = 0
       props.columns.forEach((column) => {
-        width += column.width;
-      });
-      return width;
-    });
+        width += column.width
+      })
+      return width
+    })
     const keyIndexMapRef = computed(() => {
-      const map = /* @__PURE__ */ new Map();
-      const { keyField } = props;
+      const map = /* @__PURE__ */ new Map()
+      const { keyField } = props
       props.items.forEach((item, index) => {
-        map.set(item[keyField], index);
-      });
-      return map;
-    });
+        map.set(item[keyField], index)
+      })
+      return map
+    })
     const { scrollLeftRef, listWidthRef } = setupXScroll({
-      columnsRef: toRef(props, "columns"),
-      renderColRef: toRef(props, "renderCol"),
-      renderItemWithColsRef: toRef(props, "renderItemWithCols")
-    });
-    const listElRef = ref(null);
-    const listHeightRef = ref(void 0);
-    const keyToHeightOffset = /* @__PURE__ */ new Map();
+      columnsRef: toRef(props, 'columns'),
+      renderColRef: toRef(props, 'renderCol'),
+      renderItemWithColsRef: toRef(props, 'renderItemWithCols')
+    })
+    const listElRef = ref(null)
+    const listHeightRef = ref(void 0)
+    const keyToHeightOffset = /* @__PURE__ */ new Map()
     const finweckTreeRef = computed(() => {
-      const { items, itemSize, keyField } = props;
-      const ft = new FinweckTree(items.length, itemSize);
+      const { items, itemSize, keyField } = props
+      const ft = new FinweckTree(items.length, itemSize)
       items.forEach((item, index) => {
-        const key = item[keyField];
-        const heightOffset = keyToHeightOffset.get(key);
+        const key = item[keyField]
+        const heightOffset = keyToHeightOffset.get(key)
         if (heightOffset !== void 0) {
-          ft.add(index, heightOffset);
+          ft.add(index, heightOffset)
         }
-      });
-      return ft;
-    });
-    const finweckTreeUpdateTrigger = ref(0);
-    const scrollTopRef = ref(0);
+      })
+      return ft
+    })
+    const finweckTreeUpdateTrigger = ref(0)
+    const scrollTopRef = ref(0)
     const startIndexRef = useMemo(() => {
-      return Math.max(finweckTreeRef.value.getBound(scrollTopRef.value - depx(props.paddingTop)) - 1, 0);
-    });
+      return Math.max(
+        finweckTreeRef.value.getBound(scrollTopRef.value - depx(props.paddingTop)) - 1,
+        0
+      )
+    })
     const viewportItemsRef = computed(() => {
-      const { value: listHeight } = listHeightRef;
-      if (listHeight === void 0)
-        return [];
-      const { items, itemSize } = props;
-      const startIndex = startIndexRef.value;
-      const endIndex = Math.min(startIndex + Math.ceil(listHeight / itemSize + 1), items.length - 1);
-      const viewportItems = [];
+      const { value: listHeight } = listHeightRef
+      if (listHeight === void 0) return []
+      const { items, itemSize } = props
+      const startIndex = startIndexRef.value
+      const endIndex = Math.min(startIndex + Math.ceil(listHeight / itemSize + 1), items.length - 1)
+      const viewportItems = []
       for (let i = startIndex; i <= endIndex; ++i) {
-        viewportItems.push(items[i]);
+        viewportItems.push(items[i])
       }
-      return viewportItems;
-    });
+      return viewportItems
+    })
     const scrollTo = (options, y) => {
-      if (typeof options === "number") {
-        scrollToPosition(options, y, "auto");
-        return;
+      if (typeof options === 'number') {
+        scrollToPosition(options, y, 'auto')
+        return
       }
-      const { left, top, index, key, position, behavior, debounce = true } = options;
+      const { left, top, index, key, position, behavior, debounce = true } = options
       if (left !== void 0 || top !== void 0) {
-        scrollToPosition(left, top, behavior);
+        scrollToPosition(left, top, behavior)
       } else if (index !== void 0) {
-        scrollToIndex(index, behavior, debounce);
+        scrollToIndex(index, behavior, debounce)
       } else if (key !== void 0) {
-        const toIndex = keyIndexMapRef.value.get(key);
-        if (toIndex !== void 0)
-          scrollToIndex(toIndex, behavior, debounce);
-      } else if (position === "bottom") {
-        scrollToPosition(0, Number.MAX_SAFE_INTEGER, behavior);
-      } else if (position === "top") {
-        scrollToPosition(0, 0, behavior);
+        const toIndex = keyIndexMapRef.value.get(key)
+        if (toIndex !== void 0) scrollToIndex(toIndex, behavior, debounce)
+      } else if (position === 'bottom') {
+        scrollToPosition(0, Number.MAX_SAFE_INTEGER, behavior)
+      } else if (position === 'top') {
+        scrollToPosition(0, 0, behavior)
       }
-    };
-    let anchorIndex;
-    let anchorTimerId = null;
+    }
+    let anchorIndex
+    let anchorTimerId = null
     function scrollToIndex(index, behavior, debounce) {
-      const { value: ft } = finweckTreeRef;
-      const targetTop = ft.sum(index) + depx(props.paddingTop);
+      const { value: ft } = finweckTreeRef
+      const targetTop = ft.sum(index) + depx(props.paddingTop)
       if (!debounce) {
         listElRef.value.scrollTo({
           left: 0,
           top: targetTop,
           behavior
-        });
+        })
       } else {
-        anchorIndex = index;
+        anchorIndex = index
         if (anchorTimerId !== null) {
-          window.clearTimeout(anchorTimerId);
+          window.clearTimeout(anchorTimerId)
         }
         anchorTimerId = window.setTimeout(() => {
-          anchorIndex = void 0;
-          anchorTimerId = null;
-        }, 16);
-        const { scrollTop, offsetHeight } = listElRef.value;
+          anchorIndex = void 0
+          anchorTimerId = null
+        }, 16)
+        const { scrollTop, offsetHeight } = listElRef.value
         if (targetTop > scrollTop) {
-          const itemSize = ft.get(index);
-          if (targetTop + itemSize <= scrollTop + offsetHeight) ;
+          const itemSize = ft.get(index)
+          if (targetTop + itemSize <= scrollTop + offsetHeight);
           else {
             listElRef.value.scrollTo({
               left: 0,
               top: targetTop + itemSize - offsetHeight,
               behavior
-            });
+            })
           }
         } else {
           listElRef.value.scrollTo({
             left: 0,
             top: targetTop,
             behavior
-          });
+          })
         }
       }
     }
@@ -431,151 +453,152 @@ const VVirtualList = defineComponent({
         left,
         top,
         behavior
-      });
+      })
     }
     function handleItemResize(key, entry) {
-      var _a, _b, _c;
-      if (isDeactivated)
-        return;
-      if (props.ignoreItemResize)
-        return;
-      if (isHideByVShow(entry.target))
-        return;
-      const { value: ft } = finweckTreeRef;
-      const index = keyIndexMapRef.value.get(key);
-      const previousHeight = ft.get(index);
-      const height = (_c = (_b = (_a = entry.borderBoxSize) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.blockSize) !== null && _c !== void 0 ? _c : entry.contentRect.height;
-      if (height === previousHeight)
-        return;
-      const offset = height - props.itemSize;
+      var _a, _b, _c
+      if (isDeactivated) return
+      if (props.ignoreItemResize) return
+      if (isHideByVShow(entry.target)) return
+      const { value: ft } = finweckTreeRef
+      const index = keyIndexMapRef.value.get(key)
+      const previousHeight = ft.get(index)
+      const height =
+        (_c =
+          (_b = (_a = entry.borderBoxSize) === null || _a === void 0 ? void 0 : _a[0]) === null ||
+          _b === void 0
+            ? void 0
+            : _b.blockSize) !== null && _c !== void 0
+          ? _c
+          : entry.contentRect.height
+      if (height === previousHeight) return
+      const offset = height - props.itemSize
       if (offset === 0) {
-        keyToHeightOffset.delete(key);
+        keyToHeightOffset.delete(key)
       } else {
-        keyToHeightOffset.set(key, height - props.itemSize);
+        keyToHeightOffset.set(key, height - props.itemSize)
       }
-      const delta = height - previousHeight;
-      if (delta === 0)
-        return;
-      ft.add(index, delta);
-      const listEl = listElRef.value;
+      const delta = height - previousHeight
+      if (delta === 0) return
+      ft.add(index, delta)
+      const listEl = listElRef.value
       if (listEl != null) {
         if (anchorIndex === void 0) {
-          const previousHeightSum = ft.sum(index);
+          const previousHeightSum = ft.sum(index)
           if (listEl.scrollTop > previousHeightSum) {
-            listEl.scrollBy(0, delta);
+            listEl.scrollBy(0, delta)
           }
         } else {
           if (index < anchorIndex) {
-            listEl.scrollBy(0, delta);
+            listEl.scrollBy(0, delta)
           } else if (index === anchorIndex) {
-            const previousHeightSum = ft.sum(index);
-            if (height + previousHeightSum > // Note, listEl shouldn't have border, nor offsetHeight won't be
-            // correct
-            listEl.scrollTop + listEl.offsetHeight) {
-              listEl.scrollBy(0, delta);
+            const previousHeightSum = ft.sum(index)
+            if (
+              height + previousHeightSum > // Note, listEl shouldn't have border, nor offsetHeight won't be
+              // correct
+              listEl.scrollTop + listEl.offsetHeight
+            ) {
+              listEl.scrollBy(0, delta)
             }
           }
         }
-        syncViewport();
+        syncViewport()
       }
-      finweckTreeUpdateTrigger.value++;
+      finweckTreeUpdateTrigger.value++
     }
-    const mayUseWheel = !ensureMaybeTouch();
-    let wheelCatched = false;
+    const mayUseWheel = !ensureMaybeTouch()
+    let wheelCatched = false
     function handleListScroll(e) {
-      var _a;
-      (_a = props.onScroll) === null || _a === void 0 ? void 0 : _a.call(props, e);
+      var _a
+      ;(_a = props.onScroll) === null || _a === void 0 ? void 0 : _a.call(props, e)
       if (!mayUseWheel || !wheelCatched) {
-        syncViewport();
+        syncViewport()
       }
     }
     function handleListWheel(e) {
-      var _a;
-      (_a = props.onWheel) === null || _a === void 0 ? void 0 : _a.call(props, e);
+      var _a
+      ;(_a = props.onWheel) === null || _a === void 0 ? void 0 : _a.call(props, e)
       if (mayUseWheel) {
-        const listEl = listElRef.value;
+        const listEl = listElRef.value
         if (listEl != null) {
           if (e.deltaX === 0) {
             if (listEl.scrollTop === 0 && e.deltaY <= 0) {
-              return;
+              return
             }
             if (listEl.scrollTop + listEl.offsetHeight >= listEl.scrollHeight && e.deltaY >= 0) {
-              return;
+              return
             }
           }
-          e.preventDefault();
-          listEl.scrollTop += e.deltaY / ensureWheelScale();
-          listEl.scrollLeft += e.deltaX / ensureWheelScale();
-          syncViewport();
-          wheelCatched = true;
+          e.preventDefault()
+          listEl.scrollTop += e.deltaY / ensureWheelScale()
+          listEl.scrollLeft += e.deltaX / ensureWheelScale()
+          syncViewport()
+          wheelCatched = true
           beforeNextFrameOnce(() => {
-            wheelCatched = false;
-          });
+            wheelCatched = false
+          })
         }
       }
     }
     function handleListResize(entry) {
-      if (isDeactivated)
-        return;
-      if (isHideByVShow(entry.target))
-        return;
+      if (isDeactivated) return
+      if (isHideByVShow(entry.target)) return
       if (props.renderCol == null && props.renderItemWithCols == null) {
-        if (entry.contentRect.height === listHeightRef.value)
-          return;
+        if (entry.contentRect.height === listHeightRef.value) return
       } else {
-        if (entry.contentRect.height === listHeightRef.value && entry.contentRect.width === listWidthRef.value) {
-          return;
+        if (
+          entry.contentRect.height === listHeightRef.value &&
+          entry.contentRect.width === listWidthRef.value
+        ) {
+          return
         }
       }
-      listHeightRef.value = entry.contentRect.height;
-      listWidthRef.value = entry.contentRect.width;
-      const { onResize } = props;
-      if (onResize !== void 0)
-        onResize(entry);
+      listHeightRef.value = entry.contentRect.height
+      listWidthRef.value = entry.contentRect.width
+      const { onResize } = props
+      if (onResize !== void 0) onResize(entry)
     }
     function syncViewport() {
-      const { value: listEl } = listElRef;
-      if (listEl == null)
-        return;
-      scrollTopRef.value = listEl.scrollTop;
-      scrollLeftRef.value = listEl.scrollLeft;
+      const { value: listEl } = listElRef
+      if (listEl == null) return
+      scrollTopRef.value = listEl.scrollTop
+      scrollLeftRef.value = listEl.scrollLeft
     }
     function isHideByVShow(el) {
-      let cursor = el;
+      let cursor = el
       while (cursor !== null) {
-        if (cursor.style.display === "none")
-          return true;
-        cursor = cursor.parentElement;
+        if (cursor.style.display === 'none') return true
+        cursor = cursor.parentElement
       }
-      return false;
+      return false
     }
     return {
       listHeight: listHeightRef,
       listStyle: {
-        overflow: "auto"
+        overflow: 'auto'
       },
       keyToIndex: keyIndexMapRef,
       itemsStyle: computed(() => {
-        const { itemResizable } = props;
-        const height = pxfy(finweckTreeRef.value.sum());
-        finweckTreeUpdateTrigger.value;
+        const { itemResizable } = props
+        const height = pxfy(finweckTreeRef.value.sum())
+        finweckTreeUpdateTrigger.value
         return [
           props.itemsStyle,
           {
-            boxSizing: "content-box",
+            boxSizing: 'content-box',
             width: pxfy(totalWidthRef.value),
-            height: itemResizable ? "" : height,
-            minHeight: itemResizable ? height : "",
+            height: itemResizable ? '' : height,
+            minHeight: itemResizable ? height : '',
             paddingTop: pxfy(props.paddingTop),
             paddingBottom: pxfy(props.paddingBottom)
           }
-        ];
+        ]
       }),
       visibleItemsStyle: computed(() => {
-        finweckTreeUpdateTrigger.value;
+        finweckTreeUpdateTrigger.value
         return {
           transform: `translateY(${pxfy(finweckTreeRef.value.sum(startIndexRef.value))})`
-        };
+        }
       }),
       viewportItems: viewportItemsRef,
       listElRef,
@@ -585,68 +608,99 @@ const VVirtualList = defineComponent({
       handleListScroll,
       handleListWheel,
       handleItemResize
-    };
+    }
   },
   render() {
-    const { itemResizable, keyField, keyToIndex, visibleItemsTag } = this;
-    return h(VResizeObserver, {
-      onResize: this.handleListResize
-    }, {
-      default: () => {
-        var _a, _b;
-        return h("div", mergeProps(this.$attrs, {
-          class: ["v-vl", this.showScrollbar && "v-vl--show-scrollbar"],
-          onScroll: this.handleListScroll,
-          onWheel: this.handleListWheel,
-          ref: "listElRef"
-        }), [
-          this.items.length !== 0 ? h("div", {
-            ref: "itemsElRef",
-            class: "v-vl-items",
-            style: this.itemsStyle
-          }, [
-            h(visibleItemsTag, Object.assign({
-              class: "v-vl-visible-items",
-              style: this.visibleItemsStyle
-            }, this.visibleItemsProps), {
-              default: () => {
-                const { renderCol, renderItemWithCols } = this;
-                return this.viewportItems.map((item) => {
-                  const key = item[keyField];
-                  const index = keyToIndex.get(key);
-                  const renderedCols = renderCol != null ? h(VirtualListRow, {
-                    index,
-                    item
-                  }) : void 0;
-                  const renderedItemWithCols = renderItemWithCols != null ? h(VirtualListRow, {
-                    index,
-                    item
-                  }) : void 0;
-                  const itemVNode = this.$slots.default({
-                    item,
-                    renderedCols,
-                    renderedItemWithCols,
-                    index
-                  })[0];
-                  if (itemResizable) {
-                    return h(VResizeObserver, {
-                      key,
-                      onResize: (entry) => this.handleItemResize(key, entry)
-                    }, {
-                      default: () => itemVNode
-                    });
-                  }
-                  itemVNode.key = key;
-                  return itemVNode;
-                });
-              }
-            })
-          ]) : (_b = (_a = this.$slots).empty) === null || _b === void 0 ? void 0 : _b.call(_a)
-        ]);
+    const { itemResizable, keyField, keyToIndex, visibleItemsTag } = this
+    return h(
+      VResizeObserver,
+      {
+        onResize: this.handleListResize
+      },
+      {
+        default: () => {
+          var _a, _b
+          return h(
+            'div',
+            mergeProps(this.$attrs, {
+              class: ['v-vl', this.showScrollbar && 'v-vl--show-scrollbar'],
+              onScroll: this.handleListScroll,
+              onWheel: this.handleListWheel,
+              ref: 'listElRef'
+            }),
+            [
+              this.items.length !== 0
+                ? h(
+                    'div',
+                    {
+                      ref: 'itemsElRef',
+                      class: 'v-vl-items',
+                      style: this.itemsStyle
+                    },
+                    [
+                      h(
+                        visibleItemsTag,
+                        Object.assign(
+                          {
+                            class: 'v-vl-visible-items',
+                            style: this.visibleItemsStyle
+                          },
+                          this.visibleItemsProps
+                        ),
+                        {
+                          default: () => {
+                            const { renderCol, renderItemWithCols } = this
+                            return this.viewportItems.map((item) => {
+                              const key = item[keyField]
+                              const index = keyToIndex.get(key)
+                              const renderedCols =
+                                renderCol != null
+                                  ? h(VirtualListRow, {
+                                      index,
+                                      item
+                                    })
+                                  : void 0
+                              const renderedItemWithCols =
+                                renderItemWithCols != null
+                                  ? h(VirtualListRow, {
+                                      index,
+                                      item
+                                    })
+                                  : void 0
+                              const itemVNode = this.$slots.default({
+                                item,
+                                renderedCols,
+                                renderedItemWithCols,
+                                index
+                              })[0]
+                              if (itemResizable) {
+                                return h(
+                                  VResizeObserver,
+                                  {
+                                    key,
+                                    onResize: (entry) => this.handleItemResize(key, entry)
+                                  },
+                                  {
+                                    default: () => itemVNode
+                                  }
+                                )
+                              }
+                              itemVNode.key = key
+                              return itemVNode
+                            })
+                          }
+                        }
+                      )
+                    ]
+                  )
+                : (_b = (_a = this.$slots).empty) === null || _b === void 0
+                  ? void 0
+                  : _b.call(_a)
+            ]
+          )
+        }
       }
-    });
+    )
   }
-});
-export {
-  VVirtualList as V
-};
+})
+export { VVirtualList as V }

@@ -42,6 +42,7 @@ private async executeSystemPlugin(pluginId: string, functionName: string, input?
 ### 2. 保持前端插件功能
 
 前端插件（基于 HTML/CSS/JavaScript）不受影响，继续正常工作：
+
 - 插件发现和加载
 - 插件列表管理
 - 前端插件内容读取
@@ -94,7 +95,7 @@ private async initializeWASI() {
 // worker.ts
 self.onmessage = async (event) => {
   const { wasmBytes, functionName, input } = event.data
-  
+
   try {
     const module = await WebAssembly.instantiate(wasmBytes)
     const result = module.instance.exports[functionName](input)
@@ -115,12 +116,12 @@ import { spawn } from 'child_process'
 private async executeWasmPlugin(wasmPath: string, functionName: string, input: any) {
   return new Promise((resolve, reject) => {
     const child = spawn('wasmtime', [wasmPath, functionName, JSON.stringify(input)])
-    
+
     let output = ''
     child.stdout.on('data', (data) => {
       output += data.toString()
     })
-    
+
     child.on('close', (code) => {
       if (code === 0) {
         resolve(JSON.parse(output))
@@ -135,11 +136,13 @@ private async executeWasmPlugin(wasmPath: string, functionName: string, input: a
 ## 推荐方案
 
 ### 短期方案 (当前实现)
+
 - 保持系统插件禁用状态
 - 专注于前端插件功能的完善
 - 在文档中明确说明限制
 
 ### 长期方案
+
 1. **方案 2 + 方案 3**: 结合 WASI 兼容层和 Web Workers
 2. 提供插件开发者替代方案：
    - 将复杂逻辑移到前端插件

@@ -72,18 +72,28 @@ export class ConversationService extends EventEmitter {
         this.emit('conversation:deleted', conversationId)
       })
 
-      window.electronAPI.on('conversation:unread-changed', (data: { id: string; count: number }) => {
-        this.emit('conversation:unread-changed', data)
-      })
+      window.electronAPI.on(
+        'conversation:unread-changed',
+        (data: { id: string; count: number }) => {
+          this.emit('conversation:unread-changed', data)
+        }
+      )
 
-      window.electronAPI.on('conversation:message-received', (data: { conversationId: string; message: any }) => {
-        this.emit('conversation:message-received', data)
-      })
+      window.electronAPI.on(
+        'conversation:message-received',
+        (data: { conversationId: string; message: any }) => {
+          this.emit('conversation:message-received', data)
+        }
+      )
     }
   }
 
   // 获取会话列表
-  public async getConversationList(userId: string, limit: number = 50, offset: number = 0): Promise<ConversationList> {
+  public async getConversationList(
+    userId: string,
+    limit: number = 50,
+    offset: number = 0
+  ): Promise<ConversationList> {
     try {
       const response = await window.electronAPI.invoke('plugin-api-call', {
         pluginId: this.pluginId,
@@ -95,7 +105,7 @@ export class ConversationService extends EventEmitter {
           offset
         }
       })
-      
+
       if (response.success) {
         return {
           conversations: response.data.items || [],
@@ -123,7 +133,7 @@ export class ConversationService extends EventEmitter {
           conversation_id: conversationId
         }
       })
-      
+
       if (response.success) {
         return response.data
       } else {
@@ -136,7 +146,10 @@ export class ConversationService extends EventEmitter {
   }
 
   // 创建会话
-  public async createConversation(userId: string, data: CreateConversationRequest): Promise<Conversation> {
+  public async createConversation(
+    userId: string,
+    data: CreateConversationRequest
+  ): Promise<Conversation> {
     try {
       const response = await window.electronAPI.invoke('plugin-api-call', {
         pluginId: this.pluginId,
@@ -147,7 +160,7 @@ export class ConversationService extends EventEmitter {
           ...data
         }
       })
-      
+
       if (response.success) {
         const conversation = response.data
         this.emit('conversation:created', conversation)
@@ -178,11 +191,11 @@ export class ConversationService extends EventEmitter {
           ...data
         }
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '更新会话失败')
       }
-      
+
       this.emit('conversation:updated', { id: conversationId, ...data })
     } catch (error) {
       console.error('Failed to update conversation:', error)
@@ -202,11 +215,11 @@ export class ConversationService extends EventEmitter {
           conversation_id: conversationId
         }
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '删除会话失败')
       }
-      
+
       this.emit('conversation:deleted', conversationId)
     } catch (error) {
       console.error('Failed to delete conversation:', error)
@@ -215,7 +228,11 @@ export class ConversationService extends EventEmitter {
   }
 
   // 置顶会话
-  public async pinConversation(userId: string, conversationId: string, isPinned: boolean = true): Promise<void> {
+  public async pinConversation(
+    userId: string,
+    conversationId: string,
+    isPinned: boolean = true
+  ): Promise<void> {
     try {
       const response = await window.electronAPI.invoke('plugin-api-call', {
         pluginId: this.pluginId,
@@ -227,11 +244,11 @@ export class ConversationService extends EventEmitter {
           is_top: isPinned ? 1 : 0
         }
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '置顶会话失败')
       }
-      
+
       this.emit('conversation:pinned', { conversationId, isPinned })
     } catch (error) {
       console.error('Failed to pin conversation:', error)
@@ -240,7 +257,11 @@ export class ConversationService extends EventEmitter {
   }
 
   // 设置免打扰
-  public async muteConversation(userId: string, conversationId: string, isMuted: boolean = true): Promise<void> {
+  public async muteConversation(
+    userId: string,
+    conversationId: string,
+    isMuted: boolean = true
+  ): Promise<void> {
     try {
       const response = await window.electronAPI.invoke('plugin-api-call', {
         pluginId: this.pluginId,
@@ -252,11 +273,11 @@ export class ConversationService extends EventEmitter {
           is_disturb: isMuted ? 0 : 1 // 注意：0表示免打扰，1表示不免打扰
         }
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '设置免打扰失败')
       }
-      
+
       this.emit('conversation:muted', { conversationId, isMuted })
     } catch (error) {
       console.error('Failed to mute conversation:', error)
@@ -276,11 +297,11 @@ export class ConversationService extends EventEmitter {
           conversation_id: conversationId
         }
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '清除未读失败')
       }
-      
+
       this.emit('conversation:unread-cleared', conversationId)
     } catch (error) {
       console.error('Failed to clear unread count:', error)
@@ -289,7 +310,11 @@ export class ConversationService extends EventEmitter {
   }
 
   // 归档会话
-  public async archiveConversation(userId: string, conversationId: string, isArchived: boolean = true): Promise<void> {
+  public async archiveConversation(
+    userId: string,
+    conversationId: string,
+    isArchived: boolean = true
+  ): Promise<void> {
     try {
       const response = await window.electronAPI.invoke('plugin-api-call', {
         pluginId: this.pluginId,
@@ -301,11 +326,11 @@ export class ConversationService extends EventEmitter {
           is_archived: isArchived ? 1 : 0
         }
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '归档会话失败')
       }
-      
+
       this.emit('conversation:archived', { conversationId, isArchived })
     } catch (error) {
       console.error('Failed to archive conversation:', error)
@@ -314,7 +339,11 @@ export class ConversationService extends EventEmitter {
   }
 
   // 搜索会话
-  public async searchConversations(userId: string, keyword: string, limit: number = 20): Promise<Conversation[]> {
+  public async searchConversations(
+    userId: string,
+    keyword: string,
+    limit: number = 20
+  ): Promise<Conversation[]> {
     try {
       const response = await window.electronAPI.invoke('plugin-api-call', {
         pluginId: this.pluginId,
@@ -326,7 +355,7 @@ export class ConversationService extends EventEmitter {
           limit
         }
       })
-      
+
       if (response.success) {
         return response.data.items || []
       } else {
@@ -355,7 +384,7 @@ export class ConversationService extends EventEmitter {
           user_id: userId
         }
       })
-      
+
       if (response.success) {
         return response.data
       } else {
@@ -384,11 +413,11 @@ export class ConversationService extends EventEmitter {
           action
         }
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '批量操作失败')
       }
-      
+
       this.emit('conversation:batch-updated', { conversationIds, action })
     } catch (error) {
       console.error('Failed to batch update conversations:', error)
@@ -397,7 +426,10 @@ export class ConversationService extends EventEmitter {
   }
 
   // 插件数据访问接口
-  public async getConversationsForPlugin(limit: number = 50, offset: number = 0): Promise<Conversation[]> {
+  public async getConversationsForPlugin(
+    limit: number = 50,
+    offset: number = 0
+  ): Promise<Conversation[]> {
     try {
       const response = await window.electronAPI.invoke('plugin-api-call', {
         pluginId: this.pluginId,
@@ -408,7 +440,7 @@ export class ConversationService extends EventEmitter {
           offset
         }
       })
-      
+
       if (response.success) {
         return response.data || []
       } else {
@@ -430,7 +462,7 @@ export class ConversationService extends EventEmitter {
           conversation_id: conversationId
         }
       })
-      
+
       if (response.success) {
         return response.data
       } else {
@@ -450,7 +482,7 @@ export class ConversationService extends EventEmitter {
         url: '/plugin/data/conversation/create',
         data
       })
-      
+
       if (response.success) {
         const conversation = response.data
         this.emit('conversation:created', conversation)
@@ -474,11 +506,11 @@ export class ConversationService extends EventEmitter {
           conversation_id: conversationId
         }
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '删除插件会话失败')
       }
-      
+
       this.emit('conversation:deleted', conversationId)
     } catch (error) {
       console.error('Failed to delete conversation for plugin:', error)
@@ -495,11 +527,11 @@ export class ConversationService extends EventEmitter {
         url: '/api/v1/talk/sync',
         data: {}
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '同步会话失败')
       }
-      
+
       this.emit('conversation:synced')
     } catch (error) {
       console.error('Failed to sync conversations:', error)
@@ -508,7 +540,10 @@ export class ConversationService extends EventEmitter {
   }
 
   // 导出会话数据
-  public async exportConversationData(conversationId: string, format: 'json' | 'txt' | 'html' = 'json'): Promise<string> {
+  public async exportConversationData(
+    conversationId: string,
+    format: 'json' | 'txt' | 'html' = 'json'
+  ): Promise<string> {
     try {
       const response = await window.electronAPI.invoke('plugin-api-call', {
         pluginId: this.pluginId,
@@ -519,7 +554,7 @@ export class ConversationService extends EventEmitter {
           format
         }
       })
-      
+
       if (response.success) {
         return response.data.content
       } else {

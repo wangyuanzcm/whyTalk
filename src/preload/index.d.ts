@@ -5,8 +5,13 @@ interface P2PAPI {
   // 服务控制
   start: () => Promise<{ success: boolean; message?: string; nodeId?: string }>
   stop: () => Promise<{ success: boolean; message?: string }>
-  getStatus: () => Promise<{ success: boolean; isRunning?: boolean; nodeId?: string; message?: string }>
-  
+  getStatus: () => Promise<{
+    success: boolean
+    isRunning?: boolean
+    nodeId?: string
+    message?: string
+  }>
+
   // 消息相关
   sendDirectMessage: (params: any) => Promise<any>
   sendGroupMessage: (params: any) => Promise<any>
@@ -15,7 +20,7 @@ interface P2PAPI {
   markMessagesAsRead: (params: any) => Promise<any>
   deleteMessage: (params: any) => Promise<any>
   recallMessage: (params: any) => Promise<any>
-  
+
   // 联系人相关
   addContact: (params: any) => Promise<any>
   getContacts: () => Promise<{ success: boolean; contacts?: any[]; message?: string }>
@@ -24,7 +29,7 @@ interface P2PAPI {
   searchContacts: (params: any) => Promise<any>
   getContactRequests: () => Promise<any>
   handleContactRequest: (params: any) => Promise<any>
-  
+
   // 群组相关
   createGroup: (params: any) => Promise<any>
   getGroups: () => Promise<{ success: boolean; groups?: any[]; message?: string }>
@@ -32,11 +37,11 @@ interface P2PAPI {
   leaveGroup: (params: any) => Promise<any>
   getGroupMembers: (params: any) => Promise<any>
   inviteToGroup: (params: any) => Promise<any>
-  
+
   // 节点发现
   getDiscoveredPeers: () => Promise<{ success: boolean; peers?: any[]; message?: string }>
   getConnectedPeers: () => Promise<{ success: boolean; peers?: any[]; message?: string }>
-  
+
   // 同步相关
   getUnsyncedMessages: () => Promise<any>
   getContactChanges: () => Promise<any>

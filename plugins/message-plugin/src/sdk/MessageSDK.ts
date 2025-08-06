@@ -192,10 +192,7 @@ export class MessageSDK {
   /**
    * 获取收藏的消息
    */
-  async getMarkedMessages(data: {
-    page?: number
-    limit?: number
-  }): Promise<MessageHistory> {
+  async getMarkedMessages(data: { page?: number; limit?: number }): Promise<MessageHistory> {
     const response = await this.sendPluginMessage('message.marked', data)
     return {
       messages: response.messages || [],
@@ -236,11 +233,14 @@ export class MessageSDK {
   /**
    * 更新会话信息
    */
-  async updateConversation(conversationId: number, data: {
-    is_top?: boolean
-    is_disturb?: boolean
-    is_robot?: boolean
-  }): Promise<boolean> {
+  async updateConversation(
+    conversationId: number,
+    data: {
+      is_top?: boolean
+      is_disturb?: boolean
+      is_robot?: boolean
+    }
+  ): Promise<boolean> {
     const response = await this.sendPluginMessage('conversation.update', {
       conversationId,
       ...data
@@ -344,7 +344,10 @@ export class MessageSDK {
   /**
    * 上传文件
    */
-  async uploadFile(file: File, type: 'image' | 'file' | 'voice'): Promise<{
+  async uploadFile(
+    file: File,
+    type: 'image' | 'file' | 'voice'
+  ): Promise<{
     name: string
     size: number
     suffix: string
@@ -372,11 +375,7 @@ export class MessageSDK {
   /**
    * 发送P2P消息
    */
-  async sendP2PMessage(data: {
-    to: string
-    content: string
-    type?: string
-  }): Promise<boolean> {
+  async sendP2PMessage(data: { to: string; content: string; type?: string }): Promise<boolean> {
     const response = await this.sendPluginMessage('p2p.message.send', data)
     return response.success || false
   }
@@ -431,10 +430,9 @@ export class MessageSDK {
   /**
    * 监听消息状态变化
    */
-  onMessageStatusChange(callback: (data: {
-    messageId: number
-    status: 'read' | 'recalled' | 'deleted'
-  }) => void): void {
+  onMessageStatusChange(
+    callback: (data: { messageId: number; status: 'read' | 'recalled' | 'deleted' }) => void
+  ): void {
     console.log('Message status change listener registered')
   }
 
@@ -461,7 +459,7 @@ export class MessageSDK {
     }
 
     const response = await window.electronAPI.invoke('plugin-send-message', message)
-    
+
     if (!response.success) {
       throw new Error(response.error || '消息服务调用失败')
     }

@@ -1,17 +1,12 @@
 <template>
   <div class="p2p-status-indicator">
     <!-- 简化的圆点状态指示器 -->
-    <div 
-      class="status-dot" 
-      :class="statusClass"
-      @click="showDetails = true"
-      :title="statusText"
-    >
+    <div class="status-dot" :class="statusClass" :title="statusText" @click="showDetails = true">
       <div class="dot-inner"></div>
     </div>
 
     <!-- 详情模态框 -->
-    <n-modal v-model:show="showDetails" preset="card" title="P2P网络状态" style="width: 500px;">
+    <n-modal v-model:show="showDetails" preset="card" title="网络状态" style="width: 500px">
       <div class="p2p-status-details">
         <n-space vertical>
           <!-- 连接状态 -->
@@ -21,7 +16,7 @@
                 <span class="label">网络状态:</span>
                 <n-tag :type="networkStatusType">{{ networkStatusText }}</n-tag>
               </div>
-              <div class="status-item" v-if="p2pStore.nodeId">
+              <div v-if="p2pStore.nodeId" class="status-item">
                 <span class="label">节点ID:</span>
                 <n-text code>{{ p2pStore.nodeId.slice(0, 16) }}...</n-text>
               </div>
@@ -60,24 +55,16 @@
 
           <!-- 操作按钮 -->
           <n-space>
-            <n-button 
-              type="primary" 
-              @click="reconnect"
-              :loading="reconnecting"
+            <n-button
               v-if="!p2pStore.isConnected"
+              type="primary"
+              :loading="reconnecting"
+              @click="reconnect"
             >
               重新连接
             </n-button>
-            <n-button 
-              type="warning" 
-              @click="restart"
-              :loading="restarting"
-            >
-              重启服务
-            </n-button>
-            <n-button @click="refreshStatus">
-              刷新状态
-            </n-button>
+            <n-button type="warning" :loading="restarting" @click="restart"> 重启服务 </n-button>
+            <n-button @click="refreshStatus"> 刷新状态 </n-button>
           </n-space>
         </n-space>
       </div>

@@ -20,15 +20,15 @@ if (typeof globalThis.Event === 'undefined') {
       this.currentTarget = null
       this.timeStamp = Date.now()
     }
-    
+
     preventDefault() {
       this.defaultPrevented = true
     }
-    
+
     stopPropagation() {
       // No-op in Node.js
     }
-    
+
     stopImmediatePropagation() {
       // No-op in Node.js
     }
@@ -100,7 +100,7 @@ class P2PService {
     // 生成新身份
     console.log('Generating new P2P identity...')
     const peerId = await createEd25519PeerId()
-    
+
     this.identity = {
       peerId: peerId.toString(),
       publicKey: peerId.publicKey ? Buffer.from(peerId.publicKey).toString('base64') : '',
@@ -134,15 +134,9 @@ class P2PService {
       // 创建libp2p节点
       this.node = await createLibp2p({
         addresses: {
-          listen: [
-            '/ip4/0.0.0.0/tcp/0',
-            '/ip4/0.0.0.0/tcp/0/ws'
-          ]
+          listen: ['/ip4/0.0.0.0/tcp/0', '/ip4/0.0.0.0/tcp/0/ws']
         },
-        transports: [
-          tcp(),
-          webSockets()
-        ],
+        transports: [tcp(), webSockets()],
         streamMuxers: [mplex()],
         connectionEncrypters: [noise()],
         peerDiscovery: [
@@ -174,14 +168,22 @@ class P2PService {
       this.bindEvents()
 
       this.isStarted = true
-      this.sendMessage('started', {
-        peerId: this.node.peerId.toString(),
-        addresses: this.node.getMultiaddrs().map((addr) => addr.toString())
-      }, 'startup')
-
+      this.sendMessage(
+        'started',
+        {
+          peerId: this.node.peerId.toString(),
+          addresses: this.node.getMultiaddrs().map((addr) => addr.toString())
+        },
+        'startup'
+      )
     } catch (error) {
       console.error('Failed to start P2P service:', error)
-      this.sendMessage('error', null, 'startup', error instanceof Error ? error.message : String(error))
+      this.sendMessage(
+        'error',
+        null,
+        'startup',
+        error instanceof Error ? error.message : String(error)
+      )
       throw error
     }
   }
@@ -201,7 +203,12 @@ class P2PService {
       this.sendMessage('stopped', null, 'shutdown')
     } catch (error) {
       console.error('Failed to stop P2P service:', error)
-      this.sendMessage('error', null, 'shutdown', error instanceof Error ? error.message : String(error))
+      this.sendMessage(
+        'error',
+        null,
+        'shutdown',
+        error instanceof Error ? error.message : String(error)
+      )
     }
   }
 
@@ -212,26 +219,38 @@ class P2PService {
     // 节点连接事件
     this.node.addEventListener('peer:connect', (event) => {
       console.log('Peer connected:', event.detail.toString())
-      this.sendMessage('peer:connect', {
-        peerId: event.detail.toString()
-      }, 'peer-connect')
+      this.sendMessage(
+        'peer:connect',
+        {
+          peerId: event.detail.toString()
+        },
+        'peer-connect'
+      )
     })
 
     // 节点断开事件
     this.node.addEventListener('peer:disconnect', (event) => {
       console.log('Peer disconnected:', event.detail.toString())
-      this.sendMessage('peer:disconnect', {
-        peerId: event.detail.toString()
-      }, 'peer-disconnect')
+      this.sendMessage(
+        'peer:disconnect',
+        {
+          peerId: event.detail.toString()
+        },
+        'peer-disconnect'
+      )
     })
 
     // 节点发现事件
     this.node.addEventListener('peer:discovery', (event) => {
       console.log('Peer discovered:', event.detail.id.toString())
-      this.sendMessage('peer:discovery', {
-        peerId: event.detail.id.toString(),
-        multiaddrs: event.detail.multiaddrs.map((addr) => addr.toString())
-      }, 'peer-discovery')
+      this.sendMessage(
+        'peer:discovery',
+        {
+          peerId: event.detail.id.toString(),
+          multiaddrs: event.detail.multiaddrs.map((addr) => addr.toString())
+        },
+        'peer-discovery'
+      )
     })
   }
 
@@ -245,15 +264,24 @@ class P2PService {
       // 这里需要实现具体的消息发送逻辑
       // 可以使用 libp2p 的 stream 或 pubsub
       console.log(`Sending direct message to ${targetPeerId}:`, message)
-      
-      this.sendMessage('message:sent', {
-        targetPeerId,
-        message,
-        timestamp: new Date().toISOString()
-      }, 'send-message')
+
+      this.sendMessage(
+        'message:sent',
+        {
+          targetPeerId,
+          message,
+          timestamp: new Date().toISOString()
+        },
+        'send-message'
+      )
     } catch (error) {
       console.error('Failed to send direct message:', error)
-      this.sendMessage('error', null, 'send-message', error instanceof Error ? error.message : String(error))
+      this.sendMessage(
+        'error',
+        null,
+        'send-message',
+        error instanceof Error ? error.message : String(error)
+      )
     }
   }
 
@@ -287,12 +315,12 @@ class P2PService {
       type,
       data
     }
-    
+
     // 如果是错误消息，添加错误字段
     if (type === 'error' && error) {
       message.error = error
     }
-    
+
     // 通过stdout发送JSON消息
     console.log(JSON.stringify(message))
   }
@@ -301,22 +329,22 @@ class P2PService {
 // 主函数
 async function main() {
   const service = new P2PService()
-  
+
   // 监听来自主进程的消息（通过stdin）
   let buffer = ''
   process.stdin.on('data', async (data) => {
     buffer += data.toString()
     const lines = buffer.split('\n')
     buffer = lines.pop() || '' // 保留最后一个不完整的行
-    
+
     for (const line of lines) {
       if (line.trim()) {
         let message = null
         try {
           message = JSON.parse(line)
-          
+
           let result = null
-          
+
           switch (message.type) {
             case 'start':
               await service.start()
@@ -340,27 +368,31 @@ async function main() {
             default:
               throw new Error(`Unknown message type: ${message.type}`)
           }
-          
+
           // 发送响应
           service.sendMessage('response', result, message.id)
-          
         } catch (error) {
           // 发送错误响应
-          service.sendMessage('error', null, message?.id, error instanceof Error ? error.message : String(error))
+          service.sendMessage(
+            'error',
+            null,
+            message?.id,
+            error instanceof Error ? error.message : String(error)
+          )
         }
       }
     }
   })
-  
+
   // 发送就绪信号
   service.sendMessage('ready')
-  
+
   // 优雅关闭
   process.on('SIGTERM', async () => {
     await service.stop()
     process.exit(0)
   })
-  
+
   process.on('SIGINT', async () => {
     await service.stop()
     process.exit(0)

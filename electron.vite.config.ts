@@ -16,10 +16,10 @@ function copySchemaPlugin() {
     writeBundle() {
       const sourceFile = resolve(__dirname, 'src/main/services/database/schema.sql')
       const targetFile = resolve(__dirname, 'out/main/schema.sql')
-      
+
       // 确保目标目录存在
       mkdirSync(dirname(targetFile), { recursive: true })
-      
+
       // 复制文件
       copyFileSync(sourceFile, targetFile)
       console.log('Copied schema.sql to out/main/')

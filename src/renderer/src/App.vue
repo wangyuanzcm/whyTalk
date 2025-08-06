@@ -10,15 +10,15 @@ const isInitialized = ref(false)
 const init = async () => {
   try {
     console.log('Starting app initialization...')
-    
+
     // 先加载设置
     loadSetting()
     console.log('Settings loaded successfully')
-    
+
     // 检查是否在Electron环境中
     if (window.electron) {
       console.log('Electron environment detected')
-      
+
       // 检查是否已有有效的登录状态
       try {
         // 如果用户已登录，初始化P2P连接
@@ -35,7 +35,7 @@ const init = async () => {
     } else {
       console.log('Browser environment detected, skipping P2P initialization')
     }
-    
+
     isInitialized.value = true
     console.log('App initialization completed')
   } catch (error) {
@@ -47,7 +47,7 @@ const init = async () => {
 
 onMounted(() => {
   console.log('App mounted')
-  
+
   // 初始化应用
   init()
 })

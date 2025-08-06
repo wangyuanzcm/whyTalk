@@ -29,7 +29,7 @@ const onClieckSelect = (e: Event, item: IMessage) => {
   <template v-if="item.role == 'system'">
     <div class="chat-container-item system">
       <template v-if="item.type === MessageTypeEnum.CUSTOM">
-        <component v-if="item.render" :is="item.render()" />
+        <component :is="item.render()" v-if="item.render" />
       </template>
       <template v-else-if="item.type === MessageTypeEnum.TEXT">
         <span class="system-content">{{ item.content }}</span>
@@ -52,7 +52,7 @@ const onClieckSelect = (e: Event, item: IMessage) => {
         active: isSelected
       }"
     >
-      <div class="chat-checkbox" v-show="showCheckbox">
+      <div v-show="showCheckbox" class="chat-checkbox">
         <n-checkbox
           size="medium"
           :checked="isSelected"
@@ -64,7 +64,7 @@ const onClieckSelect = (e: Event, item: IMessage) => {
         />
       </div>
 
-      <div class="chat-avatar" v-show="showAvatar">
+      <div v-show="showAvatar" class="chat-avatar">
         <im-avatar
           class="pointer"
           :size="30"
@@ -87,9 +87,9 @@ const onClieckSelect = (e: Event, item: IMessage) => {
           <div class="chat-content-message">
             <template v-if="item.type === MessageTypeEnum.CUSTOM">
               <component
+                :is="item.render()"
                 v-if="item.render"
                 class="immsg"
-                :is="item.render()"
                 @contextmenu.prevent="onContextMenu($event, raw)"
               />
             </template>
@@ -99,10 +99,10 @@ const onClieckSelect = (e: Event, item: IMessage) => {
             <template v-else>
               <div>未知类型</div>
             </template>
-            <span class="sent-status sending" v-if="item?.status === StatusEnum.SENDING"
+            <span v-if="item?.status === StatusEnum.SENDING" class="sent-status sending"
               ><n-icon :component="LoadingTwo"
             /></span>
-            <span class="sent-status fail" v-if="item?.status === StatusEnum.ERROR">发送失败</span>
+            <span v-if="item?.status === StatusEnum.ERROR" class="sent-status fail">发送失败</span>
           </div>
 
           <div v-if="item.quote?.quote_id" class="chat-content-quote">
@@ -115,20 +115,20 @@ const onClieckSelect = (e: Event, item: IMessage) => {
             <n-icon
               class="pointer"
               :component="Copy"
-              @click="emits('element-event', 'copy', raw)"
               size="16"
+              @click="emits('element-event', 'copy', raw)"
             />
             <n-icon
               class="pointer"
               :component="Delete"
-              @click="emits('element-event', 'delete', raw)"
               size="16"
+              @click="emits('element-event', 'delete', raw)"
             />
             <n-icon
               class="pointer"
               :component="Undo"
-              @click="emits('element-event', 'revoke', raw)"
               size="16"
+              @click="emits('element-event', 'revoke', raw)"
             />
           </div>
         </div>

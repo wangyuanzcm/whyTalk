@@ -7,12 +7,14 @@
 ## 当前架构分析
 
 ### 现有服务器依赖
+
 1. **WebSocket连接**: 依赖远程WebSocket服务器进行实时通信
 2. **HTTP API**: 通过REST API进行数据交互
 3. **中央数据库**: 用户数据、消息、联系人存储在服务器
 4. **身份认证**: 基于JWT的中央认证系统
 
 ### 现有P2P基础
+
 - 已有基础的P2P框架（基于libp2p）
 - P2P身份管理系统
 - 节点发现机制
@@ -21,12 +23,14 @@
 ## P2P化改造目标
 
 ### 核心目标
+
 1. **完全去中心化**: 移除所有服务器依赖
 2. **分布式存储**: 数据在本地存储，通过P2P同步
 3. **自主身份**: 基于密钥对的去中心化身份系统
 4. **直接通信**: 点对点消息传输，无需中继服务器
 
 ### 功能目标
+
 - ✅ P2P消息聊天（私聊、群聊）
 - ✅ P2P通讯录管理
 - ✅ 分布式联系人发现
@@ -39,26 +43,29 @@
 ### 1. 身份系统改造
 
 #### 当前问题
+
 - 依赖中央服务器进行用户认证
 - 用户ID由服务器分配
 
 #### P2P解决方案
+
 ```typescript
 // 新的P2P身份系统
 interface P2PIdentity {
-  peerId: string           // libp2p节点ID
-  publicKey: string        // 公钥
-  privateKey: string       // 私钥（本地存储）
+  peerId: string // libp2p节点ID
+  publicKey: string // 公钥
+  privateKey: string // 私钥（本地存储）
   profile: {
     nickname: string
     avatar: string
     bio: string
   }
-  signature: string        // 身份签名
+  signature: string // 身份签名
 }
 ```
 
 #### 实现步骤
+
 1. 生成密钥对作为用户身份
 2. 使用公钥哈希作为用户唯一标识
 3. 身份信息通过P2P网络广播和验证
@@ -66,11 +73,13 @@ interface P2PIdentity {
 ### 2. 消息系统P2P化
 
 #### 当前架构
+
 ```
 客户端A → WebSocket → 服务器 → WebSocket → 客户端B
 ```
 
 #### P2P架构
+
 ```
 客户端A → libp2p → 直连 → libp2p → 客户端B
 ```
@@ -78,25 +87,27 @@ interface P2PIdentity {
 #### 实现方案
 
 ##### 私聊消息
+
 ```typescript
 interface P2PDirectMessage {
   id: string
-  from: string          // 发送者PeerID
-  to: string            // 接收者PeerID
-  content: string       // 加密内容
+  from: string // 发送者PeerID
+  to: string // 接收者PeerID
+  content: string // 加密内容
   timestamp: number
-  signature: string     // 消息签名
+  signature: string // 消息签名
   messageType: 'text' | 'image' | 'file'
 }
 ```
 
 ##### 群聊消息
+
 ```typescript
 interface P2PGroupMessage {
   id: string
-  groupId: string       // 群组ID
-  from: string          // 发送者PeerID
-  content: string       // 加密内容
+  groupId: string // 群组ID
+  from: string // 发送者PeerID
+  content: string // 加密内容
   timestamp: number
   signature: string
   messageType: 'text' | 'image' | 'file'
@@ -104,6 +115,7 @@ interface P2PGroupMessage {
 ```
 
 ##### 消息路由机制
+
 1. **直连优先**: 优先使用直接P2P连接
 2. **中继备用**: 通过其他节点中继（DHT路由）
 3. **离线存储**: 本地存储未送达消息，上线时重发
@@ -111,18 +123,19 @@ interface P2PGroupMessage {
 ### 3. 通讯录系统P2P化
 
 #### 联系人发现机制
+
 ```typescript
 interface ContactDiscovery {
   // 1. 二维码分享
   shareQRCode(): string
   scanQRCode(qrData: string): P2PIdentity
-  
+
   // 2. 附近的人（局域网发现）
   discoverNearbyPeers(): P2PIdentity[]
-  
+
   // 3. 好友推荐（通过共同好友）
   getRecommendations(): P2PIdentity[]
-  
+
   // 4. 邀请链接
   generateInviteLink(): string
   acceptInvite(inviteLink: string): void
@@ -130,11 +143,12 @@ interface ContactDiscovery {
 ```
 
 #### 联系人同步
+
 ```typescript
 interface ContactSync {
   // 联系人列表分布式存储
   contacts: Map<string, P2PContact>
-  
+
   // 同步机制
   syncContacts(): Promise<void>
   broadcastContactUpdate(contact: P2PContact): void
@@ -145,6 +159,7 @@ interface ContactSync {
 ### 4. 数据存储和同步
 
 #### 本地存储架构
+
 ```
 userData/
 ├── identity/           # 身份密钥
@@ -155,15 +170,16 @@ userData/
 ```
 
 #### 多设备同步机制
+
 ```typescript
 interface DeviceSync {
   deviceId: string
   lastSyncTime: number
-  
+
   // 同步策略
   syncData(): Promise<void>
   resolveConflicts(conflicts: DataConflict[]): void
-  
+
   // 增量同步
   getDelta(since: number): SyncDelta
   applyDelta(delta: SyncDelta): void
@@ -173,28 +189,29 @@ interface DeviceSync {
 ### 5. 网络层改造
 
 #### 移除WebSocket依赖
+
 ```typescript
 // 替换 src/renderer/src/connect.ts
 class P2PConnect {
   private p2pManager: P2PManager
-  
+
   constructor() {
     this.p2pManager = new P2PManager()
   }
-  
+
   async connect() {
     await this.p2pManager.start()
     this.bindP2PEvents()
   }
-  
+
   disconnect() {
     this.p2pManager.stop()
   }
-  
+
   isConnect() {
     return this.p2pManager.isRunning()
   }
-  
+
   // P2P消息发送
   async sendMessage(peerId: string, message: any) {
     return this.p2pManager.sendDirectMessage(peerId, message)
@@ -203,6 +220,7 @@ class P2PConnect {
 ```
 
 #### 网络状态管理
+
 ```typescript
 interface P2PNetworkStatus {
   isOnline: boolean
@@ -215,6 +233,7 @@ interface P2PNetworkStatus {
 ## 实施计划
 
 ### 阶段1: 基础架构改造（1-2周）
+
 1. **移除服务器依赖**
    - 删除WebSocket连接代码
    - 移除HTTP API调用
@@ -226,6 +245,7 @@ interface P2PNetworkStatus {
    - 实现可靠的消息传输
 
 ### 阶段2: 消息系统P2P化（2-3周）
+
 1. **重构消息传输**
    - 实现P2P直连消息
    - 添加消息加密
@@ -237,6 +257,7 @@ interface P2PNetworkStatus {
    - 群成员同步
 
 ### 阶段3: 通讯录系统改造（1-2周）
+
 1. **联系人发现**
    - 二维码分享
    - 局域网发现
@@ -247,6 +268,7 @@ interface P2PNetworkStatus {
    - 多设备同步
 
 ### 阶段4: UI/UX优化（1周）
+
 1. **界面更新**
    - 移除服务器连接状态
    - 添加P2P网络状态
@@ -258,6 +280,7 @@ interface P2PNetworkStatus {
    - 同步状态显示
 
 ### 阶段5: 测试和优化（1-2周）
+
 1. **功能测试**
    - 多设备测试
    - 网络环境测试
@@ -271,6 +294,7 @@ interface P2PNetworkStatus {
 ## 技术实现细节
 
 ### 核心依赖更新
+
 ```json
 {
   "dependencies": {
@@ -279,28 +303,26 @@ interface P2PNetworkStatus {
     "@libp2p/kad-dht": "^11.0.0",
     "@libp2p/pubsub": "^9.0.0",
     "@libp2p/bootstrap": "^10.0.0",
-    "orbit-db": "^0.29.0",  // 分布式数据库
-    "ipfs-core": "^0.18.0"  // IPFS支持
+    "orbit-db": "^0.29.0", // 分布式数据库
+    "ipfs-core": "^0.18.0" // IPFS支持
   }
 }
 ```
 
 ### 配置文件更新
+
 ```typescript
 // src/main/config/p2p.ts
 export const P2P_CONFIG = {
   // 移除服务器配置
   // VITE_BASE_API: 删除
   // VITE_SOCKET_API: 删除
-  
+
   // 新增P2P配置
   P2P_BOOTSTRAP_NODES: [
     '/ip4/104.131.131.82/tcp/4001/p2p/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ'
   ],
-  P2P_LISTEN_ADDRESSES: [
-    '/ip4/0.0.0.0/tcp/0',
-    '/ip4/0.0.0.0/tcp/0/ws'
-  ],
+  P2P_LISTEN_ADDRESSES: ['/ip4/0.0.0.0/tcp/0', '/ip4/0.0.0.0/tcp/0/ws'],
   DHT_ENABLED: true,
   PUBSUB_ENABLED: true
 }
@@ -309,6 +331,7 @@ export const P2P_CONFIG = {
 ## 预期效果
 
 ### 优势
+
 1. **真正去中心化**: 无需依赖任何服务器
 2. **隐私保护**: 数据完全本地化
 3. **抗审查**: 无中心节点可被关闭
@@ -316,6 +339,7 @@ export const P2P_CONFIG = {
 5. **网络弹性**: 节点故障不影响整体网络
 
 ### 挑战和解决方案
+
 1. **NAT穿透**: 使用STUN/TURN服务或中继节点
 2. **离线消息**: 通过DHT和可信节点存储
 3. **数据一致性**: 使用CRDT算法解决冲突

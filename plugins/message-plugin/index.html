@@ -1,619 +1,623 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>消息插件</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f5f5;
-            height: 100vh;
-            overflow: hidden;
-        }
-        
-        .message-container {
-            display: flex;
-            height: 100vh;
-            background: white;
-        }
-        
-        /* 左侧会话列表 */
-        .chat-sidebar {
-            width: 320px;
-            border-right: 1px solid #e0e0e0;
-            display: flex;
-            flex-direction: column;
-            background: #fafafa;
-        }
-        
-        .sidebar-header {
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 16px;
-            border-bottom: 1px solid #e0e0e0;
-            background: white;
-        }
-        
-        .header-title {
-            font-size: 18px;
-            font-weight: 500;
-            color: #333;
-        }
-        
-        .header-actions {
-            display: flex;
-            gap: 8px;
-        }
-        
-        .action-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: #f0f0f0;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            transition: all 0.2s;
-        }
-        
-        .action-btn:hover {
-            background: #e0e0e0;
-            transform: scale(1.05);
-        }
-        
-        .search-section {
-            padding: 12px 16px;
-            background: white;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        
-        .search-box {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #d0d0d0;
-            border-radius: 20px;
-            font-size: 14px;
-            outline: none;
-        }
-        
-        .search-box:focus {
-            border-color: #2196f3;
-        }
-        
-        .filter-tabs {
-            display: flex;
-            background: white;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        
-        .filter-tab {
-            flex: 1;
-            padding: 12px;
-            text-align: center;
-            cursor: pointer;
-            font-size: 14px;
-            color: #666;
-            border-bottom: 2px solid transparent;
-            transition: all 0.2s;
-        }
-        
-        .filter-tab:hover {
-            background: #f8f8f8;
-        }
-        
-        .filter-tab.active {
-            color: #2196f3;
-            border-bottom-color: #2196f3;
-        }
-        
-        .chat-list {
-            flex: 1;
-            overflow-y: auto;
-        }
-        
-        .chat-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 16px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            border-bottom: 1px solid #f0f0f0;
-            background: white;
-            position: relative;
-        }
-        
-        .chat-item:hover {
-            background: #f8f8f8;
-        }
-        
-        .chat-item.active {
-            background: #e3f2fd;
-        }
-        
-        .chat-item.pinned {
-            background: #fff3e0;
-        }
-        
-        .chat-item.pinned::before {
-            content: "📌";
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            font-size: 12px;
-        }
-        
-        .chat-avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: #2196f3;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            margin-right: 12px;
-            font-size: 18px;
-            position: relative;
-        }
-        
-        .online-indicator {
-            position: absolute;
-            bottom: 2px;
-            right: 2px;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #4caf50;
-            border: 2px solid white;
-        }
-        
-        .chat-info {
-            flex: 1;
-            min-width: 0;
-        }
-        
-        .chat-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 4px;
-        }
-        
-        .chat-name {
-            font-weight: 500;
-            font-size: 15px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        
-        .chat-time {
-            font-size: 12px;
-            color: #999;
-        }
-        
-        .chat-preview {
-            font-size: 13px;
-            color: #666;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            margin-top: 2px;
-        }
-        
-        .unread-badge {
-            background: #f44336;
-            color: white;
-            border-radius: 10px;
-            padding: 2px 6px;
-            font-size: 11px;
-            min-width: 18px;
-            text-align: center;
-            margin-left: 8px;
-        }
-        
-        /* 右侧聊天面板 */
-        .chat-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: white;
-        }
-        
-        .chat-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .chat-header {
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            border-bottom: 1px solid #e0e0e0;
-            background: white;
-        }
-        
-        .chat-title {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .chat-title-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: #2196f3;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-        }
-        
-        .chat-title-info h3 {
-            font-size: 16px;
-            margin: 0;
-        }
-        
-        .chat-title-info p {
-            font-size: 12px;
-            color: #666;
-            margin: 2px 0 0 0;
-        }
-        
-        .chat-tools {
-            display: flex;
-            gap: 8px;
-        }
-        
-        .tool-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: #f5f5f5;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            transition: all 0.2s;
-        }
-        
-        .tool-btn:hover {
-            background: #e0e0e0;
-        }
-        
-        .messages-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            background: #f8f9fa;
-        }
-        
-        .message-item {
-            display: flex;
-            margin-bottom: 16px;
-            align-items: flex-start;
-        }
-        
-        .message-item.own {
-            flex-direction: row-reverse;
-        }
-        
-        .message-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: #2196f3;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            margin: 0 12px;
-        }
-        
-        .message-content {
-            max-width: 60%;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .chat-messages {
-            flex: 1;
-            padding: 16px;
-            overflow-y: auto;
-            background: #f9f9f9;
-        }
-        
-        .message {
-            margin-bottom: 16px;
-            display: flex;
-        }
-        
-        .message.sent {
-            justify-content: flex-end;
-        }
-        
-        .message-bubble {
-            background: white;
-            padding: 12px 16px;
-            border-radius: 18px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-            word-wrap: break-word;
-        }
-        
-        .message.received .message-bubble {
-            background: white;
-            border: 1px solid #e0e0e0;
-        }
-        
-        .message.sent .message-bubble {
-            background: #2196f3;
-            color: white;
-        }
-        
-        .message-item.own .message-bubble {
-            background: #2196f3;
-            color: white;
-        }
-        
-        .message-time {
-            font-size: 11px;
-            color: #999;
-            margin-top: 4px;
-            text-align: center;
-        }
-        
-        .message-input-area {
-            border-top: 1px solid #e0e0e0;
-            background: white;
-        }
-        
-        .input-toolbar {
-            display: flex;
-            align-items: center;
-            padding: 8px 16px;
-            gap: 8px;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        
-        .toolbar-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
-            background: #f5f5f5;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            transition: all 0.2s;
-        }
-        
-        .toolbar-btn:hover {
-            background: #e0e0e0;
-        }
-        
-        .message-input {
-            padding: 12px 16px;
-            display: flex;
-            gap: 12px;
-            align-items: flex-end;
-        }
-        
-        .input-box {
-            flex: 1;
-            min-height: 40px;
-            max-height: 120px;
-            padding: 8px 12px;
-            border: 1px solid #d0d0d0;
-            border-radius: 20px;
-            resize: none;
-            outline: none;
-            font-family: inherit;
-            font-size: 14px;
-            line-height: 1.4;
-        }
-        
-        .input-box:focus {
-            border-color: #2196f3;
-        }
-        
-        .chat-input {
-            padding: 16px;
-            border-top: 1px solid #e0e0e0;
-            background: white;
-        }
-        
-        .input-area {
-            display: flex;
-            gap: 8px;
-        }
-        
-        .send-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #2196f3;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 16px;
-            transition: all 0.2s;
-        }
-        
-        .send-btn:hover {
-            background: #1976d2;
-            transform: scale(1.05);
-        }
-        
-        .send-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        /* 空状态 */
-        .empty-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: #999;
-        }
-        
-        .empty-state .icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-        }
-        
-        .empty-state h3 {
-            margin: 0 0 8px 0;
-            font-size: 18px;
-        }
-        
-        .empty-state p {
-            margin: 0;
-            font-size: 14px;
-        }
-        
-        .empty-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-            opacity: 0.5;
-        }
-        
-        /* 加载状态 */
-        .loading-state {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            flex-direction: column;
-            gap: 16px;
-        }
-        
-        .loading-spinner {
-            width: 32px;
-            height: 32px;
-            border: 3px solid #f0f0f0;
-            border-top: 3px solid #2196f3;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* 隐藏类 */
-        .hidden {
-            display: none !important;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: #f5f5f5;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      .message-container {
+        display: flex;
+        height: 100vh;
+        background: white;
+      }
+
+      /* 左侧会话列表 */
+      .chat-sidebar {
+        width: 320px;
+        border-right: 1px solid #e0e0e0;
+        display: flex;
+        flex-direction: column;
+        background: #fafafa;
+      }
+
+      .sidebar-header {
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        border-bottom: 1px solid #e0e0e0;
+        background: white;
+      }
+
+      .header-title {
+        font-size: 18px;
+        font-weight: 500;
+        color: #333;
+      }
+
+      .header-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .action-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #f0f0f0;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        transition: all 0.2s;
+      }
+
+      .action-btn:hover {
+        background: #e0e0e0;
+        transform: scale(1.05);
+      }
+
+      .search-section {
+        padding: 12px 16px;
+        background: white;
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      .search-box {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #d0d0d0;
+        border-radius: 20px;
+        font-size: 14px;
+        outline: none;
+      }
+
+      .search-box:focus {
+        border-color: #2196f3;
+      }
+
+      .filter-tabs {
+        display: flex;
+        background: white;
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      .filter-tab {
+        flex: 1;
+        padding: 12px;
+        text-align: center;
+        cursor: pointer;
+        font-size: 14px;
+        color: #666;
+        border-bottom: 2px solid transparent;
+        transition: all 0.2s;
+      }
+
+      .filter-tab:hover {
+        background: #f8f8f8;
+      }
+
+      .filter-tab.active {
+        color: #2196f3;
+        border-bottom-color: #2196f3;
+      }
+
+      .chat-list {
+        flex: 1;
+        overflow-y: auto;
+      }
+
+      .chat-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        border-bottom: 1px solid #f0f0f0;
+        background: white;
+        position: relative;
+      }
+
+      .chat-item:hover {
+        background: #f8f8f8;
+      }
+
+      .chat-item.active {
+        background: #e3f2fd;
+      }
+
+      .chat-item.pinned {
+        background: #fff3e0;
+      }
+
+      .chat-item.pinned::before {
+        content: '📌';
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        font-size: 12px;
+      }
+
+      .chat-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: #2196f3;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        margin-right: 12px;
+        font-size: 18px;
+        position: relative;
+      }
+
+      .online-indicator {
+        position: absolute;
+        bottom: 2px;
+        right: 2px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #4caf50;
+        border: 2px solid white;
+      }
+
+      .chat-info {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .chat-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 4px;
+      }
+
+      .chat-name {
+        font-weight: 500;
+        font-size: 15px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .chat-time {
+        font-size: 12px;
+        color: #999;
+      }
+
+      .chat-preview {
+        font-size: 13px;
+        color: #666;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-top: 2px;
+      }
+
+      .unread-badge {
+        background: #f44336;
+        color: white;
+        border-radius: 10px;
+        padding: 2px 6px;
+        font-size: 11px;
+        min-width: 18px;
+        text-align: center;
+        margin-left: 8px;
+      }
+
+      /* 右侧聊天面板 */
+      .chat-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: white;
+      }
+
+      .chat-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .chat-header {
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+        border-bottom: 1px solid #e0e0e0;
+        background: white;
+      }
+
+      .chat-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .chat-title-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #2196f3;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+      }
+
+      .chat-title-info h3 {
+        font-size: 16px;
+        margin: 0;
+      }
+
+      .chat-title-info p {
+        font-size: 12px;
+        color: #666;
+        margin: 2px 0 0 0;
+      }
+
+      .chat-tools {
+        display: flex;
+        gap: 8px;
+      }
+
+      .tool-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #f5f5f5;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        transition: all 0.2s;
+      }
+
+      .tool-btn:hover {
+        background: #e0e0e0;
+      }
+
+      .messages-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        background: #f8f9fa;
+      }
+
+      .message-item {
+        display: flex;
+        margin-bottom: 16px;
+        align-items: flex-start;
+      }
+
+      .message-item.own {
+        flex-direction: row-reverse;
+      }
+
+      .message-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #2196f3;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        margin: 0 12px;
+      }
+
+      .message-content {
+        max-width: 60%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .chat-messages {
+        flex: 1;
+        padding: 16px;
+        overflow-y: auto;
+        background: #f9f9f9;
+      }
+
+      .message {
+        margin-bottom: 16px;
+        display: flex;
+      }
+
+      .message.sent {
+        justify-content: flex-end;
+      }
+
+      .message-bubble {
+        background: white;
+        padding: 12px 16px;
+        border-radius: 18px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        word-wrap: break-word;
+      }
+
+      .message.received .message-bubble {
+        background: white;
+        border: 1px solid #e0e0e0;
+      }
+
+      .message.sent .message-bubble {
+        background: #2196f3;
+        color: white;
+      }
+
+      .message-item.own .message-bubble {
+        background: #2196f3;
+        color: white;
+      }
+
+      .message-time {
+        font-size: 11px;
+        color: #999;
+        margin-top: 4px;
+        text-align: center;
+      }
+
+      .message-input-area {
+        border-top: 1px solid #e0e0e0;
+        background: white;
+      }
+
+      .input-toolbar {
+        display: flex;
+        align-items: center;
+        padding: 8px 16px;
+        gap: 8px;
+        border-bottom: 1px solid #f0f0f0;
+      }
+
+      .toolbar-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        background: #f5f5f5;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        transition: all 0.2s;
+      }
+
+      .toolbar-btn:hover {
+        background: #e0e0e0;
+      }
+
+      .message-input {
+        padding: 12px 16px;
+        display: flex;
+        gap: 12px;
+        align-items: flex-end;
+      }
+
+      .input-box {
+        flex: 1;
+        min-height: 40px;
+        max-height: 120px;
+        padding: 8px 12px;
+        border: 1px solid #d0d0d0;
+        border-radius: 20px;
+        resize: none;
+        outline: none;
+        font-family: inherit;
+        font-size: 14px;
+        line-height: 1.4;
+      }
+
+      .input-box:focus {
+        border-color: #2196f3;
+      }
+
+      .chat-input {
+        padding: 16px;
+        border-top: 1px solid #e0e0e0;
+        background: white;
+      }
+
+      .input-area {
+        display: flex;
+        gap: 8px;
+      }
+
+      .send-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #2196f3;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 16px;
+        transition: all 0.2s;
+      }
+
+      .send-btn:hover {
+        background: #1976d2;
+        transform: scale(1.05);
+      }
+
+      .send-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      /* 空状态 */
+      .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: #999;
+      }
+
+      .empty-state .icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+      }
+
+      .empty-state h3 {
+        margin: 0 0 8px 0;
+        font-size: 18px;
+      }
+
+      .empty-state p {
+        margin: 0;
+        font-size: 14px;
+      }
+
+      .empty-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+      }
+
+      /* 加载状态 */
+      .loading-state {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .loading-spinner {
+        width: 32px;
+        height: 32px;
+        border: 3px solid #f0f0f0;
+        border-top: 3px solid #2196f3;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* 隐藏类 */
+      .hidden {
+        display: none !important;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="message-container">
-        <!-- 左侧会话列表 -->
-        <div class="chat-sidebar">
-            <div class="sidebar-header">
-                <div class="header-title">消息</div>
-                <div class="header-actions">
-                    <button class="action-btn" id="newChatBtn" title="新建聊天">➕</button>
-                    <button class="action-btn" id="moreActionsBtn" title="更多操作">⋯</button>
-                </div>
-            </div>
-            
-            <div class="search-section">
-                <input type="text" class="search-box" id="searchInput" placeholder="搜索聊天记录...">
-            </div>
-            
-            <div class="filter-tabs">
-                <div class="filter-tab active" data-filter="all">全部</div>
-                <div class="filter-tab" data-filter="friends">好友</div>
-                <div class="filter-tab" data-filter="groups">群聊</div>
-                <div class="filter-tab" data-filter="unread">未读</div>
-            </div>
-            
-            <div class="chat-list" id="chatList">
-                <!-- 聊天项目将在这里动态生成 -->
-            </div>
-            
-            <div class="loading-state hidden" id="loadingState">
-                <div class="loading-spinner"></div>
-                <div>加载中...</div>
-            </div>
+      <!-- 左侧会话列表 -->
+      <div class="chat-sidebar">
+        <div class="sidebar-header">
+          <div class="header-title">消息</div>
+          <div class="header-actions">
+            <button class="action-btn" id="newChatBtn" title="新建聊天">➕</button>
+            <button class="action-btn" id="moreActionsBtn" title="更多操作">⋯</button>
+          </div>
         </div>
-        
-        <!-- 右侧聊天面板 -->
-        <div class="chat-panel">
-            <div class="empty-state" id="emptyState">
-                <div class="icon">💬</div>
-                <h3>选择一个聊天</h3>
-                <p>从左侧选择一个聊天开始对话</p>
-            </div>
-            
-            <div class="chat-content hidden" id="chatContent">
-                <div class="chat-header">
-                    <div class="chat-title">
-                        <div class="chat-title-avatar" id="chatTitleAvatar">A</div>
-                        <div class="chat-title-info">
-                            <h3 id="chatTitleName">聊天名称</h3>
-                            <p id="chatTitleStatus">在线</p>
-                        </div>
-                    </div>
-                    <div class="chat-tools">
-                        <button class="tool-btn" id="voiceCallBtn" title="语音通话">📞</button>
-                        <button class="tool-btn" id="videoCallBtn" title="视频通话">📹</button>
-                        <button class="tool-btn" id="chatInfoBtn" title="聊天信息">ℹ️</button>
-                    </div>
-                </div>
-                
-                <div class="messages-container" id="messagesContainer">
-                    <!-- 消息将在这里动态生成 -->
-                </div>
-                
-                <div class="message-input-area">
-                    <div class="input-toolbar">
-                        <button class="toolbar-btn" id="emojiBtn" title="表情">😊</button>
-                        <button class="toolbar-btn" id="fileBtn" title="文件">📎</button>
-                        <button class="toolbar-btn" id="imageBtn" title="图片">🖼️</button>
-                        <button class="toolbar-btn" id="voiceBtn" title="语音">🎤</button>
-                    </div>
-                    <div class="message-input">
-                        <textarea class="input-box" id="messageInput" placeholder="输入消息..."></textarea>
-                        <button class="send-btn" id="sendBtn" disabled>➤</button>
-                    </div>
-                </div>
-            </div>
+
+        <div class="search-section">
+          <input type="text" class="search-box" id="searchInput" placeholder="搜索聊天记录..." />
         </div>
+
+        <div class="filter-tabs">
+          <div class="filter-tab active" data-filter="all">全部</div>
+          <div class="filter-tab" data-filter="friends">好友</div>
+          <div class="filter-tab" data-filter="groups">群聊</div>
+          <div class="filter-tab" data-filter="unread">未读</div>
+        </div>
+
+        <div class="chat-list" id="chatList">
+          <!-- 聊天项目将在这里动态生成 -->
+        </div>
+
+        <div class="loading-state hidden" id="loadingState">
+          <div class="loading-spinner"></div>
+          <div>加载中...</div>
+        </div>
+      </div>
+
+      <!-- 右侧聊天面板 -->
+      <div class="chat-panel">
+        <div class="empty-state" id="emptyState">
+          <div class="icon">💬</div>
+          <h3>选择一个聊天</h3>
+          <p>从左侧选择一个聊天开始对话</p>
+        </div>
+
+        <div class="chat-content hidden" id="chatContent">
+          <div class="chat-header">
+            <div class="chat-title">
+              <div class="chat-title-avatar" id="chatTitleAvatar">A</div>
+              <div class="chat-title-info">
+                <h3 id="chatTitleName">聊天名称</h3>
+                <p id="chatTitleStatus">在线</p>
+              </div>
+            </div>
+            <div class="chat-tools">
+              <button class="tool-btn" id="voiceCallBtn" title="语音通话">📞</button>
+              <button class="tool-btn" id="videoCallBtn" title="视频通话">📹</button>
+              <button class="tool-btn" id="chatInfoBtn" title="聊天信息">ℹ️</button>
+            </div>
+          </div>
+
+          <div class="messages-container" id="messagesContainer">
+            <!-- 消息将在这里动态生成 -->
+          </div>
+
+          <div class="message-input-area">
+            <div class="input-toolbar">
+              <button class="toolbar-btn" id="emojiBtn" title="表情">😊</button>
+              <button class="toolbar-btn" id="fileBtn" title="文件">📎</button>
+              <button class="toolbar-btn" id="imageBtn" title="图片">🖼️</button>
+              <button class="toolbar-btn" id="voiceBtn" title="语音">🎤</button>
+            </div>
+            <div class="message-input">
+              <textarea class="input-box" id="messageInput" placeholder="输入消息..."></textarea>
+              <button class="send-btn" id="sendBtn" disabled>➤</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    
+
     <script src="script.js"></script>
-</body>
+  </body>
 </html>

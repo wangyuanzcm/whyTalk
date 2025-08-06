@@ -50,7 +50,7 @@ export class PluginAPIHandler {
     await this.permissionManager.initialize()
     this.setupIPCHandlers()
     this.initialized = true
-    
+
     console.log('Plugin API Handler initialized')
   }
 
@@ -64,7 +64,7 @@ export class PluginAPIHandler {
   private async handlePluginAPICall(request: PluginAPIRequest): Promise<PluginAPIResponse> {
     try {
       console.log('Plugin API Call:', request.pluginId, request.method, request.url)
-      
+
       // 验证插件权限
       if (!this.validatePluginPermission(request)) {
         return this.createErrorResponse(403, '插件权限不足')
@@ -76,18 +76,18 @@ export class PluginAPIHandler {
         if (!token) {
           return this.createErrorResponse(401, '未授权访问')
         }
-        
+
         const user = await authService.validateSession(token)
         if (!user) {
           return this.createErrorResponse(401, '登录已过期')
         }
-        
+
         request.userId = user.id
       }
 
       // 路由到对应的处理方法
       const result = await this.routePluginRequest(request)
-      
+
       return {
         success: true,
         status: 200,
@@ -174,10 +174,9 @@ export class PluginAPIHandler {
       throw new Error('文件上传请使用 upload-file 事件')
     }
 
-    // P2P 相关接口（基座保留）
-    const p2pServiceClient = serviceManager.getP2PServiceClient()
-    if (p2pServiceClient && url.startsWith('/api/v1/p2p/')) {
-      return await this.handleP2PRequest(request, p2pServiceClient)
+    // P2P 相关接口（基座保留）- 现在使用LocalSend实现
+    if (url.startsWith('/api/v1/p2p/')) {
+      return await this.handleP2PRequest(request)
     }
 
     // 联系人相关接口（已迁移到插件）
@@ -198,14 +197,15 @@ export class PluginAPIHandler {
     throw new Error(`未知的接口: ${url}`)
   }
 
-  private async handleP2PRequest(request: PluginAPIRequest, p2pServiceClient: any): Promise<any> {
+  private async handleP2PRequest(request: PluginAPIRequest): Promise<any> {
     const { url, data } = request
+    const p2pManager = serviceManager.getP2PManager()
 
     // P2P 状态查询
     if (url === '/api/v1/p2p/status') {
-      const nodeInfo = await p2pServiceClient.getNodeInfo()
+      const nodeInfo = p2pManager.getNodeInfo()
       return {
-        isRunning: p2pServiceClient.isRunning(),
+        isRunning: p2pManager.isRunning(),
         peerId: nodeInfo?.peerId || null,
         identity: nodeInfo ? { peerId: nodeInfo.peerId } : null
       }
@@ -213,18 +213,19 @@ export class PluginAPIHandler {
 
     // 获取已发现的节点
     if (url === '/api/v1/p2p/peers') {
-      const connectedPeers = await p2pServiceClient.getConnectedPeers()
-      return connectedPeers.map((peerId: string) => ({
-        peerId,
-        status: 'connected',
-        addedAt: new Date().toISOString()
+      const discoveredPeers = await p2pManager.getDiscoveredPeers()
+      return discoveredPeers.map((peer: any) => ({
+        peerId: peer.fingerprint,
+        status: 'discovered',
+        addedAt: new Date().toISOString(),
+        nickname: peer.alias
       }))
     }
 
     // 发送P2P消息
     if (url === '/api/v1/p2p/message/send') {
       if (!data.groupId) {
-        await p2pServiceClient.sendDirectMessage(data.to, data.content)
+        await p2pManager.sendDirectMessage(data.to, data.content)
       }
       return null
     }
@@ -339,11 +340,7 @@ export class PluginAPIHandler {
 
   private requiresAuthentication(url: string): boolean {
     // 不需要认证的接口
-    const publicEndpoints = [
-      '/api/v1/auth/login',
-      '/api/v1/auth/register',
-      '/api/v1/auth/forget'
-    ]
+    const publicEndpoints = ['/api/v1/auth/login', '/api/v1/auth/register', '/api/v1/auth/forget']
 
     return !publicEndpoints.includes(url)
   }

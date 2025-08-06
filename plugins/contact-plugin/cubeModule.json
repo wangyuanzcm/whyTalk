@@ -6,12 +6,7 @@
   "main": "index.html",
   "icon": "user",
   "menuTitle": "通讯录",
-  "permissions": [
-    "storage",
-    "notifications",
-    "ipc",
-    "database"
-  ],
+  "permissions": ["storage", "notifications", "ipc", "database"],
   "dependencies": {
     "vue": "^3.0.0",
     "naive-ui": "^2.0.0"

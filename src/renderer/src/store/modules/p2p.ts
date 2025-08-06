@@ -67,12 +67,12 @@ export const useP2PStore = defineStore('p2p', () => {
   const connectedPeers = ref<P2PNode[]>([])
 
   // 计算属性
-  const onlineContacts = computed(() => 
-    contacts.value.filter(contact => contact.status === 'online')
+  const onlineContacts = computed(() =>
+    contacts.value.filter((contact) => contact.status === 'online')
   )
 
-  const totalUnreadMessages = computed(() => 
-    messages.value.filter(msg => msg.status !== 'read').length
+  const totalUnreadMessages = computed(
+    () => messages.value.filter((msg) => msg.status !== 'read').length
   )
 
   // Actions
@@ -97,7 +97,7 @@ export const useP2PStore = defineStore('p2p', () => {
 
   // 联系人管理
   const addContact = (contact: P2PContact) => {
-    const existingIndex = contacts.value.findIndex(c => c.id === contact.id)
+    const existingIndex = contacts.value.findIndex((c) => c.id === contact.id)
     if (existingIndex >= 0) {
       contacts.value[existingIndex] = contact
     } else {
@@ -106,14 +106,14 @@ export const useP2PStore = defineStore('p2p', () => {
   }
 
   const removeContact = (contactId: string) => {
-    const index = contacts.value.findIndex(c => c.id === contactId)
+    const index = contacts.value.findIndex((c) => c.id === contactId)
     if (index >= 0) {
       contacts.value.splice(index, 1)
     }
   }
 
   const updateContactStatus = (contactId: string, status: P2PContact['status']) => {
-    const contact = contacts.value.find(c => c.id === contactId)
+    const contact = contacts.value.find((c) => c.id === contactId)
     if (contact) {
       contact.status = status
       contact.lastSeen = Date.now()
@@ -126,7 +126,7 @@ export const useP2PStore = defineStore('p2p', () => {
 
   // 消息管理
   const addMessage = (message: P2PMessage) => {
-    const existingIndex = messages.value.findIndex(m => m.id === message.id)
+    const existingIndex = messages.value.findIndex((m) => m.id === message.id)
     if (existingIndex >= 0) {
       messages.value[existingIndex] = message
     } else {
@@ -137,7 +137,7 @@ export const useP2PStore = defineStore('p2p', () => {
   }
 
   const updateMessageStatus = (messageId: string, status: P2PMessage['status']) => {
-    const message = messages.value.find(m => m.id === messageId)
+    const message = messages.value.find((m) => m.id === messageId)
     if (message) {
       message.status = status
     }
@@ -145,8 +145,8 @@ export const useP2PStore = defineStore('p2p', () => {
 
   const markMessagesAsRead = (contactId: string) => {
     messages.value
-      .filter(m => m.from === contactId && m.status !== 'read')
-      .forEach(m => m.status = 'read')
+      .filter((m) => m.from === contactId && m.status !== 'read')
+      .forEach((m) => (m.status = 'read'))
   }
 
   const setMessages = (newMessages: P2PMessage[]) => {
@@ -155,7 +155,7 @@ export const useP2PStore = defineStore('p2p', () => {
 
   // 群组管理
   const addGroup = (group: P2PGroup) => {
-    const existingIndex = groups.value.findIndex(g => g.id === group.id)
+    const existingIndex = groups.value.findIndex((g) => g.id === group.id)
     if (existingIndex >= 0) {
       groups.value[existingIndex] = group
     } else {
@@ -164,7 +164,7 @@ export const useP2PStore = defineStore('p2p', () => {
   }
 
   const removeGroup = (groupId: string) => {
-    const index = groups.value.findIndex(g => g.id === groupId)
+    const index = groups.value.findIndex((g) => g.id === groupId)
     if (index >= 0) {
       groups.value.splice(index, 1)
     }
@@ -184,7 +184,7 @@ export const useP2PStore = defineStore('p2p', () => {
   }
 
   const addDiscoveredNode = (node: P2PNode) => {
-    const existingIndex = discoveredNodes.value.findIndex(n => n.id === node.id)
+    const existingIndex = discoveredNodes.value.findIndex((n) => n.id === node.id)
     if (existingIndex >= 0) {
       discoveredNodes.value[existingIndex] = node
     } else {
@@ -198,7 +198,7 @@ export const useP2PStore = defineStore('p2p', () => {
   }
 
   const removeContactRequest = (requestId: string) => {
-    const index = contactRequests.value.findIndex(r => r.id === requestId)
+    const index = contactRequests.value.findIndex((r) => r.id === requestId)
     if (index >= 0) {
       contactRequests.value.splice(index, 1)
     }
@@ -236,11 +236,11 @@ export const useP2PStore = defineStore('p2p', () => {
     groups,
     discoveredNodes,
     connectedPeers,
-    
+
     // 计算属性
     onlineContacts,
     totalUnreadMessages,
-    
+
     // Actions
     setConnectionStatus,
     setNetworkStatus,

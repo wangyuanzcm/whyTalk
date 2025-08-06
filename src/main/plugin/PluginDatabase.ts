@@ -77,7 +77,7 @@ export class PluginDatabase {
       INSERT OR REPLACE INTO plugin_configs (id, plugin_id, config, enabled, updated_at)
       VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
     `)
-    
+
     stmt.run(pluginId, pluginId, JSON.stringify(config), enabled ? 1 : 0)
   }
 
@@ -88,10 +88,10 @@ export class PluginDatabase {
     const stmt = this.db.prepare(`
       SELECT * FROM plugin_configs WHERE plugin_id = ?
     `)
-    
+
     const row = stmt.get(pluginId) as any
     if (!row) return null
-    
+
     return {
       id: row.id,
       pluginId: row.plugin_id,
@@ -109,9 +109,9 @@ export class PluginDatabase {
     const stmt = this.db.prepare(`
       SELECT * FROM plugin_configs ORDER BY updated_at DESC
     `)
-    
+
     const rows = stmt.all() as any[]
-    return rows.map(row => ({
+    return rows.map((row) => ({
       id: row.id,
       pluginId: row.plugin_id,
       config: row.config,
@@ -128,7 +128,7 @@ export class PluginDatabase {
     const stmt = this.db.prepare(`
       DELETE FROM plugin_configs WHERE plugin_id = ?
     `)
-    
+
     stmt.run(pluginId)
   }
 
@@ -141,19 +141,24 @@ export class PluginDatabase {
       SET enabled = ?, updated_at = CURRENT_TIMESTAMP 
       WHERE plugin_id = ?
     `)
-    
+
     stmt.run(enabled ? 1 : 0, pluginId)
   }
 
   /**
    * 记录插件安装
    */
-  public recordPluginInstallation(pluginId: string, version: string, source: string, sourceUrl?: string): void {
+  public recordPluginInstallation(
+    pluginId: string,
+    version: string,
+    source: string,
+    sourceUrl?: string
+  ): void {
     const stmt = this.db.prepare(`
       INSERT OR REPLACE INTO user_plugins (id, plugin_id, version, source, source_url)
       VALUES (?, ?, ?, ?, ?)
     `)
-    
+
     stmt.run(pluginId, pluginId, version, source, sourceUrl || null)
   }
 
@@ -166,7 +171,7 @@ export class PluginDatabase {
       SET last_used = CURRENT_TIMESTAMP, usage_count = usage_count + 1
       WHERE plugin_id = ?
     `)
-    
+
     stmt.run(pluginId)
   }
 
@@ -177,7 +182,7 @@ export class PluginDatabase {
     const stmt = this.db.prepare(`
       SELECT * FROM user_plugins WHERE plugin_id = ?
     `)
-    
+
     return stmt.get(pluginId)
   }
 
@@ -188,7 +193,7 @@ export class PluginDatabase {
     const stmt = this.db.prepare(`
       SELECT * FROM user_plugins ORDER BY usage_count DESC, last_used DESC
     `)
-    
+
     return stmt.all()
   }
 
@@ -214,7 +219,7 @@ export function getPluginDatabase(): PluginDatabase {
   if (!pluginDatabase) {
     // 检查是否强制使用模拟数据库
     const useMockDb = process.env.USE_MOCK_DB === 'true' || process.env.NODE_ENV === 'development'
-    
+
     if (useMockDb) {
       console.log('Using mock database for plugin management (set USE_MOCK_DB=false to use SQLite)')
       pluginDatabase = new MockPluginDatabase() as any
@@ -224,7 +229,10 @@ export function getPluginDatabase(): PluginDatabase {
         pluginDatabase = new PluginDatabase()
         console.log('SQLite database initialized successfully')
       } catch (error) {
-        console.warn('Failed to initialize SQLite database, falling back to mock database:', (error as Error).message)
+        console.warn(
+          'Failed to initialize SQLite database, falling back to mock database:',
+          (error as Error).message
+        )
         pluginDatabase = new MockPluginDatabase() as any
       }
     }
@@ -277,8 +285,19 @@ class MockPluginDatabase {
     }
   }
 
-  public recordPluginInstallation(pluginId: string, version: string, source: string, sourceUrl?: string): void {
-    this.installations.set(pluginId, { pluginId, version, source, sourceUrl, installedAt: new Date().toISOString() })
+  public recordPluginInstallation(
+    pluginId: string,
+    version: string,
+    source: string,
+    sourceUrl?: string
+  ): void {
+    this.installations.set(pluginId, {
+      pluginId,
+      version,
+      source,
+      sourceUrl,
+      installedAt: new Date().toISOString()
+    })
   }
 
   public recordPluginUsage(pluginId: string): void {

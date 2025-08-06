@@ -2,62 +2,7 @@ import { ipcMain } from 'electron'
 import { PluginDataService } from './PluginDataService'
 import { PluginPermissionManager } from './PluginPermissionManager'
 import { DataValidator } from './DataValidator'
-
-export interface IPCRequest {
-  pluginId: string
-  action: string
-  data?: any
-  options?: any
-  permission?: string
-}
-
-export interface IPCResponse {
-  success: boolean
-  data?: any
-  error?: string
-  warnings?: string[]
-}
-
-export interface PluginDataIPCChannels {
-  // 私有数据操作
-  'plugin-data:set': (request: IPCRequest) => Promise<IPCResponse>
-  'plugin-data:get': (request: IPCRequest) => Promise<IPCResponse>
-  'plugin-data:delete': (request: IPCRequest) => Promise<IPCResponse>
-  'plugin-data:list': (request: IPCRequest) => Promise<IPCResponse>
-  
-  // 共享数据操作
-  'plugin-shared-data:set': (request: IPCRequest) => Promise<IPCResponse>
-  'plugin-shared-data:get': (request: IPCRequest) => Promise<IPCResponse>
-  'plugin-shared-data:delete': (request: IPCRequest) => Promise<IPCResponse>
-  'plugin-shared-data:list': (request: IPCRequest) => Promise<IPCResponse>
-  
-  // 联系人操作
-  'plugin-contacts:get': (request: IPCRequest) => Promise<IPCResponse>
-  'plugin-contacts:list': (request: IPCRequest) => Promise<IPCResponse>
-  'plugin-contacts:add': (request: IPCRequest) => Promise<IPCResponse>
-  'plugin-contacts:update': (request: IPCRequest) => Promise<IPCResponse>
-  'plugin-contacts:delete': (request: IPCRequest) => Promise<IPCResponse>
-  'plugin-contacts:pin': (request: IPCRequest) => Promise<IPCResponse>
-  
-  // 消息操作
-  'plugin-messages:get': (request: IPCRequest) => Promise<IPCResponse>
-  'plugin-messages:list': (request: IPCRequest) => Promise<IPCResponse>
-  'plugin-messages:send': (request: IPCRequest) => Promise<IPCResponse>
-  'plugin-messages:mark-read': (request: IPCRequest) => Promise<IPCResponse>
-  'plugin-messages:delete': (request: IPCRequest) => Promise<IPCResponse>
-  
-  // 会话操作
-  'plugin-conversations:get': (request: IPCRequest) => Promise<IPCResponse>
-  'plugin-conversations:list': (request: IPCRequest) => Promise<IPCResponse>
-  'plugin-conversations:create': (request: IPCRequest) => Promise<IPCResponse>
-  'plugin-conversations:update': (request: IPCRequest) => Promise<IPCResponse>
-  'plugin-conversations:delete': (request: IPCRequest) => Promise<IPCResponse>
-  
-  // 权限操作
-  'plugin-permissions:check': (request: IPCRequest) => Promise<IPCResponse>
-  'plugin-permissions:request': (request: IPCRequest) => Promise<IPCResponse>
-  'plugin-permissions:list': (request: IPCRequest) => Promise<IPCResponse>
-}
+import type { IPCRequest, IPCResponse } from './PluginDataIPC.d'
 
 export class PluginDataIPC {
   private static instance: PluginDataIPC
@@ -87,10 +32,10 @@ export class PluginDataIPC {
 
     await this.dataService.initialize()
     await this.permissionManager.initialize()
-    
+
     this.registerIPCHandlers()
     this.initialized = true
-    
+
     console.log('Plugin Data IPC initialized')
   }
 
@@ -107,8 +52,12 @@ export class PluginDataIPC {
     // 共享数据操作
     ipcMain.handle('plugin-shared-data:set', (_event, request) => this.handleSetSharedData(request))
     ipcMain.handle('plugin-shared-data:get', (_event, request) => this.handleGetSharedData(request))
-    ipcMain.handle('plugin-shared-data:delete', (_event, request) => this.handleDeleteSharedData(request))
-    ipcMain.handle('plugin-shared-data:list', (_event, request) => this.handleListSharedData(request))
+    ipcMain.handle('plugin-shared-data:delete', (_event, request) =>
+      this.handleDeleteSharedData(request)
+    )
+    ipcMain.handle('plugin-shared-data:list', (_event, request) =>
+      this.handleListSharedData(request)
+    )
 
     // 联系人操作
     ipcMain.handle('plugin-contacts:get', (_event, request) => this.handleGetContact(request))
@@ -122,20 +71,38 @@ export class PluginDataIPC {
     ipcMain.handle('plugin-messages:get', (_event, request) => this.handleGetMessage(request))
     ipcMain.handle('plugin-messages:list', (_event, request) => this.handleListMessages(request))
     ipcMain.handle('plugin-messages:send', (_event, request) => this.handleSendMessage(request))
-    ipcMain.handle('plugin-messages:mark-read', (_event, request) => this.handleMarkMessageAsRead(request))
+    ipcMain.handle('plugin-messages:mark-read', (_event, request) =>
+      this.handleMarkMessageAsRead(request)
+    )
     ipcMain.handle('plugin-messages:delete', (_event, request) => this.handleDeleteMessage(request))
 
     // 会话操作
-    ipcMain.handle('plugin-conversations:get', (_event, request) => this.handleGetConversation(request))
-    ipcMain.handle('plugin-conversations:list', (_event, request) => this.handleListConversations(request))
-    ipcMain.handle('plugin-conversations:create', (_event, request) => this.handleCreateConversation(request))
-    ipcMain.handle('plugin-conversations:update', (_event, request) => this.handleUpdateConversation(request))
-    ipcMain.handle('plugin-conversations:delete', (_event, request) => this.handleDeleteConversation(request))
+    ipcMain.handle('plugin-conversations:get', (_event, request) =>
+      this.handleGetConversation(request)
+    )
+    ipcMain.handle('plugin-conversations:list', (_event, request) =>
+      this.handleListConversations(request)
+    )
+    ipcMain.handle('plugin-conversations:create', (_event, request) =>
+      this.handleCreateConversation(request)
+    )
+    ipcMain.handle('plugin-conversations:update', (_event, request) =>
+      this.handleUpdateConversation(request)
+    )
+    ipcMain.handle('plugin-conversations:delete', (_event, request) =>
+      this.handleDeleteConversation(request)
+    )
 
     // 权限操作
-    ipcMain.handle('plugin-permissions:check', (_event, request) => this.handleCheckPermission(request))
-    ipcMain.handle('plugin-permissions:request', (_event, request) => this.handleRequestPermission(request))
-    ipcMain.handle('plugin-permissions:list', (_event, request) => this.handleListPermissions(request))
+    ipcMain.handle('plugin-permissions:check', (_event, request) =>
+      this.handleCheckPermission(request)
+    )
+    ipcMain.handle('plugin-permissions:request', (_event, request) =>
+      this.handleRequestPermission(request)
+    )
+    ipcMain.handle('plugin-permissions:list', (_event, request) =>
+      this.handleListPermissions(request)
+    )
   }
 
   /**
@@ -220,10 +187,7 @@ export class PluginDataIPC {
       const validation = this.validateRequest(request, ['key'])
       if (validation) return validation
 
-      const data = await this.dataService.getPluginData(
-        request.pluginId,
-        request.data.key
-      )
+      const data = await this.dataService.getPluginData(request.pluginId, request.data.key)
 
       return { success: true, data }
     } catch (error) {
@@ -236,10 +200,7 @@ export class PluginDataIPC {
       const validation = this.validateRequest(request, ['key'])
       if (validation) return validation
 
-      const deleted = await this.dataService.deletePluginData(
-        request.pluginId,
-        request.data.key
-      )
+      const deleted = await this.dataService.deletePluginData(request.pluginId, request.data.key)
 
       return { success: true, data: { deleted } }
     } catch (error) {
@@ -252,9 +213,7 @@ export class PluginDataIPC {
       const validation = this.validateRequest(request)
       if (validation) return validation
 
-      const data = await this.dataService.listPluginData(
-        request.pluginId
-      )
+      const data = await this.dataService.listPluginData(request.pluginId)
 
       return { success: true, data }
     } catch (error) {
@@ -370,10 +329,7 @@ export class PluginDataIPC {
         }
       }
 
-      const data = await this.dataService.listSharedData(
-        request.data.namespace,
-        request.pluginId
-      )
+      const data = await this.dataService.listSharedData(request.data.namespace, request.pluginId)
 
       return { success: true, data }
     } catch (error) {
@@ -465,8 +421,8 @@ export class PluginDataIPC {
         request.data.contactData,
         request.pluginId
       )
-      return { 
-        success: true, 
+      return {
+        success: true,
         data: { contactId },
         warnings: dataValidation.warnings
       }
@@ -508,8 +464,8 @@ export class PluginDataIPC {
         request.data.updates,
         request.pluginId
       )
-      return { 
-        success: true, 
+      return {
+        success: true,
         data: { updated },
         warnings: dataValidation.warnings
       }
@@ -536,10 +492,7 @@ export class PluginDataIPC {
         }
       }
 
-      const deleted = await this.dataService.deleteContact(
-        request.data.contactId,
-        request.pluginId
-      )
+      const deleted = await this.dataService.deleteContact(request.data.contactId, request.pluginId)
       return { success: true, data: { deleted } }
     } catch (error) {
       return this.handleError(error, 'deleteContact')
@@ -664,8 +617,8 @@ export class PluginDataIPC {
         request.data.messageData,
         request.pluginId
       )
-      return { 
-        success: true, 
+      return {
+        success: true,
         data: { messageId },
         warnings: dataValidation.warnings
       }
@@ -720,10 +673,7 @@ export class PluginDataIPC {
         }
       }
 
-      const deleted = await this.dataService.deleteMessage(
-        request.data.messageId,
-        request.pluginId
-      )
+      const deleted = await this.dataService.deleteMessage(request.data.messageId, request.pluginId)
       return { success: true, data: { deleted } }
     } catch (error) {
       return this.handleError(error, 'deleteMessage')
@@ -817,8 +767,8 @@ export class PluginDataIPC {
         request.data.conversationData,
         request.pluginId
       )
-      return { 
-        success: true, 
+      return {
+        success: true,
         data: { conversationId },
         warnings: dataValidation.warnings
       }
@@ -860,8 +810,8 @@ export class PluginDataIPC {
         request.data.updates,
         request.pluginId
       )
-      return { 
-        success: true, 
+      return {
+        success: true,
         data: { updated },
         warnings: dataValidation.warnings
       }
@@ -952,15 +902,36 @@ export class PluginDataIPC {
 
     // 移除所有IPC处理器
     const channels = [
-      'plugin-data:set', 'plugin-data:get', 'plugin-data:delete', 'plugin-data:list',
-      'plugin-shared-data:set', 'plugin-shared-data:get', 'plugin-shared-data:delete', 'plugin-shared-data:list',
-      'plugin-contacts:get', 'plugin-contacts:list', 'plugin-contacts:add', 'plugin-contacts:update', 'plugin-contacts:delete', 'plugin-contacts:pin',
-      'plugin-messages:get', 'plugin-messages:list', 'plugin-messages:send', 'plugin-messages:mark-read', 'plugin-messages:delete',
-      'plugin-conversations:get', 'plugin-conversations:list', 'plugin-conversations:create', 'plugin-conversations:update', 'plugin-conversations:delete',
-      'plugin-permissions:check', 'plugin-permissions:request', 'plugin-permissions:list'
+      'plugin-data:set',
+      'plugin-data:get',
+      'plugin-data:delete',
+      'plugin-data:list',
+      'plugin-shared-data:set',
+      'plugin-shared-data:get',
+      'plugin-shared-data:delete',
+      'plugin-shared-data:list',
+      'plugin-contacts:get',
+      'plugin-contacts:list',
+      'plugin-contacts:add',
+      'plugin-contacts:update',
+      'plugin-contacts:delete',
+      'plugin-contacts:pin',
+      'plugin-messages:get',
+      'plugin-messages:list',
+      'plugin-messages:send',
+      'plugin-messages:mark-read',
+      'plugin-messages:delete',
+      'plugin-conversations:get',
+      'plugin-conversations:list',
+      'plugin-conversations:create',
+      'plugin-conversations:update',
+      'plugin-conversations:delete',
+      'plugin-permissions:check',
+      'plugin-permissions:request',
+      'plugin-permissions:list'
     ]
 
-    channels.forEach(channel => {
+    channels.forEach((channel) => {
       ipcMain.removeAllListeners(channel)
     })
 

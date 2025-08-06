@@ -5,7 +5,9 @@ import { userService } from './user/UserService'
 import { uploadService } from './upload/UploadService'
 // settingsService removed - functionality moved to user preferences
 // pluginManager removed - functionality integrated into plugin services
-import { p2pManager } from './p2p/P2PManager'
+// import { p2pManager } from './p2p/P2PManager' // 替换为LocalSend实现
+import { localSendP2PManager as p2pManager } from './p2p/LocalSendP2PManager'
+import { localSendIPCHandler } from './p2p/LocalSendIPCHandler'
 import { pluginDataService } from './plugin/PluginDataService'
 import { pluginDataIPC } from './plugin/PluginDataIPC'
 import { PluginPermissionManager } from './plugin/PluginPermissionManager'
@@ -13,15 +15,13 @@ import { PluginPermissionManager } from './plugin/PluginPermissionManager'
 import { pluginAPIHandler } from './plugin/PluginAPIHandler'
 import { pluginCommunicationService } from './plugin/PluginCommunicationService'
 import { ipcHandler } from './ipc/IPCHandler'
-import { P2PServiceClient } from './p2p/P2PServiceClient'
-import { P2PIPCBridge } from './p2p/P2PIPCBridge'
+// P2PServiceClient and P2PIPCBridge removed - using LocalSend implementation
 import { ensureDirectories } from '../config'
 
 export class ServiceManager {
   private static instance: ServiceManager
   private isInitialized = false
-  private p2pServiceClient: P2PServiceClient | null = null
-  private p2pIPCBridge: P2PIPCBridge | null = null
+  // P2P service client and bridge removed - using LocalSend implementation
 
   public static getInstance(): ServiceManager {
     if (!ServiceManager.instance) {
@@ -37,44 +37,51 @@ export class ServiceManager {
 
     try {
       console.log('Initializing services...')
-      
+
       // 确保必要的目录存在
       ensureDirectories()
       console.log('Directories ensured')
-      
+
       // 初始化数据库
       await databaseManager.initialize()
       console.log('Database initialized')
-      
+
       // 启动定时任务
       this.startScheduledTasks()
       console.log('Scheduled tasks started')
-      
+
       // 初始化所有服务
       await authService.initialize()
       await userService.initialize()
       await uploadService.initialize()
-      
+
       // 初始化插件权限管理器（必须在pluginDataService之前）
       await PluginPermissionManager.getInstance().initialize()
       console.log('Plugin permission manager initialized')
-      
+
       await pluginDataService.initialize()
       await pluginDataIPC.initialize()
       await pluginAPIHandler.initialize()
       await pluginCommunicationService.initialize()
+      
+      // 初始化 LocalSend IPC 处理器
+      localSendIPCHandler.initialize()
+      console.log('LocalSend IPC handler initialized')
+      
       await p2pManager.start()
-      console.log('P2P Manager started')
-      
-      // 初始化IPC处理器
-      console.log('IPC handler initialized')
-      
-      // 启动P2P服务客户端
-      this.p2pServiceClient = new P2PServiceClient()
-      this.p2pIPCBridge = new P2PIPCBridge(this.p2pServiceClient)
-      await this.p2pServiceClient.start()
-      console.log('P2P services initialized')
-      
+      console.log('LocalSend P2P Manager started')
+
+      // 初始化IPC处理器 - ipcHandler在导入时就会自动初始化
+      // 这里只需要确保模块被加载
+      console.log('IPC handler initialized:', !!ipcHandler)
+
+      // P2P服务现在使用LocalSend实现
+      console.log('P2P Service using LocalSend implementation')
+
+      // 启动定时任务
+      this.startScheduledTasks()
+      console.log('Scheduled tasks started')
+
       this.isInitialized = true
       console.log('All services initialized successfully')
     } catch (error) {
@@ -90,24 +97,16 @@ export class ServiceManager {
 
     try {
       console.log('Shutting down services...')
-      
+
       // 停止定时任务
       this.stopScheduledTasks()
-      
-      // 停止P2P服务客户端
-      if (this.p2pServiceClient) {
-        await this.p2pServiceClient.stop()
-        console.log('P2P service client stopped')
-      }
-      
-      // 清理P2P IPC桥接器
-      if (this.p2pIPCBridge) {
-        await this.p2pIPCBridge.cleanup()
-        console.log('P2P IPC bridge cleaned up')
-      }
-      
+
+      // P2P服务清理现在由LocalSend管理器处理
+      console.log('P2P Service cleanup handled by LocalSend manager')
+
       // 清理所有服务
       await p2pManager.cleanup()
+      localSendIPCHandler.cleanup()
       await pluginCommunicationService.cleanup()
       await pluginAPIHandler.cleanup()
       await pluginDataIPC.cleanup()
@@ -115,10 +114,10 @@ export class ServiceManager {
       await uploadService.cleanup()
       await userService.cleanup()
       await authService.cleanup()
-      
+
       // 关闭数据库连接
       await databaseManager.cleanup()
-      
+
       this.isInitialized = false
       console.log('All services shut down successfully')
     } catch (error) {
@@ -129,18 +128,24 @@ export class ServiceManager {
 
   private startScheduledTasks(): void {
     // 每5分钟清理离线用户状态
-    setInterval(() => {
-      userService.cleanupOfflineUsers().catch(error => {
-        console.error('Failed to cleanup offline users:', error)
-      })
-    }, 5 * 60 * 1000)
+    setInterval(
+      () => {
+        userService.cleanupOfflineUsers().catch((error) => {
+          console.error('Failed to cleanup offline users:', error)
+        })
+      },
+      5 * 60 * 1000
+    )
 
     // 每小时优化数据库
-    setInterval(() => {
-      databaseManager.optimize().catch(error => {
-        console.error('Failed to optimize database:', error)
-      })
-    }, 60 * 60 * 1000)
+    setInterval(
+      () => {
+        databaseManager.optimize().catch((error) => {
+          console.error('Failed to optimize database:', error)
+        })
+      },
+      60 * 60 * 1000
+    )
   }
 
   private stopScheduledTasks(): void {
@@ -164,18 +169,18 @@ export class ServiceManager {
     return uploadService
   }
 
-  public getIPCHandler() {
-    return ipcHandler
+
+
+  public getP2PManager() {
+    return p2pManager
   }
 
-  public getP2PServiceClient(): P2PServiceClient | null {
-    return this.p2pServiceClient
+  public getLocalSendIPCHandler() {
+    return localSendIPCHandler
   }
 
-  public setMainWindow(mainWindow: BrowserWindow): void {
-    if (this.p2pIPCBridge) {
-      this.p2pIPCBridge.setMainWindow(mainWindow)
-    }
+  public setMainWindow(_mainWindow: BrowserWindow): void {
+    // P2P IPC bridge removed - using LocalSend implementation
   }
 }
 

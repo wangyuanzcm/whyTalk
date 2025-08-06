@@ -1,4 +1,8 @@
-import { PluginDataAPI, ContactData, PluginDataOptions } from '../../../../src/renderer/src/services/plugin/PluginDataAPI'
+import {
+  PluginDataAPI,
+  ContactData,
+  PluginDataOptions
+} from '../../../../src/renderer/src/services/plugin/PluginDataAPI'
 
 export interface ContactGroup {
   id: number
@@ -70,7 +74,13 @@ export class ContactDataService {
       // 返回默认分组
       const defaultGroups: ContactGroup[] = [
         { id: 1, name: '我的好友', description: '默认好友分组', color: '#1890ff', icon: 'user' },
-        { id: 2, name: '工作联系人', description: '工作相关联系人', color: '#52c41a', icon: 'briefcase' },
+        {
+          id: 2,
+          name: '工作联系人',
+          description: '工作相关联系人',
+          color: '#52c41a',
+          icon: 'briefcase'
+        },
         { id: 3, name: '家人', description: '家庭成员', color: '#f5222d', icon: 'heart' },
         { id: 4, name: '同学朋友', description: '同学和朋友', color: '#722ed1', icon: 'team' }
       ]
@@ -111,11 +121,13 @@ export class ContactDataService {
   /**
    * 创建联系人分组
    */
-  async createContactGroup(group: Omit<ContactGroup, 'id' | 'created_at' | 'updated_at'>): Promise<ContactGroup | null> {
+  async createContactGroup(
+    group: Omit<ContactGroup, 'id' | 'created_at' | 'updated_at'>
+  ): Promise<ContactGroup | null> {
     try {
       const groups = await this.getContactGroups()
-      const maxId = Math.max(...groups.map(g => g.id), 0)
-      
+      const maxId = Math.max(...groups.map((g) => g.id), 0)
+
       const newGroup: ContactGroup = {
         ...group,
         id: maxId + 1,
@@ -125,7 +137,7 @@ export class ContactDataService {
 
       groups.push(newGroup)
       const success = await this.saveContactGroups(groups)
-      
+
       return success ? newGroup : null
     } catch (error) {
       console.error('创建联系人分组失败:', error)
@@ -139,8 +151,8 @@ export class ContactDataService {
   async updateContactGroup(groupId: number, updates: Partial<ContactGroup>): Promise<boolean> {
     try {
       const groups = await this.getContactGroups()
-      const index = groups.findIndex(g => g.id === groupId)
-      
+      const index = groups.findIndex((g) => g.id === groupId)
+
       if (index === -1) {
         console.error('联系人分组不存在:', groupId)
         return false
@@ -165,8 +177,8 @@ export class ContactDataService {
   async deleteContactGroup(groupId: number): Promise<boolean> {
     try {
       const groups = await this.getContactGroups()
-      const filteredGroups = groups.filter(g => g.id !== groupId)
-      
+      const filteredGroups = groups.filter((g) => g.id !== groupId)
+
       if (filteredGroups.length === groups.length) {
         console.error('联系人分组不存在:', groupId)
         return false
@@ -174,7 +186,7 @@ export class ContactDataService {
 
       // 将该分组下的联系人移动到默认分组
       await this.moveContactsToGroup(groupId, 1)
-      
+
       return await this.saveContactGroups(filteredGroups)
     } catch (error) {
       console.error('删除联系人分组失败:', error)
@@ -199,7 +211,7 @@ export class ContactDataService {
       // 先尝试从缓存获取
       const cached = await this.api.getCachedContacts()
       let contacts: ContactWithGroup[] = []
-      
+
       if (cached.success && cached.data) {
         contacts = cached.data
       } else {
@@ -210,7 +222,7 @@ export class ContactDataService {
           sortBy: options?.sortBy,
           sortOrder: options?.sortOrder
         })
-        
+
         if (dbResult.success && dbResult.data) {
           contacts = await this.enrichContactsWithGroups(dbResult.data)
           // 更新缓存
@@ -253,7 +265,14 @@ export class ContactDataService {
   /**
    * 添加联系人
    */
-  async addContact(contactData: ContactData & { nickname?: string; avatar?: string; tags?: string[]; notes?: string }): Promise<ContactWithGroup | null> {
+  async addContact(
+    contactData: ContactData & {
+      nickname?: string
+      avatar?: string
+      tags?: string[]
+      notes?: string
+    }
+  ): Promise<ContactWithGroup | null> {
     try {
       const permission = await this.api.checkPermission('contacts', 'write')
       if (!permission.success || !permission.data?.hasPermission) {
@@ -284,7 +303,7 @@ export class ContactDataService {
 
       // 清除缓存以强制刷新
       await this.clearContactsCache()
-      
+
       // 获取完整的联系人信息
       return await this.getContact(result.data.contactId)
     } catch (error) {
@@ -306,7 +325,7 @@ export class ContactDataService {
 
       // 分离数据库字段和自定义字段
       const { nickname, avatar, tags, notes, status, ...dbUpdates } = updates
-      
+
       // 准备自定义数据更新
       const customDataUpdates: any = {}
       if (nickname !== undefined) customDataUpdates.nickname = nickname
@@ -314,7 +333,7 @@ export class ContactDataService {
       if (tags !== undefined) customDataUpdates.tags = tags
       if (notes !== undefined) customDataUpdates.notes = notes
       if (status !== undefined) customDataUpdates.status = status
-      
+
       if (Object.keys(customDataUpdates).length > 0) {
         customDataUpdates.updated_at = new Date().toISOString()
         dbUpdates.custom_data = customDataUpdates
@@ -328,7 +347,7 @@ export class ContactDataService {
 
       // 更新缓存
       await this.updateContactInCache(contactId, updates)
-      
+
       return true
     } catch (error) {
       console.error('更新联系人失败:', error)
@@ -355,7 +374,7 @@ export class ContactDataService {
 
       // 从缓存中移除
       await this.api.removeCachedContact(contactId)
-      
+
       return true
     } catch (error) {
       console.error('删除联系人失败:', error)
@@ -382,7 +401,7 @@ export class ContactDataService {
 
       // 更新缓存
       await this.updateContactInCache(contactId, { is_pinned: pinned })
-      
+
       return true
     } catch (error) {
       console.error('置顶联系人失败:', error)
@@ -396,11 +415,11 @@ export class ContactDataService {
   async moveContactsToGroup(fromGroupId: number, toGroupId: number): Promise<boolean> {
     try {
       const contacts = await this.getContacts({ groupId: fromGroupId })
-      
+
       for (const contact of contacts) {
         await this.updateContact(contact.id, { group_id: toGroupId })
       }
-      
+
       return true
     } catch (error) {
       console.error('移动联系人分组失败:', error)
@@ -411,12 +430,15 @@ export class ContactDataService {
   /**
    * 搜索联系人
    */
-  async searchContacts(keyword: string, options?: ContactSearchOptions): Promise<ContactWithGroup[]> {
+  async searchContacts(
+    keyword: string,
+    options?: ContactSearchOptions
+  ): Promise<ContactWithGroup[]> {
     const searchOptions: ContactSearchOptions = {
       ...options,
       keyword: keyword.toLowerCase()
     }
-    
+
     return await this.getContacts(searchOptions)
   }
 
@@ -448,9 +470,9 @@ export class ContactDataService {
    */
   private async enrichContactsWithGroups(contacts: any[]): Promise<ContactWithGroup[]> {
     const groups = await this.getContactGroups()
-    const groupMap = new Map(groups.map(g => [g.id, g]))
-    
-    return contacts.map(contact => {
+    const groupMap = new Map(groups.map((g) => [g.id, g]))
+
+    return contacts.map((contact) => {
       const customData = contact.custom_data || {}
       return {
         ...contact,
@@ -470,7 +492,10 @@ export class ContactDataService {
   /**
    * 过滤联系人
    */
-  private filterContacts(contacts: ContactWithGroup[], options?: ContactSearchOptions): ContactWithGroup[] {
+  private filterContacts(
+    contacts: ContactWithGroup[],
+    options?: ContactSearchOptions
+  ): ContactWithGroup[] {
     if (!options) return contacts
 
     let filtered = contacts
@@ -478,34 +503,35 @@ export class ContactDataService {
     // 关键词搜索
     if (options.keyword) {
       const keyword = options.keyword.toLowerCase()
-      filtered = filtered.filter(contact => 
-        contact.nickname?.toLowerCase().includes(keyword) ||
-        contact.remark?.toLowerCase().includes(keyword) ||
-        contact.notes?.toLowerCase().includes(keyword) ||
-        contact.tags?.some(tag => tag.toLowerCase().includes(keyword))
+      filtered = filtered.filter(
+        (contact) =>
+          contact.nickname?.toLowerCase().includes(keyword) ||
+          contact.remark?.toLowerCase().includes(keyword) ||
+          contact.notes?.toLowerCase().includes(keyword) ||
+          contact.tags?.some((tag) => tag.toLowerCase().includes(keyword))
       )
     }
 
     // 分组过滤
     if (options.groupId !== undefined) {
-      filtered = filtered.filter(contact => contact.group_id === options.groupId)
+      filtered = filtered.filter((contact) => contact.group_id === options.groupId)
     }
 
     // 状态过滤
     if (options.status) {
-      filtered = filtered.filter(contact => contact.status === options.status)
+      filtered = filtered.filter((contact) => contact.status === options.status)
     }
 
     // 标签过滤
     if (options.tags && options.tags.length > 0) {
-      filtered = filtered.filter(contact => 
-        contact.tags?.some(tag => options.tags!.includes(tag))
+      filtered = filtered.filter((contact) =>
+        contact.tags?.some((tag) => options.tags!.includes(tag))
       )
     }
 
     // 置顶过滤
     if (options.pinned !== undefined) {
-      filtered = filtered.filter(contact => contact.is_pinned === options.pinned)
+      filtered = filtered.filter((contact) => contact.is_pinned === options.pinned)
     }
 
     // 排序
@@ -514,7 +540,7 @@ export class ContactDataService {
       filtered.sort((a, b) => {
         const aVal = (a as any)[options.sortBy!]
         const bVal = (b as any)[options.sortBy!]
-        
+
         if (aVal < bVal) return -1 * order
         if (aVal > bVal) return 1 * order
         return 0
@@ -524,7 +550,7 @@ export class ContactDataService {
       filtered.sort((a, b) => {
         if (a.is_pinned && !b.is_pinned) return -1
         if (!a.is_pinned && b.is_pinned) return 1
-        
+
         const aTime = new Date(a.updated_at || 0).getTime()
         const bTime = new Date(b.updated_at || 0).getTime()
         return bTime - aTime
@@ -537,14 +563,17 @@ export class ContactDataService {
   /**
    * 更新缓存中的联系人
    */
-  private async updateContactInCache(contactId: number, updates: Partial<ContactWithGroup>): Promise<void> {
+  private async updateContactInCache(
+    contactId: number,
+    updates: Partial<ContactWithGroup>
+  ): Promise<void> {
     try {
       const cached = await this.api.getCachedContacts()
       if (!cached.success || !cached.data) return
 
       const contacts = cached.data
       const index = contacts.findIndex((c: any) => c.id === contactId)
-      
+
       if (index >= 0) {
         contacts[index] = { ...contacts[index], ...updates }
         await this.api.cacheContacts(contacts)
@@ -584,10 +613,10 @@ export class ContactDataService {
     try {
       // 清除缓存
       await this.clearContactsCache()
-      
+
       // 重新获取数据
       const contacts = await this.getContacts()
-      
+
       console.log(`同步完成，共 ${contacts.length} 个联系人`)
       return true
     } catch (error) {
@@ -614,7 +643,7 @@ export class ContactDataService {
       try {
         const { id, group, created_at, updated_at, ...contactData } = contact
         const result = await this.addContact(contactData)
-        
+
         if (result) {
           success++
         } else {
@@ -628,7 +657,7 @@ export class ContactDataService {
 
     // 清除缓存以刷新数据
     await this.clearContactsCache()
-    
+
     return { success, failed }
   }
 }

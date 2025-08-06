@@ -26,7 +26,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="load-toolbar-footer flex-center" ref="load-toolbar-footer">
+  <div ref="load-toolbar-footer" class="load-toolbar-footer flex-center">
     <template v-if="loadMode === 'pullup'">
       <span v-if="loadStatus === 3" class="no-more">― 没有更多消息 ―</span>
       <span v-else-if="loadStatus === 2" class="loading">加载数据中...</span>

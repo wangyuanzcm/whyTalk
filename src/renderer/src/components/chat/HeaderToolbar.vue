@@ -19,7 +19,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="load-toolbar-header flex-center" ref="load-toolbar-header">
+  <div ref="load-toolbar-header" class="load-toolbar-header flex-center">
     <span v-if="loadStatus === 3" class="no-more">― 没有更多消息 ―</span>
     <span v-else-if="loadStatus === 2" class="loading">加载数据中...</span>
     <span v-else class="loading">加载更多消息</span>

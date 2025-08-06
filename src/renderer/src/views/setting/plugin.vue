@@ -1,21 +1,33 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { NButton, NCard, NInput, NTag, NModal, NForm, NFormItem, NSwitch, NSpace, NPopconfirm, useMessage } from 'naive-ui'
+import {
+  NButton,
+  NCard,
+  NInput,
+  NTag,
+  NModal,
+  NForm,
+  NFormItem,
+  NSwitch,
+  NSpace,
+  NPopconfirm,
+  useMessage
+} from 'naive-ui'
 import { Download, Delete, Setting } from '@icon-park/vue-next'
 import PluginAPI, { type PluginInfo } from '@/api/plugin'
+
 const message = useMessage()
 
 // 插件列表
 const plugins = ref<PluginInfo[]>([])
 const loading = ref(false)
 
-
 // 上传相关
 const showUploadModal = ref(false)
 const uploadLoading = ref(false)
 const installProgress = ref(0)
 const installStep = ref('')
-const installResult = ref<{success: boolean, message: string} | null>(null)
+const installResult = ref<{ success: boolean; message: string } | null>(null)
 
 // 远程下载相关
 const showRemoteModal = ref(false)
@@ -30,43 +42,6 @@ const showConfigModal = ref(false)
 const currentPlugin = ref<PluginInfo | null>(null)
 const pluginConfig = reactive({})
 
-// 插件市场
-const marketPlugins = ref([
-  {
-    id: 'weather-plugin',
-    name: '天气插件',
-    description: '获取实时天气信息',
-    author: 'WeatherTeam',
-    version: '1.0.0',
-    downloadUrl: 'https://example.com/plugins/weather.zip',
-    category: '工具',
-    rating: 4.5,
-    downloads: 1250
-  },
-  {
-    id: 'translator-plugin',
-    name: '翻译插件',
-    description: '多语言翻译工具',
-    author: 'TranslateTeam',
-    version: '2.1.0',
-    downloadUrl: 'https://example.com/plugins/translator.zip',
-    category: '工具',
-    rating: 4.8,
-    downloads: 2100
-  },
-  {
-    id: 'note-plugin',
-    name: '笔记插件',
-    description: '快速记录和管理笔记',
-    author: 'NoteTeam',
-    version: '1.5.0',
-    downloadUrl: 'https://example.com/plugins/note.zip',
-    category: '效率',
-    rating: 4.3,
-    downloads: 890
-  }
-])
-
 // 加载已安装的插件
 const loadInstalledPlugins = async () => {
   loading.value = true
@@ -74,7 +49,7 @@ const loadInstalledPlugins = async () => {
     console.log('开始调用 PluginAPI.listPlugins()')
     const result = await PluginAPI.listPlugins()
     console.log('PluginAPI.listPlugins() 返回结果:', result)
-    
+
     if (result.success && result.plugins) {
       plugins.value = result.plugins
       console.log('插件列表加载成功，插件数量:', result.plugins.length)
@@ -91,123 +66,21 @@ const loadInstalledPlugins = async () => {
   }
 }
 
-// 处理本地文件上传
-const handleFileUpload = async () => {
-  uploadLoading.value = true
-  installProgress.value = 0
-  installStep.value = ''
-  installResult.value = null
-  
+// 切换插件状态
+const togglePlugin = async (plugin: PluginInfo) => {
   try {
-    // 步骤1: 选择文件
-    installStep.value = '选择插件文件...'
-    installProgress.value = 20
-    
-    const fileResult = await PluginAPI.selectLocalFile()
-    if (!fileResult.success || !fileResult.filePath) {
-      if (fileResult.error !== '用户取消选择') {
-        installResult.value = { success: false, message: fileResult.error || '选择文件失败' }
-      } else {
-        // 用户取消，重置状态
-        installStep.value = ''
-        installProgress.value = 0
-      }
-      return
-    }
-
-    // 步骤2: 验证文件
-    installStep.value = '验证插件文件...'
-    installProgress.value = 40
-    await new Promise(resolve => setTimeout(resolve, 500)) // 模拟验证过程
-
-    // 步骤3: 安装插件
-    installStep.value = '正在安装插件...'
-    installProgress.value = 70
-    
-    const result = await PluginAPI.installLocalPlugin(fileResult.filePath)
-
-    // 步骤4: 完成安装
-    installProgress.value = 100
-    
-    if (result.success) {
-      installStep.value = '安装完成'
-      installResult.value = { success: true, message: '插件安装成功！' }
-      await loadInstalledPlugins()
-      
-      // 3秒后自动关闭模态框
-      setTimeout(() => {
-        showUploadModal.value = false
-        resetInstallState()
-      }, 3000)
-    } else {
-      installStep.value = '安装失败'
-      installResult.value = { success: false, message: result.error || '插件安装失败' }
-    }
-  } catch (error: any) {
-    console.error('安装插件失败:', error)
-    installStep.value = '安装失败'
-    // 显示具体的错误信息
-    const errorMessage = error?.message || error?.toString() || '安装插件时发生错误'
-    installResult.value = { success: false, message: errorMessage }
-  } finally {
-    // 确保uploadLoading状态被重置
-    uploadLoading.value = false
-  }
-}
-
-// 重置安装状态
-const resetInstallState = () => {
-  installProgress.value = 0
-  installStep.value = ''
-  installResult.value = null
-}
-
-// 从远程URL安装插件
-const installFromRemote = async () => {
-  if (!remoteForm.url.trim()) {
-    message.error('请输入插件下载地址')
-    return
-  }
-
-  uploadLoading.value = true
-  try {
-    const result = await PluginAPI.installRemotePlugin(remoteForm.url.trim())
+    const result = plugin.enabled
+      ? await PluginAPI.disablePlugin(plugin.id)
+      : await PluginAPI.enablePlugin(plugin.id)
 
     if (result.success) {
-      message.success('插件安装成功')
-      showRemoteModal.value = false
-      remoteForm.url = ''
-      remoteForm.name = ''
-      remoteForm.description = ''
-      await loadInstalledPlugins()
+      plugin.enabled = !plugin.enabled
+      message.success(`插件已${plugin.enabled ? '启用' : '禁用'}`)
     } else {
-      message.error(result.error || '插件安装失败')
+      message.error(result.error || '操作失败')
     }
   } catch (error: any) {
-    console.error('安装插件失败:', error)
-    message.error('安装插件失败')
-  } finally {
-    uploadLoading.value = false
-  }
-}
-
-// 从市场安装插件
-const installFromMarket = async (plugin: any) => {
-  uploadLoading.value = true
-  try {
-    const result = await PluginAPI.installRemotePlugin(plugin.downloadUrl)
-
-    if (result.success) {
-      message.success(`插件 "${plugin.name}" 安装成功`)
-      await loadInstalledPlugins()
-    } else {
-      message.error(result.error || '插件安装失败')
-    }
-  } catch (error: any) {
-    console.error('安装插件失败:', error)
-    message.error('安装插件失败')
-  } finally {
-    uploadLoading.value = false
+    message.error(`操作失败: ${error.message}`)
   }
 }
 
@@ -215,85 +88,138 @@ const installFromMarket = async (plugin: any) => {
 const uninstallPlugin = async (plugin: PluginInfo) => {
   try {
     const result = await PluginAPI.uninstallPlugin(plugin.id)
-
     if (result.success) {
       message.success('插件卸载成功')
       await loadInstalledPlugins()
     } else {
-      message.error(result.error || '插件卸载失败')
+      message.error(result.error || '卸载失败')
     }
   } catch (error: any) {
-    console.error('卸载插件失败:', error)
-    message.error('卸载插件失败')
-  }
-}
-
-// 切换插件启用状态
-const togglePlugin = async (plugin: PluginInfo) => {
-  const newEnabled = !plugin.enabled
-  try {
-    const result = newEnabled
-      ? await PluginAPI.enablePlugin(plugin.id)
-      : await PluginAPI.disablePlugin(plugin.id)
-
-    if (result.success) {
-      plugin.enabled = newEnabled
-      message.success(`插件已${newEnabled ? '启用' : '禁用'}`)
-    } else {
-      message.error(result.error || `${newEnabled ? '启用' : '禁用'}插件失败`)
-    }
-  } catch (error: any) {
-    console.error('切换插件状态失败:', error)
-    message.error('操作失败')
+    message.error(`卸载失败: ${error.message}`)
   }
 }
 
 // 配置插件
 const configurePlugin = async (plugin: PluginInfo) => {
   try {
-    currentPlugin.value = plugin
-
-    // 获取插件配置
     const result = await PluginAPI.getPluginConfig(plugin.id)
-    if (result.success && result.config) {
-      Object.assign(pluginConfig, result.config)
+    if (result.success) {
+      currentPlugin.value = plugin
+      Object.assign(pluginConfig, result.config || {})
+      showConfigModal.value = true
     } else {
-      Object.assign(pluginConfig, {})
+      message.error(result.error || '获取配置失败')
     }
-
-    showConfigModal.value = true
   } catch (error: any) {
-    console.error('获取插件配置失败:', error)
-    message.error('获取插件配置失败')
+    message.error(`获取配置失败: ${error.message}`)
   }
 }
 
 // 保存插件配置
 const savePluginConfig = async () => {
+  if (!currentPlugin.value) return
+
   try {
-    if (!currentPlugin.value) return
-
     const result = await PluginAPI.setPluginConfig(currentPlugin.value.id, pluginConfig)
-
     if (result.success) {
       message.success('配置保存成功')
       showConfigModal.value = false
     } else {
-      message.error(result.error || '保存配置失败')
+      message.error(result.error || '保存失败')
     }
   } catch (error: any) {
-    console.error('保存配置失败:', error)
-    message.error('保存配置失败')
+    message.error(`保存失败: ${error.message}`)
   }
 }
 
+// 处理文件上传
+const handleFileUpload = async () => {
+  try {
+    const result = await PluginAPI.selectLocalFile()
+    if (result.success && result.filePath) {
+      await installLocalPlugin(result.filePath)
+    } else {
+      message.error(result.error || '文件选择失败')
+    }
+  } catch (error: any) {
+    message.error(`文件选择失败: ${error.message}`)
+  }
+}
+
+// 安装本地插件
+const installLocalPlugin = async (filePath: string) => {
+  uploadLoading.value = true
+  installStep.value = '正在安装插件...'
+  installProgress.value = 0
+
+  try {
+    const result = await PluginAPI.installLocalPlugin(filePath)
+    if (result.success) {
+      installResult.value = {
+        success: true,
+        message: '插件安装成功！'
+      }
+      setTimeout(() => {
+        showUploadModal.value = false
+        resetInstallState()
+        loadInstalledPlugins()
+      }, 2000)
+    } else {
+      installResult.value = {
+        success: false,
+        message: result.error || '安装失败'
+      }
+    }
+  } catch (error: any) {
+    installResult.value = {
+      success: false,
+      message: `安装失败: ${error.message}`
+    }
+  } finally {
+    uploadLoading.value = false
+  }
+}
+
+// 远程安装插件
+const installFromRemote = async () => {
+  if (!remoteForm.url) {
+    message.error('请输入下载地址')
+    return
+  }
+
+  uploadLoading.value = true
+  try {
+    const result = await PluginAPI.installRemotePlugin(remoteForm.url)
+    if (result.success) {
+      message.success('插件安装成功')
+      showRemoteModal.value = false
+      Object.assign(remoteForm, { url: '', name: '', description: '' })
+      await loadInstalledPlugins()
+    } else {
+      message.error(result.error || '安装失败')
+    }
+  } catch (error: any) {
+    message.error(`安装失败: ${error.message}`)
+  } finally {
+    uploadLoading.value = false
+  }
+}
+
+// 重置安装状态
+const resetInstallState = () => {
+  uploadLoading.value = false
+  installProgress.value = 0
+  installStep.value = ''
+  installResult.value = null
+}
+
 // 获取插件状态颜色
-const getStatusColor = (enabled) => {
+const getStatusColor = (enabled: boolean) => {
   return enabled ? 'success' : 'default'
 }
 
 // 获取插件状态文本
-const getStatusText = (enabled) => {
+const getStatusText = (enabled: boolean) => {
   return enabled ? '已启用' : '已禁用'
 }
 
@@ -301,6 +227,7 @@ onMounted(() => {
   loadInstalledPlugins()
 })
 </script>
+
 <template>
   <section>
     <h3 class="title">插件管理</h3>
@@ -320,16 +247,14 @@ onMounted(() => {
           </template>
           远程安装
         </n-button>
-        <n-button @click="loadInstalledPlugins" :loading="loading">
-          刷新列表
-        </n-button>
+        <n-button :loading="loading" @click="loadInstalledPlugins"> 刷新列表 </n-button>
       </n-space>
     </div>
 
     <!-- 已安装插件列表 -->
     <div class="plugin-section">
       <h4>已安装插件</h4>
-      <div class="plugin-grid" v-if="plugins.length > 0">
+      <div v-if="plugins.length > 0" class="plugin-grid">
         <n-card v-for="plugin in plugins" :key="plugin.id" class="plugin-card" hoverable>
           <template #header>
             <div class="plugin-header">
@@ -351,14 +276,26 @@ onMounted(() => {
 
           <template #action>
             <n-space>
-              <n-switch :value="plugin.enabled" @update:value="() => togglePlugin(plugin)" size="small" />
-              <n-button size="small" @click="configurePlugin(plugin)" v-if="plugin.config?.ui?.settings">
+              <n-switch
+                :value="plugin.enabled"
+                size="small"
+                @update:value="() => togglePlugin(plugin)"
+              />
+              <n-button
+                v-if="plugin.config?.ui?.settings"
+                size="small"
+                @click="configurePlugin(plugin)"
+              >
                 <template #icon>
                   <Setting />
                 </template>
                 配置
               </n-button>
-              <n-popconfirm @positive-click="uninstallPlugin(plugin)" positive-text="确认" negative-text="取消">
+              <n-popconfirm
+                positive-text="确认"
+                negative-text="取消"
+                @positive-click="uninstallPlugin(plugin)"
+              >
                 <template #trigger>
                   <n-button size="small" type="error">
                     <template #icon>
@@ -378,96 +315,48 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- 插件市场 -->
-    <div class="plugin-section">
-      <h4>插件市场</h4>
-      <div class="plugin-grid">
-        <n-card v-for="plugin in marketPlugins" :key="plugin.id" class="plugin-card market-card" hoverable>
-          <template #header>
-            <div class="plugin-header">
-              <span class="plugin-name">{{ plugin.name }}</span>
-              <n-tag type="info" size="small">{{ plugin.category }}</n-tag>
-            </div>
-          </template>
-
-          <div class="plugin-content">
-            <p class="plugin-description">{{ plugin.description }}</p>
-            <p class="plugin-info">
-              <span>版本: {{ plugin.version }}</span>
-              <span>作者: {{ plugin.author }}</span>
-            </p>
-            <p class="plugin-stats">
-              <span>评分: {{ plugin.rating }}/5</span>
-              <span>下载: {{ plugin.downloads }}</span>
-            </p>
-          </div>
-
-          <template #action>
-            <n-button type="primary" size="small" @click="installFromMarket(plugin)" :loading="uploadLoading">
-              <template #icon>
-                <Download />
-              </template>
-              安装
-            </n-button>
-          </template>
-        </n-card>
-      </div>
-    </div>
-
     <!-- 本地上传模态框 -->
-    <n-modal v-model:show="showUploadModal" preset="dialog" title="本地安装插件" :mask-closable="!uploadLoading">
+    <n-modal
+      v-model:show="showUploadModal"
+      preset="dialog"
+      title="本地安装插件"
+      :mask-closable="!uploadLoading"
+    >
       <div class="upload-content">
         <div v-if="!uploadLoading && !installResult">
           <p>请选择插件zip文件进行安装：</p>
-          <n-button @click="handleFileUpload" type="primary">
-            选择插件文件
-          </n-button>
+          <n-button type="primary" @click="handleFileUpload"> 选择插件文件 </n-button>
         </div>
-        
+
         <!-- 安装进度 -->
         <div v-if="uploadLoading" class="install-progress">
           <div class="progress-info">
-            <n-icon size="20" class="progress-icon">
-              <svg viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="62.83" stroke-dashoffset="62.83" stroke-linecap="round">
-                  <animate attributeName="stroke-dashoffset" values="62.83;0;62.83" dur="2s" repeatCount="indefinite"/>
-                </circle>
-              </svg>
-            </n-icon>
-            <span class="step-text">{{ installStep }}</span>
+            <p>{{ installStep }}</p>
           </div>
-          <n-progress 
-            type="line" 
-            :percentage="installProgress" 
-            :show-indicator="true"
-            processing
-            class="progress-bar"
-          />
         </div>
-        
+
         <!-- 安装结果 -->
         <div v-if="installResult" class="install-result">
-          <div class="result-icon">
-            <n-icon size="48" :color="installResult.success ? '#18a058' : '#d03050'">
-              <svg v-if="installResult.success" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-              </svg>
-              <svg v-else viewBox="0 0 24 24">
-                <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-              </svg>
-            </n-icon>
-          </div>
-          <p class="result-message" :class="{ 'success': installResult.success, 'error': !installResult.success }">
+          <p
+            class="result-message"
+            :class="{ success: installResult.success, error: !installResult.success }"
+          >
             {{ installResult.message }}
           </p>
           <div v-if="installResult.success" class="success-note">
             <p>插件已成功安装到系统中，窗口将在几秒后自动关闭</p>
           </div>
           <div v-else class="error-actions">
-            <n-button @click="resetInstallState" type="primary">
-              重新安装
-            </n-button>
-            <n-button @click="showUploadModal = false; resetInstallState()" quaternary>
+            <n-button type="primary" @click="resetInstallState"> 重新安装 </n-button>
+            <n-button
+              quaternary
+              @click="
+                () => {
+                  showUploadModal = false
+                  resetInstallState()
+                }
+              "
+            >
               关闭
             </n-button>
           </div>
@@ -485,13 +374,18 @@ onMounted(() => {
           <n-input v-model:value="remoteForm.name" placeholder="可选，插件显示名称" />
         </n-form-item>
         <n-form-item label="插件描述">
-          <n-input v-model:value="remoteForm.description" placeholder="可选，插件描述信息" type="textarea" :rows="3" />
+          <n-input
+            v-model:value="remoteForm.description"
+            placeholder="可选，插件描述信息"
+            type="textarea"
+            :rows="3"
+          />
         </n-form-item>
       </n-form>
       <template #action>
         <n-space>
           <n-button @click="showRemoteModal = false">取消</n-button>
-          <n-button type="primary" @click="installFromRemote" :loading="uploadLoading">
+          <n-button type="primary" :loading="uploadLoading" @click="installFromRemote">
             安装
           </n-button>
         </n-space>
@@ -511,90 +405,31 @@ onMounted(() => {
       <template #action>
         <n-space>
           <n-button @click="showConfigModal = false">取消</n-button>
-          <n-button type="primary" @click="savePluginConfig">
-            保存配置
-          </n-button>
+          <n-button type="primary" @click="savePluginConfig"> 保存配置 </n-button>
         </n-space>
       </template>
     </n-modal>
   </section>
 </template>
+
 <style lang="less" scoped>
-.plugin-container {
-  padding: 20px;
+.title {
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: 600;
 }
 
-.upload-content {
-  padding: 20px;
-  text-align: center;
-  
-  p {
-    margin-bottom: 16px;
-    color: #666;
-  }
+.action-buttons {
+  margin-bottom: 20px;
 }
 
-.install-progress {
-  padding: 20px 0;
-  
-  .progress-info {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 16px;
-    
-    .progress-icon {
-      margin-right: 8px;
-      color: #18a058;
-    }
-    
-    .step-text {
-      font-size: 14px;
-      color: #333;
-      font-weight: 500;
-    }
-  }
-  
-  .progress-bar {
-    margin-top: 8px;
-  }
-}
+.plugin-section {
+  margin-bottom: 30px;
 
-.install-result {
-  padding: 20px 0;
-  text-align: center;
-  
-  .result-icon {
+  h4 {
     margin-bottom: 16px;
-  }
-  
-  .result-message {
     font-size: 16px;
     font-weight: 500;
-    margin-bottom: 12px;
-    
-    &.success {
-      color: #18a058;
-    }
-    
-    &.error {
-      color: #d03050;
-    }
-  }
-  
-  .success-note {
-    p {
-      font-size: 14px;
-      color: #666;
-      margin: 0;
-    }
-  }
-  
-  .error-actions {
-    margin-top: 20px;
-    display: flex;
-    gap: 12px;
-    justify-content: center;
   }
 }
 
@@ -602,73 +437,115 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 16px;
-  margin-top: 20px;
 }
 
 .plugin-card {
   border: 1px solid #e0e0e0;
   border-radius: 8px;
-  padding: 16px;
   transition: all 0.3s ease;
-  
+
   &:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     border-color: #18a058;
   }
-  
+
   .plugin-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 12px;
-    
-    .plugin-info {
-      flex: 1;
-      
-      .plugin-name {
-        font-size: 16px;
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 4px;
-      }
-      
-      .plugin-version {
-        font-size: 12px;
-        color: #999;
-        background: #f5f5f5;
-        padding: 2px 6px;
-        border-radius: 4px;
-        display: inline-block;
-      }
+    align-items: center;
+
+    .plugin-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
     }
   }
-  
-  .plugin-description {
-    color: #666;
-    font-size: 14px;
-    line-height: 1.5;
-    margin-bottom: 16px;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  
-  .plugin-actions {
-    display: flex;
-    gap: 8px;
-    justify-content: flex-end;
+
+  .plugin-content {
+    .plugin-description {
+      color: #666;
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .plugin-info {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      color: #999;
+      margin-bottom: 8px;
+    }
+
+    .plugin-type {
+      font-size: 12px;
+      color: #666;
+    }
   }
 }
 
-.header-actions {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
-  
-  .search-input {
-    flex: 1;
-    max-width: 300px;
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+}
+
+.upload-content {
+  padding: 20px;
+  text-align: center;
+
+  p {
+    margin-bottom: 16px;
+    color: #666;
+  }
+}
+
+.install-progress {
+  text-align: center;
+  padding: 20px;
+
+  .progress-info {
+    margin-bottom: 16px;
+
+    p {
+      font-size: 14px;
+      color: #666;
+      margin: 0;
+    }
+  }
+}
+
+.install-result {
+  text-align: center;
+  padding: 20px;
+
+  .result-message {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 16px;
+
+    &.success {
+      color: #18a058;
+    }
+
+    &.error {
+      color: #d03050;
+    }
+  }
+
+  .success-note {
+    p {
+      font-size: 14px;
+      color: #666;
+      margin: 0;
+    }
+  }
+
+  .error-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
   }
 }
 </style>

@@ -36,7 +36,9 @@ const loadPlugins = async () => {
 
     const pluginList = await window.electron.ipcRenderer.invoke('plugin:list')
     // 显示所有类型的插件，包括前端插件和系统插件
-    plugins.value = pluginList.filter((plugin: Plugin) => plugin.type === 'system' || plugin.type === 'frontend')
+    plugins.value = pluginList.filter(
+      (plugin: Plugin) => plugin.type === 'system' || plugin.type === 'frontend'
+    )
   } catch (err: any) {
     error.value = err.message || '加载插件失败'
     console.error('加载插件失败:', err)
@@ -123,7 +125,7 @@ onMounted(() => {
           <NEmpty description="加载失败">
             <template #extra>
               <p style="color: #e74c3c; margin-bottom: 16px">{{ error }}</p>
-              <NButton @click="loadPlugins" type="primary">重新加载</NButton>
+              <NButton type="primary" @click="loadPlugins">重新加载</NButton>
             </template>
           </NEmpty>
         </div>
@@ -131,7 +133,7 @@ onMounted(() => {
         <div v-else-if="plugins.length === 0 && !loading" class="empty-container">
           <NEmpty description="暂无可用的插件应用">
             <template #extra>
-              <NButton @click="loadPlugins" type="primary">刷新</NButton>
+              <NButton type="primary" @click="loadPlugins">刷新</NButton>
             </template>
           </NEmpty>
         </div>
@@ -155,14 +157,14 @@ onMounted(() => {
                 <p class="plugin-description">{{ plugin.config.description }}</p>
                 <p class="plugin-author">作者: {{ plugin.config.author }}</p>
 
-                <div class="plugin-features" v-if="plugin.config.ui">
+                <div v-if="plugin.config.ui" class="plugin-features">
                   <div class="feature-item">
                     <span class="feature-label">UI组件:</span>
                     <span class="feature-value"
                       >{{ plugin.config.ui.components?.length || 0 }} 个</span
                     >
                   </div>
-                  <div class="feature-item" v-if="plugin.config.ui.settings">
+                  <div v-if="plugin.config.ui.settings" class="feature-item">
                     <span class="feature-label">设置页面:</span>
                     <span class="feature-value"
                       >{{ plugin.config.ui.settings.sections?.length || 0 }} 个分组</span
@@ -176,21 +178,25 @@ onMounted(() => {
                   <NTooltip trigger="hover">
                     <template #trigger>
                       <NButton
-                        @click="openPlugin(plugin)"
                         type="primary"
                         size="small"
-                        :disabled="!plugin.enabled || (plugin.type === 'system' && !plugin.config.ui)"
+                        :disabled="
+                          !plugin.enabled || (plugin.type === 'system' && !plugin.config.ui)
+                        "
+                        @click="openPlugin(plugin)"
                       >
                         <Play :size="16" style="margin-right: 4px" />
                         打开
                       </NButton>
                     </template>
                     <span v-if="!plugin.enabled">插件已禁用</span>
-                    <span v-else-if="plugin.type === 'system' && !plugin.config.ui">系统插件暂无UI界面</span>
+                    <span v-else-if="plugin.type === 'system' && !plugin.config.ui"
+                      >系统插件暂无UI界面</span
+                    >
                     <span v-else>打开插件应用</span>
                   </NTooltip>
 
-                  <NButton @click="configurePlugin(plugin)" size="small" quaternary>
+                  <NButton size="small" quaternary @click="configurePlugin(plugin)">
                     <Setting :size="16" style="margin-right: 4px" />
                     配置
                   </NButton>

@@ -1,11 +1,12 @@
 import { NAvatar } from 'naive-ui'
 import { h } from 'vue'
-import { useTalkStore, useUserStore } from '@/store'
+import { useUserStore } from '@/store'
 import { notifyIcon } from '@/constant/default'
 import WsSocket from '@/plugins/websocket.ts'
-import EventTalk from '@/event/talk.ts'
-import EventKeyboard from '@/event/keyboard.ts'
-import EventRevoke from '@/event/revoke.ts'
+// 以下事件处理器已迁移到插件中:
+// import EventTalk from '@/event/talk.ts'
+// import EventKeyboard from '@/event/keyboard.ts'
+// import EventRevoke from '@/event/revoke.ts'
 import { getToken, isLogin } from '@/utils/auth.ts'
 
 const urlCallback = () => {
@@ -40,7 +41,7 @@ class Connect {
   private initialize() {
     if (this.initialized) return
     this.initialized = true
-    
+
     if (!this.isP2PMode && import.meta.env.VITE_SOCKET_API) {
       const url = urlCallback()
       if (!url) {
@@ -53,10 +54,10 @@ class Connect {
         },
         onOpen: () => {
           useUserStore().updateSocketStatus(true)
-          // 只有在用户已登录时才加载对话列表
-          if (isLogin()) {
-            useTalkStore().loadTalkList()
-          }
+          // TODO: 通过插件间通信加载对话列表
+          // if (isLogin()) {
+          //   useTalkStore().loadTalkList()
+          // }
         },
         onClose: () => {
           useUserStore().updateSocketStatus(false)
@@ -68,10 +69,10 @@ class Connect {
       console.log('P2P mode enabled, skipping WebSocket connection')
       // 在 P2P 模式下，直接设置为已连接状态
       useUserStore().updateSocketStatus(true)
-      // 只有在用户已登录时才加载对话列表
-      if (isLogin()) {
-        useTalkStore().loadTalkList()
-      }
+      // TODO: 通过插件间通信加载对话列表
+      // if (isLogin()) {
+      //   useTalkStore().loadTalkList()
+      // }
     }
   }
 
@@ -116,7 +117,7 @@ class Connect {
       console.log('P2P mode: skipping WebSocket event binding')
       return
     }
-    
+
     this.onPing()
     this.onPong()
     this.onImMessage()
@@ -137,15 +138,24 @@ class Connect {
   }
 
   onImMessage() {
-    this.conn?.on('im.message', (data: any) => new EventTalk(data))
+    // TODO: 通过插件间通信处理消息事件
+    this.conn?.on('im.message', (data: any) => {
+      console.log('收到消息事件，需要转发到插件:', data)
+    })
   }
 
   onImMessageKeyboard() {
-    this.conn?.on('im.message.keyboard', (data: any) => new EventKeyboard(data))
+    // TODO: 通过插件间通信处理键盘事件
+    this.conn?.on('im.message.keyboard', (data: any) => {
+      console.log('收到键盘事件，需要转发到插件:', data)
+    })
   }
 
   onImMessageRevoke() {
-    this.conn?.on('im.message.revoke', (data: any) => new EventRevoke(data))
+    // TODO: 通过插件间通信处理撤回事件
+    this.conn?.on('im.message.revoke', (data: any) => {
+      console.log('收到撤回事件，需要转发到插件:', data)
+    })
   }
 
   onImContactApply() {
@@ -184,6 +194,7 @@ class Connect {
         duration: 10000
       })
 
+      // TODO: 通过插件间通信更新群组申请状态
       useUserStore().isGroupApply = true
     })
   }

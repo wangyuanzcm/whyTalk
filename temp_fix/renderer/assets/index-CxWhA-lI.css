@@ -102,19 +102,19 @@
 }
 /* 响应式设计 */
 @media (max-width: 1200px) {
-.plugin-grid[data-v-d029d215] .n-grid {
+  .plugin-grid[data-v-d029d215] .n-grid {
     grid-template-columns: repeat(2, 1fr) !important;
-}
+  }
 }
 @media (max-width: 768px) {
-.workspace-container[data-v-d029d215] {
+  .workspace-container[data-v-d029d215] {
     padding: 16px;
-}
-.plugin-grid[data-v-d029d215] .n-grid {
+  }
+  .plugin-grid[data-v-d029d215] .n-grid {
     grid-template-columns: 1fr !important;
-}
-.plugin-card[data-v-d029d215] {
+  }
+  .plugin-card[data-v-d029d215] {
     height: auto;
     min-height: 240px;
-}
+  }
 }

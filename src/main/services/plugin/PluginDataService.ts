@@ -2,60 +2,13 @@ import Database from 'better-sqlite3'
 import { DatabaseManager } from '../database/Database'
 import { PluginPermissionManager } from './PluginPermissionManager'
 import { DataValidator } from './DataValidator'
-
-export interface PluginDataItem {
-  key: string
-  value: any
-  type: string
-  created_at: string
-  updated_at: string
-}
-
-export interface SharedDataItem {
-  namespace: string
-  key: string
-  value: any
-  type: string
-  owner_plugin: string
-  permissions: any
-  created_at: string
-  updated_at: string
-}
-
-export interface ContactData {
-  id?: number
-  user_id: number
-  friend_id: number
-  remark?: string
-  group_id?: number
-  is_pinned?: boolean
-  plugin_source?: string
-  last_interaction?: string
-  custom_data?: any
-}
-
-export interface MessageData {
-  id?: number
-  user_id: number
-  talk_mode: number
-  to_from_id: number
-  message_type: number
-  content: string
-  plugin_source?: string
-  read_status?: number
-  attachment_data?: any
-  custom_data?: any
-}
-
-export interface ConversationData {
-  id?: number
-  user_id: number
-  talk_mode: number
-  to_from_id: number
-  is_pinned?: boolean
-  plugin_data?: any
-  custom_settings?: any
-}
+import type {
+  PluginDataItem,
+  SharedDataItem,
+  ContactData,
+  MessageData,
+  ConversationData
+} from './PluginDataService.d'
 
 export class PluginDataService {
   private static instance: PluginDataService
@@ -78,7 +31,7 @@ export class PluginDataService {
     if (this.isInitialized) {
       return
     }
-    
+
     try {
       this.db = DatabaseManager.getInstance().getDatabase()
       this.permissionManager = PluginPermissionManager.getInstance()
@@ -95,13 +48,13 @@ export class PluginDataService {
     if (!this.db) {
       throw new Error('Database not initialized')
     }
-    
+
     try {
       // 执行插件schema扩展
       const fs = require('fs')
       const path = require('path')
       const schemaPath = path.join(__dirname, '../database/plugin-schema.sql')
-      
+
       if (fs.existsSync(schemaPath)) {
         const schema = fs.readFileSync(schemaPath, 'utf8')
         this.db.exec(schema)
@@ -114,18 +67,23 @@ export class PluginDataService {
 
   // ==================== 插件私有数据操作 ====================
 
-  async setPluginData(pluginId: string, key: string, value: any, type: string = 'string'): Promise<boolean> {
+  async setPluginData(
+    pluginId: string,
+    key: string,
+    value: any,
+    type: string = 'string'
+  ): Promise<boolean> {
     if (!this.db) {
       console.error('Database not initialized')
       return false
     }
-    
+
     try {
       const stmt = this.db!.prepare(`
         INSERT OR REPLACE INTO plugin_data (plugin_id, data_key, data_value, data_type, updated_at)
         VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
       `)
-      
+
       const serializedValue = this.serializeValue(value, type)
       stmt.run(pluginId, key, serializedValue, type)
       return true
@@ -140,16 +98,16 @@ export class PluginDataService {
       console.error('Database not initialized')
       return null
     }
-    
+
     try {
       const stmt = this.db!.prepare(`
         SELECT data_value, data_type FROM plugin_data 
         WHERE plugin_id = ? AND data_key = ?
       `)
-      
+
       const result = stmt.get(pluginId, key) as any
       if (!result) return null
-      
+
       return this.deserializeValue(result.data_value, result.data_type)
     } catch (error) {
       console.error('获取插件数据失败:', error)
@@ -162,12 +120,12 @@ export class PluginDataService {
       console.error('Database not initialized')
       return false
     }
-    
+
     try {
       const stmt = this.db!.prepare(`
         DELETE FROM plugin_data WHERE plugin_id = ? AND data_key = ?
       `)
-      
+
       const result = stmt.run(pluginId, key)
       return result.changes > 0
     } catch (error) {
@@ -181,16 +139,16 @@ export class PluginDataService {
       console.error('Database not initialized')
       return []
     }
-    
+
     try {
       const stmt = this.db!.prepare(`
         SELECT data_key as key, data_value, data_type as type, created_at, updated_at
         FROM plugin_data WHERE plugin_id = ?
         ORDER BY updated_at DESC
       `)
-      
+
       const results = stmt.all(pluginId) as any[]
-      return results.map(item => ({
+      return results.map((item) => ({
         key: item.key,
         value: this.deserializeValue(item.data_value, item.type),
         type: item.type,
@@ -205,23 +163,29 @@ export class PluginDataService {
 
   // ==================== 插件共享数据操作 ====================
 
-  async setSharedData(namespace: string, key: string, value: any, ownerPlugin: string, permissions?: any): Promise<boolean> {
+  async setSharedData(
+    namespace: string,
+    key: string,
+    value: any,
+    ownerPlugin: string,
+    permissions?: any
+  ): Promise<boolean> {
     if (!this.db) {
       console.error('Database not initialized')
       return false
     }
-    
+
     try {
       const stmt = this.db!.prepare(`
         INSERT OR REPLACE INTO plugin_shared_data 
         (namespace, data_key, data_value, data_type, owner_plugin, permissions, updated_at)
         VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
       `)
-      
+
       const type = this.getValueType(value)
       const serializedValue = this.serializeValue(value, type)
       const serializedPermissions = permissions ? JSON.stringify(permissions) : null
-      
+
       stmt.run(namespace, key, serializedValue, type, ownerPlugin, serializedPermissions)
       return true
     } catch (error) {
@@ -235,7 +199,7 @@ export class PluginDataService {
       console.error('Database not initialized')
       return null
     }
-    
+
     try {
       // 检查权限
       if (!this.checkSharedDataPermission(namespace, key, requestPlugin, 'read')) {
@@ -247,10 +211,10 @@ export class PluginDataService {
         SELECT data_value, data_type FROM plugin_shared_data 
         WHERE namespace = ? AND data_key = ?
       `)
-      
+
       const result = stmt.get(namespace, key) as any
       if (!result) return null
-      
+
       return this.deserializeValue(result.data_value, result.data_type)
     } catch (error) {
       console.error('获取共享数据失败:', error)
@@ -263,7 +227,7 @@ export class PluginDataService {
       console.error('Database not initialized')
       return false
     }
-    
+
     try {
       // 检查权限
       if (!this.checkSharedDataPermission(namespace, key, requestPlugin, 'write')) {
@@ -274,7 +238,7 @@ export class PluginDataService {
       const stmt = this.db!.prepare(`
         DELETE FROM plugin_shared_data WHERE namespace = ? AND data_key = ?
       `)
-      
+
       const result = stmt.run(namespace, key)
       return result.changes > 0
     } catch (error) {
@@ -288,7 +252,7 @@ export class PluginDataService {
       console.error('Database not initialized')
       return []
     }
-    
+
     try {
       const stmt = this.db!.prepare(`
         SELECT namespace, data_key as key, data_value, data_type as type, 
@@ -296,11 +260,13 @@ export class PluginDataService {
         FROM plugin_shared_data WHERE namespace = ?
         ORDER BY updated_at DESC
       `)
-      
+
       const results = stmt.all(namespace) as any[]
       return results
-        .filter(item => this.checkSharedDataPermission(namespace, item.key, requestPlugin, 'read'))
-        .map(item => ({
+        .filter((item) =>
+          this.checkSharedDataPermission(namespace, item.key, requestPlugin, 'read')
+        )
+        .map((item) => ({
           namespace: item.namespace,
           key: item.key,
           value: this.deserializeValue(item.data_value, item.type),
@@ -323,7 +289,7 @@ export class PluginDataService {
       console.error('Database or permission manager not initialized')
       return []
     }
-    
+
     try {
       if (!this.permissionManager.validateDataAccess(pluginId, 'read', 'contacts')) {
         throw new Error('没有读取联系人的权限')
@@ -335,9 +301,9 @@ export class PluginDataService {
         FROM contacts 
         ORDER BY is_pinned DESC, last_interaction DESC, updated_at DESC
       `)
-      
+
       const results = stmt.all() as any[]
-      return results.map(item => ({
+      return results.map((item) => ({
         ...item,
         is_pinned: Boolean(item.is_pinned),
         custom_data: item.custom_data ? JSON.parse(item.custom_data) : null
@@ -353,7 +319,7 @@ export class PluginDataService {
       console.error('Database or permission manager not initialized')
       return null
     }
-    
+
     try {
       if (!this.permissionManager.validateDataAccess(pluginId, 'read', 'contacts')) {
         throw new Error('没有读取联系人的权限')
@@ -364,10 +330,10 @@ export class PluginDataService {
                plugin_source, last_interaction, custom_data, created_at, updated_at
         FROM contacts WHERE id = ?
       `)
-      
+
       const result = stmt.get(contactId) as any
       if (!result) return null
-      
+
       return {
         ...result,
         is_pinned: Boolean(result.is_pinned),
@@ -379,7 +345,11 @@ export class PluginDataService {
     }
   }
 
-  async updateContact(contactId: number, updates: Partial<ContactData>, pluginId: string): Promise<boolean> {
+  async updateContact(
+    contactId: number,
+    updates: Partial<ContactData>,
+    pluginId: string
+  ): Promise<boolean> {
     try {
       if (!this.permissionManager!.validateDataAccess(pluginId, 'write', 'contacts')) {
         throw new Error('没有更新联系人的权限')
@@ -392,7 +362,7 @@ export class PluginDataService {
 
       const fields: string[] = []
       const values: any[] = []
-      
+
       for (const [key, value] of Object.entries(updates)) {
         if (key !== 'id') {
           fields.push(`${key} = ?`)
@@ -403,23 +373,23 @@ export class PluginDataService {
           }
         }
       }
-      
+
       if (fields.length === 0) return false
-      
+
       fields.push('updated_at = CURRENT_TIMESTAMP')
       values.push(contactId)
-      
+
       const stmt = this.db!.prepare(`
         UPDATE contacts SET ${fields.join(', ')} WHERE id = ?
       `)
-      
+
       const result = stmt.run(...values)
-      
+
       if (result.changes > 0) {
         // 触发数据更新通知
         await this.setSharedData('contacts', 'last_update', Date.now(), pluginId)
       }
-      
+
       return result.changes > 0
     } catch (error) {
       console.error('更新联系人失败:', error)
@@ -442,9 +412,9 @@ export class PluginDataService {
         INSERT INTO contacts (user_id, friend_id, remark, group_id, is_pinned, plugin_source, custom_data)
         VALUES (?, ?, ?, ?, ?, ?, ?)
       `)
-      
+
       const customData = contactData.custom_data ? JSON.stringify(contactData.custom_data) : null
-      
+
       const result = stmt.run(
         contactData.user_id,
         contactData.friend_id,
@@ -454,12 +424,12 @@ export class PluginDataService {
         pluginId,
         customData
       )
-      
+
       if (result.lastInsertRowid) {
         // 触发数据更新通知
         await this.setSharedData('contacts', 'last_update', Date.now(), pluginId)
       }
-      
+
       return Number(result.lastInsertRowid)
     } catch (error) {
       console.error('添加联系人失败:', error)
@@ -475,12 +445,12 @@ export class PluginDataService {
 
       const stmt = this.db!.prepare('DELETE FROM contacts WHERE id = ?')
       const result = stmt.run(contactId)
-      
+
       if (result.changes > 0) {
         // 触发数据更新通知
         await this.setSharedData('contacts', 'last_update', Date.now(), pluginId)
       }
-      
+
       return result.changes > 0
     } catch (error) {
       console.error('删除联系人失败:', error)
@@ -497,14 +467,14 @@ export class PluginDataService {
       const stmt = this.db!.prepare(`
         UPDATE contacts SET is_pinned = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?
       `)
-      
+
       const result = stmt.run(isPinned ? 1 : 0, contactId)
-      
+
       if (result.changes > 0) {
         // 触发数据更新通知
         await this.setSharedData('contacts', 'last_update', Date.now(), pluginId)
       }
-      
+
       return result.changes > 0
     } catch (error) {
       console.error('置顶联系人失败:', error)
@@ -525,10 +495,10 @@ export class PluginDataService {
                plugin_source, read_status, attachment_data, custom_data, created_at, updated_at
         FROM messages WHERE id = ?
       `)
-      
+
       const result = stmt.get(messageId) as any
       if (!result) return null
-      
+
       return {
         ...result,
         read_status: Boolean(result.read_status),
@@ -541,20 +511,25 @@ export class PluginDataService {
     }
   }
 
-  async getMessages(conversationId: number, page: number = 1, limit: number = 20, pluginId: string): Promise<{ messages: MessageData[], total: number }> {
+  async getMessages(
+    conversationId: number,
+    page: number = 1,
+    limit: number = 20,
+    pluginId: string
+  ): Promise<{ messages: MessageData[]; total: number }> {
     try {
       if (!this.permissionManager!.validateDataAccess(pluginId, 'read', 'messages')) {
         throw new Error('没有读取消息的权限')
       }
 
       const offset = (page - 1) * limit
-      
+
       // 获取总数
       const countStmt = this.db!.prepare(`
         SELECT COUNT(*) as total FROM messages WHERE to_from_id = ?
       `)
       const countResult = countStmt.get(conversationId) as any
-      
+
       // 获取消息列表
       const stmt = this.db!.prepare(`
         SELECT id, user_id, talk_mode, to_from_id, message_type, content, 
@@ -564,15 +539,15 @@ export class PluginDataService {
         ORDER BY created_at DESC
         LIMIT ? OFFSET ?
       `)
-      
+
       const results = stmt.all(conversationId, limit, offset) as any[]
-      const messages = results.map(item => ({
+      const messages = results.map((item) => ({
         ...item,
         read_status: Boolean(item.read_status),
         attachment_data: item.attachment_data ? JSON.parse(item.attachment_data) : null,
         custom_data: item.custom_data ? JSON.parse(item.custom_data) : null
       }))
-      
+
       return {
         messages,
         total: countResult.total
@@ -599,10 +574,12 @@ export class PluginDataService {
                              plugin_source, attachment_data, custom_data)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `)
-      
-      const attachmentData = messageData.attachment_data ? JSON.stringify(messageData.attachment_data) : null
+
+      const attachmentData = messageData.attachment_data
+        ? JSON.stringify(messageData.attachment_data)
+        : null
       const customData = messageData.custom_data ? JSON.stringify(messageData.custom_data) : null
-      
+
       const result = stmt.run(
         messageData.user_id,
         messageData.talk_mode,
@@ -613,12 +590,12 @@ export class PluginDataService {
         attachmentData,
         customData
       )
-      
+
       if (result.lastInsertRowid) {
         // 触发数据更新通知
         await this.setSharedData('messages', 'last_update', Date.now(), pluginId)
       }
-      
+
       return Number(result.lastInsertRowid)
     } catch (error) {
       console.error('发送消息失败:', error)
@@ -635,7 +612,7 @@ export class PluginDataService {
       const stmt = this.db!.prepare(`
         UPDATE messages SET read_status = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?
       `)
-      
+
       const result = stmt.run(messageId)
       return result.changes > 0
     } catch (error) {
@@ -653,14 +630,14 @@ export class PluginDataService {
       const stmt = this.db!.prepare(`
         DELETE FROM messages WHERE id = ?
       `)
-      
+
       const result = stmt.run(messageId)
-      
+
       if (result.changes > 0) {
         // 触发数据更新通知
         await this.setSharedData('messages', 'last_update', Date.now(), pluginId)
       }
-      
+
       return result.changes > 0
     } catch (error) {
       console.error('删除消息失败:', error)
@@ -676,10 +653,10 @@ export class PluginDataService {
         SELECT id, user_id, talk_mode, to_from_id, is_pinned, plugin_data, custom_settings, created_at, updated_at
         FROM conversations WHERE id = ?
       `)
-      
+
       const result = stmt.get(conversationId) as any
       if (!result) return null
-      
+
       return {
         ...result,
         is_pinned: Boolean(result.is_pinned),
@@ -699,23 +676,23 @@ export class PluginDataService {
         FROM conversations
       `
       const params: any[] = []
-      
+
       if (userId) {
         query += ' WHERE user_id = ?'
         params.push(userId)
       }
-      
+
       query += ' ORDER BY updated_at DESC'
-      
+
       if (options?.limit) {
         query += ' LIMIT ?'
         params.push(options.limit)
       }
-      
+
       const stmt = this.db!.prepare(query)
       const results = stmt.all(...params) as any[]
-      
-      return results.map(item => ({
+
+      return results.map((item) => ({
         ...item,
         is_pinned: Boolean(item.is_pinned),
         plugin_data: item.plugin_data ? JSON.parse(item.plugin_data) : null,
@@ -742,10 +719,14 @@ export class PluginDataService {
         INSERT INTO conversations (user_id, talk_mode, to_from_id, is_pinned, plugin_data, custom_settings)
         VALUES (?, ?, ?, ?, ?, ?)
       `)
-      
-      const pluginData = conversationData.plugin_data ? JSON.stringify(conversationData.plugin_data) : null
-      const customSettings = conversationData.custom_settings ? JSON.stringify(conversationData.custom_settings) : null
-      
+
+      const pluginData = conversationData.plugin_data
+        ? JSON.stringify(conversationData.plugin_data)
+        : null
+      const customSettings = conversationData.custom_settings
+        ? JSON.stringify(conversationData.custom_settings)
+        : null
+
       const result = stmt.run(
         conversationData.user_id,
         conversationData.talk_mode,
@@ -754,12 +735,12 @@ export class PluginDataService {
         pluginData,
         customSettings
       )
-      
+
       if (result.lastInsertRowid) {
         // 触发数据更新通知
         await this.setSharedData('conversations', 'last_update', Date.now(), pluginId)
       }
-      
+
       return Number(result.lastInsertRowid)
     } catch (error) {
       console.error('创建会话失败:', error)
@@ -767,7 +748,11 @@ export class PluginDataService {
     }
   }
 
-  async updateConversation(conversationId: number, updates: Partial<ConversationData>, pluginId: string): Promise<boolean> {
+  async updateConversation(
+    conversationId: number,
+    updates: Partial<ConversationData>,
+    pluginId: string
+  ): Promise<boolean> {
     try {
       if (!this.permissionManager!.validateDataAccess(pluginId, 'write', 'conversations')) {
         throw new Error('没有更新会话的权限')
@@ -780,7 +765,7 @@ export class PluginDataService {
 
       const fields: string[] = []
       const values: any[] = []
-      
+
       for (const [key, value] of Object.entries(updates)) {
         if (key !== 'id') {
           fields.push(`${key} = ?`)
@@ -795,23 +780,23 @@ export class PluginDataService {
           }
         }
       }
-      
+
       if (fields.length === 0) return false
-      
+
       fields.push('updated_at = CURRENT_TIMESTAMP')
       values.push(conversationId)
-      
+
       const stmt = this.db!.prepare(`
         UPDATE conversations SET ${fields.join(', ')} WHERE id = ?
       `)
-      
+
       const result = stmt.run(...values)
-      
+
       if (result.changes > 0) {
         // 触发数据更新通知
         await this.setSharedData('conversations', 'last_update', Date.now(), pluginId)
       }
-      
+
       return result.changes > 0
     } catch (error) {
       console.error('更新会话失败:', error)
@@ -827,12 +812,12 @@ export class PluginDataService {
 
       const stmt = this.db!.prepare('DELETE FROM conversations WHERE id = ?')
       const result = stmt.run(conversationId)
-      
+
       if (result.changes > 0) {
         // 触发数据更新通知
         await this.setSharedData('conversations', 'last_update', Date.now(), pluginId)
       }
-      
+
       return result.changes > 0
     } catch (error) {
       console.error('删除会话失败:', error)
@@ -879,18 +864,23 @@ export class PluginDataService {
     return typeof value
   }
 
-  private checkSharedDataPermission(namespace: string, _key: string, requestPlugin: string, operation: string): boolean {
+  private checkSharedDataPermission(
+    namespace: string,
+    _key: string,
+    requestPlugin: string,
+    operation: string
+  ): boolean {
     // 系统数据允许所有插件读取
     if (operation === 'read' && ['contacts', 'messages', 'conversations'].includes(namespace)) {
       return true
     }
-    
+
     // 检查插件权限
     if (!this.permissionManager) {
       console.error('Permission manager not initialized')
       return false
     }
-    
+
     return this.permissionManager.validateDataAccess(requestPlugin, operation, namespace)
   }
 
@@ -905,7 +895,7 @@ export class PluginDataService {
       // 数据库连接由DatabaseManager管理，这里不需要关闭
       this.db = null
       this.isInitialized = false
-      
+
       console.log('PluginDataService cleanup completed')
     } catch (error) {
       console.error('Error during PluginDataService cleanup:', error)

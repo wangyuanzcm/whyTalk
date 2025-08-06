@@ -24,16 +24,16 @@ export class DatabaseManager {
     try {
       // 创建数据库连接
       this.db = new Database(config.database.path)
-      
+
       // 设置WAL模式以提高并发性能
       this.db.pragma('journal_mode = WAL')
-      
+
       // 启用外键约束
       this.db.pragma('foreign_keys = ON')
-      
+
       // 执行数据库架构
       await this.executeSchema()
-      
+
       console.log('Database initialized successfully')
     } catch (error) {
       console.error('Failed to initialize database:', error)
@@ -50,26 +50,63 @@ export class DatabaseManager {
       } else {
         schemaPath = join(__dirname, 'schema.sql')
       }
-      
+
       // 如果文件不存在，尝试其他路径
       if (!existsSync(schemaPath)) {
         const alternativePaths = [
-      // 开发环境路径
-      join(process.cwd(), 'src/main/services/database/schema.sql'),
-      join(process.cwd(), 'out/main/schema.sql'),
-      join(__dirname, '../../../src/main/services/database/schema.sql'),
-      join(__dirname, 'schema.sql'),
-      // 基于__dirname的路径（适用于从任何目录启动）
-       join(__dirname, '..', '..', '..', '..', 'src', 'main', 'services', 'database', 'schema.sql'),
-       join(__dirname, '..', '..', '..', '..', 'out', 'main', 'schema.sql'),
-      // 生产环境路径 - 相对于可执行文件
-      join(process.resourcesPath || '', 'app.asar.unpacked', 'out', 'main', 'schema.sql'),
-      join(process.resourcesPath || '', 'app.asar.unpacked', 'src', 'main', 'services', 'database', 'schema.sql'),
-      // 如果是从不同目录启动，尝试相对于应用程序目录的路径
-      join(process.execPath, '..', 'resources', 'app.asar.unpacked', 'out', 'main', 'schema.sql'),
-      join(process.execPath, '..', 'resources', 'app.asar.unpacked', 'src', 'main', 'services', 'database', 'schema.sql')
-    ]
-        
+          // 开发环境路径
+          join(process.cwd(), 'src/main/services/database/schema.sql'),
+          join(process.cwd(), 'out/main/schema.sql'),
+          join(__dirname, '../../../src/main/services/database/schema.sql'),
+          join(__dirname, 'schema.sql'),
+          // 基于__dirname的路径（适用于从任何目录启动）
+          join(
+            __dirname,
+            '..',
+            '..',
+            '..',
+            '..',
+            'src',
+            'main',
+            'services',
+            'database',
+            'schema.sql'
+          ),
+          join(__dirname, '..', '..', '..', '..', 'out', 'main', 'schema.sql'),
+          // 生产环境路径 - 相对于可执行文件
+          join(process.resourcesPath || '', 'app.asar.unpacked', 'out', 'main', 'schema.sql'),
+          join(
+            process.resourcesPath || '',
+            'app.asar.unpacked',
+            'src',
+            'main',
+            'services',
+            'database',
+            'schema.sql'
+          ),
+          // 如果是从不同目录启动，尝试相对于应用程序目录的路径
+          join(
+            process.execPath,
+            '..',
+            'resources',
+            'app.asar.unpacked',
+            'out',
+            'main',
+            'schema.sql'
+          ),
+          join(
+            process.execPath,
+            '..',
+            'resources',
+            'app.asar.unpacked',
+            'src',
+            'main',
+            'services',
+            'database',
+            'schema.sql'
+          )
+        ]
+
         for (const path of alternativePaths) {
           if (existsSync(path)) {
             schemaPath = path
@@ -78,7 +115,7 @@ export class DatabaseManager {
           }
         }
       }
-      
+
       if (!existsSync(schemaPath)) {
         const triedPaths = [
           schemaPath,
@@ -87,21 +124,47 @@ export class DatabaseManager {
           join(__dirname, '../../../src/main/services/database/schema.sql'),
           join(__dirname, 'schema.sql'),
           join(process.resourcesPath, 'app.asar.unpacked', 'out', 'main', 'schema.sql'),
-          join(process.resourcesPath, 'app.asar.unpacked', 'src', 'main', 'services', 'database', 'schema.sql'),
-          join(process.execPath, '..', 'resources', 'app.asar.unpacked', 'out', 'main', 'schema.sql'),
-          join(process.execPath, '..', 'resources', 'app.asar.unpacked', 'src', 'main', 'services', 'database', 'schema.sql')
+          join(
+            process.resourcesPath,
+            'app.asar.unpacked',
+            'src',
+            'main',
+            'services',
+            'database',
+            'schema.sql'
+          ),
+          join(
+            process.execPath,
+            '..',
+            'resources',
+            'app.asar.unpacked',
+            'out',
+            'main',
+            'schema.sql'
+          ),
+          join(
+            process.execPath,
+            '..',
+            'resources',
+            'app.asar.unpacked',
+            'src',
+            'main',
+            'services',
+            'database',
+            'schema.sql'
+          )
         ]
         throw new Error(`Schema file not found. Tried paths: ${triedPaths.join(', ')}`)
       }
-      
+
       const schema = readFileSync(schemaPath, 'utf-8')
-      
+
       // 直接执行整个 schema，让 SQLite 处理语句分割
       this.db!.exec(schema)
-      
+
       // 执行插件相关的schema
       await this.executePluginSchema()
-      
+
       console.log('Database schema executed successfully')
     } catch (error) {
       console.error('Failed to execute database schema:', error)
@@ -118,7 +181,7 @@ export class DatabaseManager {
       } else {
         pluginSchemaPath = join(__dirname, 'plugin-schema.sql')
       }
-      
+
       // 如果文件不存在，尝试其他路径
       if (!existsSync(pluginSchemaPath)) {
         const alternativePaths = [
@@ -126,14 +189,57 @@ export class DatabaseManager {
           join(process.cwd(), 'out/main/plugin-schema.sql'),
           join(__dirname, '../../../src/main/services/database/plugin-schema.sql'),
           join(__dirname, 'plugin-schema.sql'),
-          join(__dirname, '..', '..', '..', '..', 'src', 'main', 'services', 'database', 'plugin-schema.sql'),
+          join(
+            __dirname,
+            '..',
+            '..',
+            '..',
+            '..',
+            'src',
+            'main',
+            'services',
+            'database',
+            'plugin-schema.sql'
+          ),
           join(__dirname, '..', '..', '..', '..', 'out', 'main', 'plugin-schema.sql'),
-          join(process.resourcesPath || '', 'app.asar.unpacked', 'out', 'main', 'plugin-schema.sql'),
-          join(process.resourcesPath || '', 'app.asar.unpacked', 'src', 'main', 'services', 'database', 'plugin-schema.sql'),
-          join(process.execPath, '..', 'resources', 'app.asar.unpacked', 'out', 'main', 'plugin-schema.sql'),
-          join(process.execPath, '..', 'resources', 'app.asar.unpacked', 'src', 'main', 'services', 'database', 'plugin-schema.sql')
+          join(
+            process.resourcesPath || '',
+            'app.asar.unpacked',
+            'out',
+            'main',
+            'plugin-schema.sql'
+          ),
+          join(
+            process.resourcesPath || '',
+            'app.asar.unpacked',
+            'src',
+            'main',
+            'services',
+            'database',
+            'plugin-schema.sql'
+          ),
+          join(
+            process.execPath,
+            '..',
+            'resources',
+            'app.asar.unpacked',
+            'out',
+            'main',
+            'plugin-schema.sql'
+          ),
+          join(
+            process.execPath,
+            '..',
+            'resources',
+            'app.asar.unpacked',
+            'src',
+            'main',
+            'services',
+            'database',
+            'plugin-schema.sql'
+          )
         ]
-        
+
         for (const path of alternativePaths) {
           if (existsSync(path)) {
             pluginSchemaPath = path
@@ -142,17 +248,17 @@ export class DatabaseManager {
           }
         }
       }
-      
+
       if (!existsSync(pluginSchemaPath)) {
         console.warn('Plugin schema file not found, skipping plugin schema initialization')
         return
       }
-      
+
       const pluginSchema = readFileSync(pluginSchemaPath, 'utf-8')
-      
+
       // 执行插件schema
       this.db!.exec(pluginSchema)
-      
+
       console.log('Plugin database schema executed successfully')
     } catch (error) {
       console.error('Failed to execute plugin database schema:', error)
@@ -180,7 +286,7 @@ export class DatabaseManager {
     if (!this.db) {
       throw new Error('Database not initialized')
     }
-    
+
     const transaction = this.db.transaction(fn)
     return transaction(this.db)
   }
@@ -245,7 +351,7 @@ export class DatabaseManager {
       const pageCount = this.db.pragma('page_count', { simple: true }) as number
       const pageSize = this.db.pragma('page_size', { simple: true }) as number
       const freePages = this.db.pragma('freelist_count', { simple: true }) as number
-      
+
       return {
         totalPages: pageCount,
         pageSize: pageSize,

@@ -1,17 +1,12 @@
 <script lang="ts" setup>
 import SubViewLayout from '@/layout/SubViewLayout.vue'
-import { Tool, Protect, Remind, LinkThree, User, Plug, SettingTwo } from '@icon-park/vue-next'
+import { Tool, Remind, LinkThree, User, Plug, SettingTwo } from '@icon-park/vue-next'
 
 const menus = [
   {
     name: '个人中心',
     path: '/settings/detail',
     icon: User
-  },
-  {
-    name: '安全设置',
-    path: '/settings/security',
-    icon: Protect
   },
   {
     name: '个性设置',

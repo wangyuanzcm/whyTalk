@@ -1,22 +1,26 @@
 # 设置按钮点击问题调试指南
 
 ## 问题描述
+
 用户反映点击设置按钮没有反应并且报错。
 
 ## 调试步骤
 
 ### 1. 打开浏览器开发者工具
+
 1. 在浏览器中按 `F12` 或右键选择"检查元素"
 2. 切换到 `Console`（控制台）标签页
 3. 清空控制台日志（点击清除按钮或按 `Ctrl+L`）
 
 ### 2. 测试设置按钮点击
+
 1. 点击左侧菜单中的"设置"按钮
 2. 观察控制台输出的调试信息
 
 ### 3. 分析调试信息
 
 #### 预期的正常输出：
+
 ```
 Menu clicked: {name: "设置", link: "/settings", icon: "SettingTwo"}
 Current route: /message
@@ -32,6 +36,7 @@ Navigation successful to: /settings
 #### 可能的问题输出：
 
 **问题1: 用户未登录**
+
 ```
 Menu clicked: {name: "设置", link: "/settings", icon: "SettingTwo"}
 Current route: /message
@@ -44,6 +49,7 @@ Router guard - redirecting to login, original path: /settings
 ```
 
 **问题2: 路由导航失败**
+
 ```
 Menu clicked: {name: "设置", link: "/settings", icon: "SettingTwo"}
 Current route: /message
@@ -54,6 +60,7 @@ Error details: [具体错误信息]
 ```
 
 **问题3: 点击事件未触发**
+
 ```
 (没有任何输出)
 ```
@@ -61,7 +68,9 @@ Error details: [具体错误信息]
 ## 解决方案
 
 ### 针对问题1: 用户未登录
+
 **解决方法A: 正常登录**
+
 1. 访问登录页面：`http://localhost:5173/#/auth/login`
 2. 使用测试账号登录：
    - 账号：`13800000001`
@@ -69,17 +78,20 @@ Error details: [具体错误信息]
 
 **解决方法B: 临时设置token（仅用于开发测试）**
 在浏览器控制台执行：
+
 ```javascript
 localStorage.setItem('AUTH_TOKEN', 'temp-token-for-testing')
 location.reload()
 ```
 
 ### 针对问题2: 路由导航失败
+
 1. 检查错误详情中的具体错误信息
 2. 确认设置路由配置是否正确
 3. 检查设置页面组件是否存在
 
 ### 针对问题3: 点击事件未触发
+
 1. 检查菜单组件是否正确渲染
 2. 确认点击的是正确的设置按钮
 3. 检查是否有CSS样式阻止点击事件
@@ -110,6 +122,7 @@ location.reload()
 ## 联系支持
 
 如果按照上述步骤仍无法解决问题，请提供：
+
 1. 浏览器控制台的完整错误信息
 2. 点击设置按钮时的所有控制台输出
 3. 当前的用户登录状态

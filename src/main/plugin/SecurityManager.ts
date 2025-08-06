@@ -1,35 +1,7 @@
 import { dialog } from 'electron'
 import { PluginInstance, PluginType } from './PluginManager'
-
-// 权限类型枚举
-export enum Permission {
-  FILE_SYSTEM_READ = 'filesystem:read',
-  FILE_SYSTEM_WRITE = 'filesystem:write',
-  NETWORK_ACCESS = 'network:access',
-  SYSTEM_INFO = 'system:info',
-  CLIPBOARD = 'clipboard',
-  NOTIFICATIONS = 'notifications',
-  CAMERA = 'camera',
-  MICROPHONE = 'microphone',
-  LOCATION = 'location',
-  STORAGE = 'storage'
-}
-
-// 安全策略配置
-export interface SecurityPolicy {
-  allowedPermissions: Permission[]
-  blockedDomains?: string[]
-  allowedDomains?: string[]
-  maxMemoryUsage?: number // MB
-  maxExecutionTime?: number // 毫秒
-  sandboxed: boolean
-}
-
-// 权限请求结果
-export interface PermissionResult {
-  granted: boolean
-  reason?: string
-}
+import { Permission } from './SecurityManager.d'
+import type { SecurityPolicy, PermissionResult } from './SecurityManager.d'
 
 /**
  * 插件安全管理器
@@ -49,10 +21,7 @@ export class SecurityManager {
   private initializeDefaultPolicies() {
     // 前端插件默认策略（更严格）
     const frontendPolicy: SecurityPolicy = {
-      allowedPermissions: [
-        Permission.STORAGE,
-        Permission.NOTIFICATIONS
-      ],
+      allowedPermissions: [Permission.STORAGE, Permission.NOTIFICATIONS],
       sandboxed: false, // 禁用沙盒以允许preload脚本访问ipcRenderer
       maxMemoryUsage: 100, // 100MB
       maxExecutionTime: 5000 // 5秒
@@ -112,9 +81,12 @@ export class SecurityManager {
   /**
    * 检查插件是否有特定权限
    */
-  public async checkPermission(plugin: PluginInstance, permission: Permission): Promise<PermissionResult> {
+  public async checkPermission(
+    plugin: PluginInstance,
+    permission: Permission
+  ): Promise<PermissionResult> {
     const policy = this.getPluginPolicy(plugin)
-    
+
     // 检查策略是否允许该权限
     if (!policy.allowedPermissions.includes(permission)) {
       return {
@@ -149,7 +121,10 @@ export class SecurityManager {
   /**
    * 请求用户权限授权
    */
-  private async requestUserPermission(plugin: PluginInstance, permission: Permission): Promise<boolean> {
+  private async requestUserPermission(
+    plugin: PluginInstance,
+    permission: Permission
+  ): Promise<boolean> {
     const permissionDescriptions = {
       [Permission.FILE_SYSTEM_READ]: '读取文件系统',
       [Permission.FILE_SYSTEM_WRITE]: '写入文件系统',
@@ -164,7 +139,7 @@ export class SecurityManager {
     }
 
     const description = permissionDescriptions[permission] || permission
-    
+
     const result = await dialog.showMessageBox({
       type: 'question',
       buttons: ['允许', '拒绝'],
@@ -202,11 +177,11 @@ export class SecurityManager {
         Permission.MICROPHONE,
         Permission.LOCATION
       ]
-      
-      const requestedSuspicious = config.permissions.filter(p => 
+
+      const requestedSuspicious = config.permissions.filter((p) =>
         suspiciousPermissions.includes(p as Permission)
       )
-      
+
       if (requestedSuspicious.length > 0) {
         issues.push(`请求了敏感权限: ${requestedSuspicious.join(', ')}`)
       }
@@ -229,7 +204,7 @@ export class SecurityManager {
    */
   public createSandboxConfig(plugin: PluginInstance) {
     const policy = this.getPluginPolicy(plugin)
-    
+
     return {
       nodeIntegration: false,
       contextIsolation: true,
@@ -285,11 +260,11 @@ export class SecurityManager {
    */
   public isUrlAllowed(plugin: PluginInstance, url: string): boolean {
     const policy = this.getPluginPolicy(plugin)
-    
+
     // 如果有黑名单，检查是否在黑名单中
     if (policy.blockedDomains) {
       const hostname = new URL(url).hostname
-      if (policy.blockedDomains.some(domain => hostname.includes(domain))) {
+      if (policy.blockedDomains.some((domain) => hostname.includes(domain))) {
         return false
       }
     }
@@ -297,10 +272,20 @@ export class SecurityManager {
     // 如果有白名单，检查是否在白名单中
     if (policy.allowedDomains) {
       const hostname = new URL(url).hostname
-      return policy.allowedDomains.some(domain => hostname.includes(domain))
+      return policy.allowedDomains.some((domain) => hostname.includes(domain))
     }
 
     // 默认允许（如果没有特殊限制）
     return true
   }
 }
+
+// 重新导出类型定义和枚举
+export {
+  Permission
+} from './SecurityManager.d'
+
+export type {
+  SecurityPolicy,
+  PermissionResult
+} from './SecurityManager.d'

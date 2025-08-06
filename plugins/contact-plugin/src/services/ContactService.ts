@@ -84,7 +84,7 @@ export class ContactService extends EventEmitter {
         url: '/api/v1/contact/list',
         data: { user_id: userId }
       })
-      
+
       if (response.success) {
         return response.data.items || []
       } else {
@@ -105,11 +105,11 @@ export class ContactService extends EventEmitter {
         url: '/api/v1/contact/add',
         data: { user_id: userId, ...data }
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '添加联系人失败')
       }
-      
+
       this.emit('contact:added', data)
     } catch (error) {
       console.error('Failed to add contact:', error)
@@ -118,7 +118,11 @@ export class ContactService extends EventEmitter {
   }
 
   // 修改联系人备注
-  public async updateContactRemark(userId: number, friendId: number, remark: string): Promise<void> {
+  public async updateContactRemark(
+    userId: number,
+    friendId: number,
+    remark: string
+  ): Promise<void> {
     try {
       const response = await window.electronAPI.invoke('plugin-api-call', {
         pluginId: this.pluginId,
@@ -126,11 +130,11 @@ export class ContactService extends EventEmitter {
         url: '/api/v1/contact/edit-remark',
         data: { user_id: userId, friend_id: friendId, remark }
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '修改备注失败')
       }
-      
+
       this.emit('contact:remark-updated', { friendId, remark })
     } catch (error) {
       console.error('Failed to update contact remark:', error)
@@ -147,11 +151,11 @@ export class ContactService extends EventEmitter {
         url: '/api/v1/contact/move-group',
         data: { user_id: userId, friend_id: friendId, group_id: groupId }
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '移动分组失败')
       }
-      
+
       this.emit('contact:group-moved', { friendId, groupId })
     } catch (error) {
       console.error('Failed to move contact group:', error)
@@ -168,11 +172,11 @@ export class ContactService extends EventEmitter {
         url: '/api/v1/contact/delete',
         data: { user_id: userId, friend_id: friendId }
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '删除联系人失败')
       }
-      
+
       this.emit('contact:deleted', { friendId })
     } catch (error) {
       console.error('Failed to delete contact:', error)
@@ -189,7 +193,7 @@ export class ContactService extends EventEmitter {
         url: '/api/v1/contact/group/list',
         data: { user_id: userId }
       })
-      
+
       if (response.success) {
         return response.data.items || []
       } else {
@@ -202,7 +206,10 @@ export class ContactService extends EventEmitter {
   }
 
   // 创建联系人分组
-  public async createContactGroup(userId: number, data: ContactGroupRequest): Promise<{ group_id: number }> {
+  public async createContactGroup(
+    userId: number,
+    data: ContactGroupRequest
+  ): Promise<{ group_id: number }> {
     try {
       const response = await window.electronAPI.invoke('plugin-api-call', {
         pluginId: this.pluginId,
@@ -210,7 +217,7 @@ export class ContactService extends EventEmitter {
         url: '/api/v1/contact/group/create',
         data: { user_id: userId, ...data }
       })
-      
+
       if (response.success) {
         this.emit('contact-group:created', data)
         return response.data
@@ -224,7 +231,11 @@ export class ContactService extends EventEmitter {
   }
 
   // 修改联系人分组
-  public async updateContactGroup(userId: number, groupId: number, data: ContactGroupRequest): Promise<void> {
+  public async updateContactGroup(
+    userId: number,
+    groupId: number,
+    data: ContactGroupRequest
+  ): Promise<void> {
     try {
       const response = await window.electronAPI.invoke('plugin-api-call', {
         pluginId: this.pluginId,
@@ -232,11 +243,11 @@ export class ContactService extends EventEmitter {
         url: '/api/v1/contact/group/update',
         data: { user_id: userId, group_id: groupId, ...data }
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '修改分组失败')
       }
-      
+
       this.emit('contact-group:updated', { groupId, ...data })
     } catch (error) {
       console.error('Failed to update contact group:', error)
@@ -253,11 +264,11 @@ export class ContactService extends EventEmitter {
         url: '/api/v1/contact/group/delete',
         data: { user_id: userId, group_id: groupId }
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '删除分组失败')
       }
-      
+
       this.emit('contact-group:deleted', { groupId })
     } catch (error) {
       console.error('Failed to delete contact group:', error)
@@ -274,7 +285,7 @@ export class ContactService extends EventEmitter {
         url: '/api/v1/contact/apply/records',
         data: { user_id: userId }
       })
-      
+
       if (response.success) {
         return response.data.items || []
       } else {
@@ -295,11 +306,11 @@ export class ContactService extends EventEmitter {
         url: '/api/v1/contact/apply/create',
         data: { user_id: userId, ...data }
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '发送好友申请失败')
       }
-      
+
       this.emit('friend-apply:created', data)
     } catch (error) {
       console.error('Failed to create friend apply:', error)
@@ -308,7 +319,12 @@ export class ContactService extends EventEmitter {
   }
 
   // 处理好友申请
-  public async handleFriendApply(userId: number, applyId: number, action: 'accept' | 'reject', remark?: string): Promise<void> {
+  public async handleFriendApply(
+    userId: number,
+    applyId: number,
+    action: 'accept' | 'reject',
+    remark?: string
+  ): Promise<void> {
     try {
       const response = await window.electronAPI.invoke('plugin-api-call', {
         pluginId: this.pluginId,
@@ -316,11 +332,11 @@ export class ContactService extends EventEmitter {
         url: '/api/v1/contact/apply/handle',
         data: { user_id: userId, apply_id: applyId, action, remark }
       })
-      
+
       if (!response.success) {
         throw new Error(response.error || '处理好友申请失败')
       }
-      
+
       this.emit('friend-apply:handled', { applyId, action, remark })
     } catch (error) {
       console.error('Failed to handle friend apply:', error)
@@ -337,7 +353,7 @@ export class ContactService extends EventEmitter {
         url: '/api/v1/contact/search',
         data: { user_id: userId, keyword }
       })
-      
+
       if (response.success) {
         return response.data.items || []
       } else {
@@ -358,7 +374,7 @@ export class ContactService extends EventEmitter {
         url: '/api/v1/contact/detail',
         data: { user_id: userId, friend_id: friendId }
       })
-      
+
       if (response.success) {
         return response.data
       } else {

@@ -38,17 +38,17 @@ export class P2PInitializer {
   private async doInitialize(): Promise<boolean> {
     try {
       console.log('开始初始化P2P服务...')
-      
+
       const p2pStore = useP2PStore()
       p2pStore.setNetworkStatus('connecting')
-      
+
       // 检查是否在Electron环境中
       if (!window.electron || !window.electron.p2p) {
         console.warn('非Electron环境或electron API未就绪，跳过P2P初始化')
         p2pStore.setNetworkStatus('disconnected')
         return false
       }
-      
+
       // 检查是否启用P2P模式
       const p2pMode = import.meta.env.VITE_P2P_MODE
       if (!p2pMode || p2pMode !== 'true') {
@@ -67,7 +67,7 @@ export class P2PInitializer {
 
       // 连接P2P网络
       await p2pConnect.connect()
-      
+
       // 检查连接状态
       if (!p2pConnect.isConnect()) {
         console.error('P2P网络连接失败')
@@ -78,7 +78,7 @@ export class P2PInitializer {
       // 更新连接状态
       p2pStore.setConnectionStatus(true)
       p2pStore.setNetworkStatus('connected')
-      
+
       // 获取节点ID
       const status = await window.electron.p2p.getStatus()
       if (status.success && status.nodeId) {
@@ -95,7 +95,6 @@ export class P2PInitializer {
       p2pStore.setInitialized(true)
       console.log('P2P服务初始化成功')
       return true
-
     } catch (error) {
       console.error('P2P初始化失败:', error)
       const p2pStore = useP2PStore()
@@ -179,10 +178,10 @@ export class P2PInitializer {
     try {
       // 同步联系人数据
       await this.syncContacts()
-      
+
       // 同步未读消息
       await this.syncMessages()
-      
+
       console.log('初始数据同步完成')
     } catch (error) {
       console.error('初始数据同步失败:', error)

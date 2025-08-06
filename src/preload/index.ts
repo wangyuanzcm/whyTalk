@@ -11,14 +11,14 @@ const electronAPI = {
     on: ipcRenderer.on.bind(ipcRenderer),
     removeAllListeners: ipcRenderer.removeAllListeners.bind(ipcRenderer)
   },
-  
+
   // P2P相关API
   p2p: {
     // 服务控制
     start: () => ipcRenderer.invoke('p2p:start'),
     stop: () => ipcRenderer.invoke('p2p:stop'),
-    getStatus: () => ipcRenderer.invoke('p2p:getStatus'),
-    
+    getStatus: () => ipcRenderer.invoke('p2p:status'),
+
     // 消息相关
     sendDirectMessage: (params: any) => ipcRenderer.invoke('p2p:sendDirectMessage', params),
     sendGroupMessage: (params: any) => ipcRenderer.invoke('p2p:sendGroupMessage', params),
@@ -27,7 +27,7 @@ const electronAPI = {
     markMessagesAsRead: (params: any) => ipcRenderer.invoke('p2p:markMessagesAsRead', params),
     deleteMessage: (params: any) => ipcRenderer.invoke('p2p:deleteMessage', params),
     recallMessage: (params: any) => ipcRenderer.invoke('p2p:recallMessage', params),
-    
+
     // 联系人相关
     addContact: (params: any) => ipcRenderer.invoke('p2p:addContact', params),
     getContacts: () => ipcRenderer.invoke('p2p:getContacts'),
@@ -36,7 +36,7 @@ const electronAPI = {
     searchContacts: (params: any) => ipcRenderer.invoke('p2p:searchContacts', params),
     getContactRequests: () => ipcRenderer.invoke('p2p:getContactRequests'),
     handleContactRequest: (params: any) => ipcRenderer.invoke('p2p:handleContactRequest', params),
-    
+
     // 群组相关
     createGroup: (params: any) => ipcRenderer.invoke('p2p:createGroup', params),
     getGroups: () => ipcRenderer.invoke('p2p:getGroups'),
@@ -44,15 +44,16 @@ const electronAPI = {
     leaveGroup: (params: any) => ipcRenderer.invoke('p2p:leaveGroup', params),
     getGroupMembers: (params: any) => ipcRenderer.invoke('p2p:getGroupMembers', params),
     inviteToGroup: (params: any) => ipcRenderer.invoke('p2p:inviteToGroup', params),
-    
+
     // 节点发现
     getDiscoveredPeers: () => ipcRenderer.invoke('p2p:getDiscoveredPeers'),
     getConnectedPeers: () => ipcRenderer.invoke('p2p:getConnectedPeers'),
-    
+
     // 同步相关
     getUnsyncedMessages: () => ipcRenderer.invoke('p2p:getUnsyncedMessages'),
     getContactChanges: () => ipcRenderer.invoke('p2p:getContactChanges'),
-    broadcastContactChanges: (changes: any) => ipcRenderer.invoke('p2p:broadcastContactChanges', changes)
+    broadcastContactChanges: (changes: any) =>
+      ipcRenderer.invoke('p2p:broadcastContactChanges', changes)
   }
 }
 

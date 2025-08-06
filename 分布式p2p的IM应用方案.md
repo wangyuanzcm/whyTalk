@@ -6,14 +6,14 @@
 
 ## ✅ 改造目标简述
 
-| 模块    | 当前           | 改造后                   |
-| ----- | ------------ | --------------------- |
-| 服务端语言 | Go 服务        | Node.js 嵌入 Electron 中 |
-| 服务部署  | 集中式后端        | 本地 Node 服务（每个客户端即服务）  |
-| 用户认证  | 登录系统         | 公私钥身份，自认证             |
-| 消息传输  | 中心转发         | P2P 分发（如 libp2p）      |
-| 用户发现  | 注册登录 + 服务器分发 | 局域网自动发现（UDP、mDNS）     |
-| 数据存储  | 数据库后端        | SQLite 或 JSON 本地存储    |
+| 模块       | 当前                  | 改造后                             |
+| ---------- | --------------------- | ---------------------------------- |
+| 服务端语言 | Go 服务               | Node.js 嵌入 Electron 中           |
+| 服务部署   | 集中式后端            | 本地 Node 服务（每个客户端即服务） |
+| 用户认证   | 登录系统              | 公私钥身份，自认证                 |
+| 消息传输   | 中心转发              | P2P 分发（如 libp2p）              |
+| 用户发现   | 注册登录 + 服务器分发 | 局域网自动发现（UDP、mDNS）        |
+| 数据存储   | 数据库后端            | SQLite 或 JSON 本地存储            |
 
 ---
 
@@ -24,8 +24,8 @@
 |     Electron App    |  ← UI
 |  ┌────────────────┐ |
 |  |  Node.js 后端   |  ← P2P 节点服务
-|  |  - 身份认证     | 
-|  |  - 消息传输     | 
+|  |  - 身份认证     |
+|  |  - 消息传输     |
 |  |  - 网络发现     |
 |  └────────────────┘ |
 +---------------------+
@@ -40,13 +40,13 @@
 
 ## ✅ 技术选型建议（Electron + Node）
 
-| 功能           | 方案                                                 |
-| ------------ | -------------------------------------------------- |
+| 功能             | 方案                                               |
+| ---------------- | -------------------------------------------------- |
 | **P2P 网络协议** | [libp2p (js)](https://github.com/libp2p/js-libp2p) |
-| **身份认证**     | `ed25519` 公私钥生成 + 签名                               |
-| **节点发现**     | mDNS（局域网）+ WebRTC + Gossip                         |
-| **消息加密**     | Libp2p 的 Noise/AES 协议（端对端）                         |
-| **本地数据存储**   | SQLite（如 `better-sqlite3`）或 `lowdb`                |
+| **身份认证**     | `ed25519` 公私钥生成 + 签名                        |
+| **节点发现**     | mDNS（局域网）+ WebRTC + Gossip                    |
+| **消息加密**     | Libp2p 的 Noise/AES 协议（端对端）                 |
+| **本地数据存储** | SQLite（如 `better-sqlite3`）或 `lowdb`            |
 
 ---
 
@@ -54,17 +54,17 @@
 
 ### 1. ✅ 用户身份系统
 
-* 安装应用时，自动生成公私钥对
-* 保存到本地（加密存储）
-* 用 base58(公钥) 作为唯一 ID
-* UI 展示为昵称 + ID（支持扫码添加好友）
+- 安装应用时，自动生成公私钥对
+- 保存到本地（加密存储）
+- 用 base58(公钥) 作为唯一 ID
+- UI 展示为昵称 + ID（支持扫码添加好友）
 
 ---
 
 ### 2. ✅ 网络发现模块（内嵌 nodejs 实现）
 
-* 使用 `libp2p` 的 `mDNS` 模块发现本地节点
-* 或用 `dgram` 模块定期 UDP 广播身份
+- 使用 `libp2p` 的 `mDNS` 模块发现本地节点
+- 或用 `dgram` 模块定期 UDP 广播身份
 
 ```js
 // 例子：广播自己的身份信息
@@ -94,13 +94,13 @@ const node = await createLibp2p({
   transports: [webSockets()],
   streamMuxers: [mplex()],
   connectionEncryption: [noise()],
-  peerDiscovery: [mdns()],
+  peerDiscovery: [mdns()]
 })
 ```
 
-* 每个用户启动时成为一个节点
-* 自动发现邻居
-* 可通过 `libp2p pubsub` 实现群聊
+- 每个用户启动时成为一个节点
+- 自动发现邻居
+- 可通过 `libp2p pubsub` 实现群聊
 
 ---
 
@@ -108,9 +108,9 @@ const node = await createLibp2p({
 
 推荐：
 
-* 聊天记录存 SQLite
-* 好友列表存 JSON 或数据库
-* 每条消息结构如下：
+- 聊天记录存 SQLite
+- 好友列表存 JSON 或数据库
+- 每条消息结构如下：
 
 ```json
 {
@@ -145,10 +145,10 @@ await window.electron.ipcRenderer.invoke('send-message', { to, msg })
 
 ## ✅ 安全建议
 
-* 使用 libp2p 内建加密层（Noise）
-* 每条消息签名防伪
-* 每次通信需附带 nonce 防重放攻击
-* 私钥加密存储（可用 keytar 或加密文件）
+- 使用 libp2p 内建加密层（Noise）
+- 每条消息签名防伪
+- 每次通信需附带 nonce 防重放攻击
+- 私钥加密存储（可用 keytar 或加密文件）
 
 ---
 
@@ -164,8 +164,8 @@ await window.electron.ipcRenderer.invoke('send-message', { to, msg })
 
 ## ✅ 示例参考项目
 
-* [`js-libp2p-webrtc-pubsub-chat`](https://github.com/libp2p/js-libp2p-examples/tree/master/webrtc-in-browser)
-* [`simple-p2p-chat-electron`](https://github.com/tavendo/simple-p2p-chat-electron)（早期 demo）
+- [`js-libp2p-webrtc-pubsub-chat`](https://github.com/libp2p/js-libp2p-examples/tree/master/webrtc-in-browser)
+- [`simple-p2p-chat-electron`](https://github.com/tavendo/simple-p2p-chat-electron)（早期 demo）
 
 ---
 
@@ -263,7 +263,7 @@ export class IdentityService {
   // 生成新身份
   private async generateNewIdentity(): Promise<P2PIdentity> {
     const peerId = await createEd25519PeerId()
-    
+
     return {
       peerId: peerId.toString(),
       publicKey: peerId.publicKey ? Buffer.from(peerId.publicKey).toString('base64') : '',
@@ -351,7 +351,7 @@ export class AuthService {
 
     // 生成本地会话令牌
     const accessToken = this.generateP2PToken(identity.peerId)
-    
+
     const userInfo: User = {
       id: 1, // P2P模式下使用固定ID
       mobile: identity.peerId,
@@ -433,15 +433,9 @@ export class P2PManager extends EventEmitter {
       // 创建libp2p节点
       this.node = await createLibp2p({
         addresses: {
-          listen: [
-            '/ip4/0.0.0.0/tcp/0',
-            '/ip4/0.0.0.0/tcp/0/ws'
-          ]
+          listen: ['/ip4/0.0.0.0/tcp/0', '/ip4/0.0.0.0/tcp/0/ws']
         },
-        transports: [
-          tcp(),
-          webSockets()
-        ],
+        transports: [tcp(), webSockets()],
         streamMuxers: [mplex()],
         connectionEncryption: [noise()],
         peerDiscovery: [
@@ -521,16 +515,16 @@ export class P2PManager extends EventEmitter {
   // 获取连接的节点列表
   public getConnectedPeers(): string[] {
     if (!this.node) return []
-    return this.node.getPeers().map(peer => peer.toString())
+    return this.node.getPeers().map((peer) => peer.toString())
   }
 
   // 获取节点信息
   public getNodeInfo() {
     if (!this.node) return null
-    
+
     return {
       peerId: this.node.peerId.toString(),
-      addresses: this.node.getMultiaddrs().map(addr => addr.toString()),
+      addresses: this.node.getMultiaddrs().map((addr) => addr.toString()),
       connections: this.getConnectedPeers().length
     }
   }
@@ -585,7 +579,7 @@ export class Discovery extends EventEmitter {
   // 启动UDP广播发现
   public async startUDPDiscovery(): Promise<void> {
     this.udpSocket = dgram.createSocket('udp4')
-    
+
     // 监听广播消息
     this.udpSocket.on('message', (msg, rinfo) => {
       this.handleBroadcastMessage(msg, rinfo)
@@ -633,11 +627,11 @@ export class Discovery extends EventEmitter {
       peerId: this.node.peerId.toString(),
       nickname: 'WhyTalk用户', // 从身份服务获取
       timestamp: Date.now(),
-      addresses: this.node.getMultiaddrs().map(addr => addr.toString())
+      addresses: this.node.getMultiaddrs().map((addr) => addr.toString())
     }
 
     const buffer = Buffer.from(JSON.stringify(message))
-    
+
     this.udpSocket.send(buffer, 0, buffer.length, this.BROADCAST_PORT, '255.255.255.255', (err) => {
       if (err) {
         console.error('Failed to broadcast presence:', err)
@@ -649,7 +643,7 @@ export class Discovery extends EventEmitter {
   private handleBroadcastMessage(msg: Buffer, rinfo: dgram.RemoteInfo): void {
     try {
       const message = JSON.parse(msg.toString())
-      
+
       if (message.type === 'presence' && message.peerId !== this.node?.peerId.toString()) {
         const peer: DiscoveredPeer = {
           peerId: message.peerId,
@@ -661,7 +655,7 @@ export class Discovery extends EventEmitter {
 
         this.discoveredPeers.set(message.peerId, peer)
         this.emit('peer:discovered', peer)
-        
+
         console.log('Discovered peer via UDP:', peer)
       }
     } catch (error) {
@@ -736,7 +730,10 @@ export class P2PMessageService extends EventEmitter {
   }
 
   // 发送点对点消息
-  public async sendDirectMessage(targetPeerId: string, message: Omit<P2PMessage, 'from' | 'timestamp' | 'signature'>): Promise<void> {
+  public async sendDirectMessage(
+    targetPeerId: string,
+    message: Omit<P2PMessage, 'from' | 'timestamp' | 'signature'>
+  ): Promise<void> {
     if (!this.node || !this.identityService) {
       throw new Error('P2P Message Service not initialized')
     }
@@ -756,7 +753,7 @@ export class P2PMessageService extends EventEmitter {
     try {
       // 获取目标节点的连接
       const stream = await this.node.dialProtocol(targetPeerId, this.PROTOCOL)
-      
+
       // 发送消息
       const messageData = new TextEncoder().encode(JSON.stringify(fullMessage))
       await stream.sink([messageData])
@@ -774,7 +771,10 @@ export class P2PMessageService extends EventEmitter {
   }
 
   // 发送群组消息
-  public async sendGroupMessage(groupId: string, message: Omit<P2PMessage, 'from' | 'timestamp' | 'signature' | 'groupId'>): Promise<void> {
+  public async sendGroupMessage(
+    groupId: string,
+    message: Omit<P2PMessage, 'from' | 'timestamp' | 'signature' | 'groupId'>
+  ): Promise<void> {
     if (!this.node || !this.identityService) {
       throw new Error('P2P Message Service not initialized')
     }
@@ -795,7 +795,7 @@ export class P2PMessageService extends EventEmitter {
     try {
       const topic = this.GROUP_TOPIC_PREFIX + groupId
       const messageData = new TextEncoder().encode(JSON.stringify(fullMessage))
-      
+
       // 通过pubsub发布群组消息
       await this.node.services.pubsub.publish(topic, messageData)
 
@@ -814,7 +814,7 @@ export class P2PMessageService extends EventEmitter {
   private async handleIncomingMessage({ stream }): Promise<void> {
     try {
       const chunks: Uint8Array[] = []
-      
+
       for await (const chunk of stream.source) {
         chunks.push(chunk.subarray())
       }
@@ -833,7 +833,7 @@ export class P2PMessageService extends EventEmitter {
       if (await this.verifyMessage(message)) {
         // 保存到本地数据库
         await this.saveMessage(message)
-        
+
         this.emit('message:received', message)
         console.log('Direct message received from:', message.from)
       } else {
@@ -866,7 +866,7 @@ export class P2PMessageService extends EventEmitter {
       if (await this.verifyMessage(message)) {
         // 保存到本地数据库
         await this.saveMessage(message)
-        
+
         this.emit('message:received', message)
         console.log('Group message received from:', message.from)
       } else {
@@ -910,14 +910,14 @@ export class P2PMessageService extends EventEmitter {
   // 保存消息到数据库
   private async saveMessage(message: P2PMessage): Promise<void> {
     const db = databaseManager.getDatabase()
-    
+
     try {
       const stmt = db.prepare(`
         INSERT OR REPLACE INTO p2p_messages 
         (id, from_peer, to_peer, type, content, timestamp, signature, group_id)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `)
-      
+
       stmt.run(
         message.id,
         message.from,
@@ -1036,11 +1036,11 @@ export class ServiceManager {
 
     try {
       console.log('Initializing services...')
-      
+
       // 确保必要的目录存在
       ensureDirectories()
       console.log('Directories ensured')
-      
+
       // 初始化数据库
       await databaseManager.initialize()
       console.log('Database initialized')
@@ -1048,11 +1048,11 @@ export class ServiceManager {
       // 初始化P2P网络
       await this.p2pManager.start()
       console.log('P2P network started')
-      
+
       // 启动定时任务
       this.startScheduledTasks()
       console.log('Scheduled tasks started')
-      
+
       this.isInitialized = true
       console.log('All services initialized successfully')
     } catch (error) {
@@ -1068,16 +1068,16 @@ export class ServiceManager {
 
     try {
       console.log('Shutting down services...')
-      
+
       // 停止P2P网络
       await this.p2pManager.stop()
-      
+
       // 停止定时任务
       this.stopScheduledTasks()
-      
+
       // 关闭数据库连接
       await databaseManager.close()
-      
+
       this.isInitialized = false
       console.log('All services shut down successfully')
     } catch (error) {
@@ -1128,7 +1128,7 @@ export class IPCHandler {
       const { targetPeerId, type, content } = data
       const p2pManager = serviceManager.getP2PManager()
       const messageService = p2pManager.getMessageService()
-      
+
       await messageService.sendDirectMessage(targetPeerId, {
         id: generateMessageId(),
         to: targetPeerId,
@@ -1157,7 +1157,7 @@ export class IPCHandler {
       const { groupId } = data
       const p2pManager = serviceManager.getP2PManager()
       const messageService = p2pManager.getMessageService()
-      
+
       await messageService.joinGroup(groupId)
 
       return {
@@ -1223,11 +1223,7 @@ const p2pLogin = async () => {
   <div class="p2p-discovery">
     <h3>发现的节点</h3>
     <div class="peer-list">
-      <div 
-        v-for="peer in discoveredPeers" 
-        :key="peer.peerId"
-        class="peer-item"
-      >
+      <div v-for="peer in discoveredPeers" :key="peer.peerId" class="peer-item">
         <div class="peer-info">
           <div class="peer-name">{{ peer.nickname }}</div>
           <div class="peer-id">{{ peer.peerId.slice(-8) }}</div>
@@ -1289,29 +1285,28 @@ const { serviceManager } = require('./out/main/services')
 
 async function testP2P() {
   await app.whenReady()
-  
+
   try {
     // 初始化服务
     await serviceManager.initialize()
     console.log('Services initialized')
-    
+
     // 获取P2P管理器
     const p2pManager = serviceManager.getP2PManager()
-    
+
     // 监听节点连接事件
     p2pManager.on('peer:connect', (peerId) => {
       console.log('New peer connected:', peerId.toString())
     })
-    
+
     // 监听消息接收事件
     const messageService = p2pManager.getMessageService()
     messageService.on('message:received', (message) => {
       console.log('Message received:', message)
     })
-    
+
     console.log('P2P test setup complete')
     console.log('Node info:', p2pManager.getNodeInfo())
-    
   } catch (error) {
     console.error('P2P test failed:', error)
   }
@@ -1331,16 +1326,16 @@ testP2P()
 
 ## 🎯 实施时间线
 
-| 阶段 | 预计时间 | 主要任务 |
-|------|----------|----------|
-| 阶段一 | 1-2天 | 依赖安装、目录结构搭建 |
-| 阶段二 | 2-3天 | 身份系统改造 |
-| 阶段三 | 3-4天 | P2P网络服务搭建 |
-| 阶段四 | 4-5天 | 消息系统改造 |
-| 阶段五 | 1-2天 | 数据库架构扩展 |
-| 阶段六 | 2-3天 | 服务集成与IPC接口 |
-| 阶段七 | 3-4天 | 前端界面适配 |
-| 阶段八 | 2-3天 | 测试与优化 |
+| 阶段   | 预计时间 | 主要任务               |
+| ------ | -------- | ---------------------- |
+| 阶段一 | 1-2天    | 依赖安装、目录结构搭建 |
+| 阶段二 | 2-3天    | 身份系统改造           |
+| 阶段三 | 3-4天    | P2P网络服务搭建        |
+| 阶段四 | 4-5天    | 消息系统改造           |
+| 阶段五 | 1-2天    | 数据库架构扩展         |
+| 阶段六 | 2-3天    | 服务集成与IPC接口      |
+| 阶段七 | 3-4天    | 前端界面适配           |
+| 阶段八 | 2-3天    | 测试与优化             |
 
 **总计**: 约 18-26 天
 
@@ -1358,7 +1353,7 @@ testP2P()
 
 如你希望，我可以：
 
-* 帮你生成一个 `Electron + libp2p` 的 P2P 通信 Demo 项目
-* 或输出第一步的代码模板（身份模块 + 网络发现）
+- 帮你生成一个 `Electron + libp2p` 的 P2P 通信 Demo 项目
+- 或输出第一步的代码模板（身份模块 + 网络发现）
 
 是否要我先帮你出一个 PoC 模板项目？你希望使用 TypeScript 还是纯 JS？

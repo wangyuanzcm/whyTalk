@@ -13,7 +13,7 @@ const store = useUserStore()
         {{ store.nickname || '未设置昵称' }}
       </div>
 
-      <div class="gender" v-show="store.gender > 0">
+      <div v-show="store.gender > 0" class="gender">
         <n-icon v-if="store.gender == 1" :component="Male" color="#ffffff" />
         <n-icon v-if="store.gender == 2" :component="Female" color="#ffffff" />
       </div>

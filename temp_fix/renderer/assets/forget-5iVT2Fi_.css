@@ -3,7 +3,8 @@
   width: 200px;
   height: 38px;
   font-size: 34px;
-  font-family: Times New Roman,
+  font-family:
+    Times New Roman,
     Georgia,
     Serif;
   color: #2196f3;
@@ -72,9 +73,9 @@
   cursor: pointer;
 }
 @media screen and (max-height: 500px) {
-.copyright[data-v-71fb473f] {
+  .copyright[data-v-71fb473f] {
     display: none;
-}
+  }
 }
 .fly-box .fly[data-v-71fb473f] {
   pointer-events: none;
@@ -118,15 +119,15 @@
   animation: move-71fb473f 3.5s linear infinite;
 }
 @keyframes move-71fb473f {
-0% {
+  0% {
     transform: translateY(0px);
-}
-50% {
+  }
+  50% {
     transform: translateY(25px);
-}
-100% {
+  }
+  100% {
     transform: translateY(0px);
-}
+  }
 }
 html[theme-mode='dark'] .login-box[data-v-71fb473f] {
   border: 1px solid #393939;

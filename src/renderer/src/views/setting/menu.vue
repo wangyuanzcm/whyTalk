@@ -18,7 +18,7 @@ const coreMenuItems = [
   { id: 'register', name: '注册', icon: 'UserAdd', path: '/auth/register', core: true },
   { id: 'workspace', name: '工作台', icon: 'Application', path: '/workspace', core: true },
   { id: 'settings', name: '设置', icon: 'SettingTwo', path: '/settings', core: true },
-  { id: 'p2p', name: 'P2P网络', icon: 'Connection', path: '/p2p', core: true }
+  { id: 'p2p', name: '网络', icon: 'Connection', path: '/p2p', core: true }
 ]
 
 // 可插件化的功能（将被移除的核心功能）
@@ -34,7 +34,7 @@ const loadPlugins = async () => {
   try {
     const result = await PluginAPI.listPlugins()
     if (result.success && result.plugins) {
-      plugins.value = result.plugins.filter(plugin => plugin.enabled)
+      plugins.value = result.plugins.filter((plugin) => plugin.enabled)
     } else {
       message.error(result.error || '加载插件列表失败')
     }
@@ -85,14 +85,14 @@ const resetToDefault = () => {
 // 计算属性：按顺序排列的启用插件
 const orderedEnabledPlugins = computed(() => {
   return menuStore.menuConfig.pluginOrder
-    .map(id => plugins.value.find(p => p.id === id))
+    .map((id) => plugins.value.find((p) => p.id === id))
     .filter(Boolean) as PluginInfo[]
 })
 
 // 计算属性：按顺序排列的核心菜单项
 const orderedCoreMenuItems = computed(() => {
   return menuStore.menuConfig.coreMenuOrder
-    .map(id => coreMenuItems.find(item => item.id === id))
+    .map((id) => coreMenuItems.find((item) => item.id === id))
     .filter(Boolean) as typeof coreMenuItems
 })
 
@@ -123,7 +123,7 @@ onMounted(() => {
             </div>
           </div>
         </div>
-        
+
         <div class="plugin-features">
           <h5>插件化功能（将移除）</h5>
           <div class="feature-list">
@@ -140,12 +140,12 @@ onMounted(() => {
     <!-- 插件菜单配置 -->
     <div class="plugin-menu-config">
       <h4>🔧 插件菜单配置</h4>
-      
+
       <NSpin :show="loading">
         <div v-if="plugins.length === 0 && !loading" class="empty-state">
           <NEmpty description="暂无可用插件">
             <template #extra>
-              <NButton @click="loadPlugins" type="primary">刷新</NButton>
+              <NButton type="primary" @click="loadPlugins">刷新</NButton>
             </template>
           </NEmpty>
         </div>
@@ -162,9 +162,9 @@ onMounted(() => {
               <p class="plugin-description">{{ plugin.config?.description || '无描述' }}</p>
               <p class="plugin-version">版本: {{ plugin.config?.version || '未知' }}</p>
             </div>
-            
+
             <div class="plugin-controls">
-              <NSwitch 
+              <NSwitch
                 :value="isPluginEnabledInMenu(plugin.id)"
                 @update:value="(val) => togglePluginInMenu(plugin.id, val)"
               />
@@ -179,7 +179,7 @@ onMounted(() => {
     <div class="core-menu-order-config">
       <h4>🎯 核心菜单顺序</h4>
       <p class="order-description">调整核心菜单项在菜单中的显示顺序</p>
-      
+
       <div class="order-list">
         <div v-for="(item, index) in orderedCoreMenuItems" :key="item.id" class="order-item">
           <div class="order-info">
@@ -188,17 +188,13 @@ onMounted(() => {
             <span class="order-name">{{ item.name }}</span>
             <NTag type="success" size="tiny">核心</NTag>
           </div>
-          
+
           <div class="order-controls">
-            <NButton 
-              size="small" 
-              :disabled="index === 0"
-              @click="moveCoreMenu(item.id, 'up')"
-            >
+            <NButton size="small" :disabled="index === 0" @click="moveCoreMenu(item.id, 'up')">
               ↑
             </NButton>
-            <NButton 
-              size="small" 
+            <NButton
+              size="small"
               :disabled="index === orderedCoreMenuItems.length - 1"
               @click="moveCoreMenu(item.id, 'down')"
             >
@@ -213,7 +209,7 @@ onMounted(() => {
     <div v-if="orderedEnabledPlugins.length > 0" class="menu-order-config">
       <h4>📋 插件菜单顺序</h4>
       <p class="order-description">拖拽或使用按钮调整插件在菜单中的显示顺序</p>
-      
+
       <div class="order-list">
         <div v-for="(plugin, index) in orderedEnabledPlugins" :key="plugin.id" class="order-item">
           <div class="order-info">
@@ -221,17 +217,13 @@ onMounted(() => {
             <span class="order-number">{{ index + 1 }}</span>
             <span class="order-name">{{ plugin.config?.name || plugin.id }}</span>
           </div>
-          
+
           <div class="order-controls">
-            <NButton 
-              size="small" 
-              :disabled="index === 0"
-              @click="movePlugin(plugin.id, 'up')"
-            >
+            <NButton size="small" :disabled="index === 0" @click="movePlugin(plugin.id, 'up')">
               ↑
             </NButton>
-            <NButton 
-              size="small" 
+            <NButton
+              size="small"
               :disabled="index === orderedEnabledPlugins.length - 1"
               @click="movePlugin(plugin.id, 'down')"
             >
@@ -245,15 +237,9 @@ onMounted(() => {
     <!-- 操作按钮 -->
     <div class="action-buttons">
       <NSpace>
-        <NButton type="primary" @click="saveMenuConfig">
-          保存配置
-        </NButton>
-        <NButton @click="resetToDefault">
-          重置为默认
-        </NButton>
-        <NButton @click="loadPlugins">
-          刷新插件列表
-        </NButton>
+        <NButton type="primary" @click="saveMenuConfig"> 保存配置 </NButton>
+        <NButton @click="resetToDefault"> 重置为默认 </NButton>
+        <NButton @click="loadPlugins"> 刷新插件列表 </NButton>
       </NSpace>
     </div>
 
@@ -268,7 +254,7 @@ onMounted(() => {
             <span>{{ item.name }}</span>
             <NTag type="success" size="tiny">核心</NTag>
           </div>
-          
+
           <!-- 插件菜单项（按配置顺序） -->
           <div v-for="plugin in orderedEnabledPlugins" :key="plugin.id" class="preview-item plugin">
             <Application :size="16" />

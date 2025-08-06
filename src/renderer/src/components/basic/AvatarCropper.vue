@@ -98,7 +98,7 @@ const onSubmit = () => {
   <n-modal v-model:show="state.show" :on-after-leave="onMaskClick">
     <n-card style="width: 800px" title="选择头像" :bordered="false" class="modal-radius">
       <template #header-extra>
-        <n-icon size="22" :component="Close" @click="state.show = false" class="pointer" />
+        <n-icon size="22" :component="Close" class="pointer" @click="state.show = false" />
       </template>
 
       <div class="content">
@@ -123,7 +123,7 @@ const onSubmit = () => {
         </div>
         <div class="view">
           <div class="preview">
-            <img :src="option.preview" v-show="option.preview" />
+            <img v-show="option.preview" :src="option.preview" />
           </div>
         </div>
       </div>
@@ -140,7 +140,7 @@ const onSubmit = () => {
               padding: 0 5px;
             "
           >
-            <n-button @click="onTriggerUpload" type="primary" ghost>
+            <n-button type="primary" ghost @click="onTriggerUpload">
               上传图片
               <template #icon>
                 <n-icon :component="UploadOne" />

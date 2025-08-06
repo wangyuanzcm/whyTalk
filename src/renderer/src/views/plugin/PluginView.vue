@@ -17,8 +17,8 @@
         ref="pluginFrame"
         :src="pluginUrl"
         class="plugin-iframe"
-        @load="onPluginLoad"
         sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+        @load="onPluginLoad"
       ></iframe>
     </div>
   </div>
@@ -50,7 +50,7 @@ const loadPlugin = async () => {
   try {
     loading.value = true
     error.value = ''
-    
+
     const result = await PluginAPI.loadFrontendPlugin(pluginId.value)
     if (result.success) {
       pluginData.value = result.data
@@ -88,7 +88,7 @@ const handlePluginMessage = (event: MessageEvent) => {
   }
 
   const { type, data } = event.data
-  
+
   switch (type) {
     case 'PLUGIN_READY':
       console.log(`Plugin ${pluginId.value} is ready`)

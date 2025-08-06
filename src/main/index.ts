@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -25,7 +25,6 @@ function createWindow(): void {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
-    
     // 在开发模式下打开开发者工具
     if (is.dev) {
       mainWindow.webContents.openDevTools()
@@ -64,27 +63,21 @@ app.whenReady().then(async () => {
     // 初始化服务
     await serviceManager.initialize()
     console.log('Services initialized successfully')
-    
+
     // 创建测试用户（如果不存在）
     await createTestUserIfNotExists()
   } catch (error) {
-    console.error('Failed to initialize services:', error instanceof Error ? error.message : String(error))
+    console.error(
+      'Failed to initialize services:',
+      error instanceof Error ? error.message : String(error)
+    )
     app.quit()
     return
   }
 
-  // IPC test
-  ipcMain.handle('ping', () => 'pong')
-
   createWindow()
-  
-  // 注意：createWindow 不返回窗口实例，所以我们需要在创建后获取
-  // 设置主窗口到服务管理器（用于P2P事件转发）
-  // serviceManager.setMainWindow(mainWindow)
-
+  // 针对mac用户：应用关闭所有窗口后仍保持运行，点击图标可重新打开窗口
   app.on('activate', function () {
-    // On macOS it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 
@@ -108,7 +101,10 @@ app.on('before-quit', async () => {
     await serviceManager.shutdown()
     console.log('Services shut down successfully')
   } catch (error) {
-    console.error('Failed to shutdown services:', error instanceof Error ? error.message : String(error))
+    console.error(
+      'Failed to shutdown services:',
+      error instanceof Error ? error.message : String(error)
+    )
   }
 })
 
@@ -116,7 +112,7 @@ app.on('before-quit', async () => {
 async function createTestUserIfNotExists(): Promise<void> {
   try {
     const db = databaseManager.getDatabase()
-    
+
     // 定义所有测试用户
     const testUsers = [
       { nickname: '测试用户', mobile: '13800138000', password: '123456' },
@@ -125,20 +121,20 @@ async function createTestUserIfNotExists(): Promise<void> {
       { nickname: 'Charlie', mobile: '13800138003', password: '123456' },
       { nickname: 'Diana', mobile: '13800138004', password: '123456' }
     ]
-    
+
     console.log('========================================')
     console.log('检查和创建测试用户')
     console.log('========================================')
-    
+
     for (const userConfig of testUsers) {
       const { nickname, mobile, password } = userConfig
-      
+
       // 检查用户是否已存在
       const existingUser = db.prepare('SELECT * FROM users WHERE mobile = ?').get(mobile) as any
-      
+
       if (!existingUser) {
         console.log(`创建用户: ${nickname} (${mobile})`)
-        
+
         try {
           const registerRequest = {
             nickname: nickname,
@@ -147,21 +143,24 @@ async function createTestUserIfNotExists(): Promise<void> {
             platform: 'desktop',
             sms_code: '123456' // 这个会被跳过验证
           }
-          
+
           await authService.register(registerRequest)
           console.log(`✓ 用户 ${nickname} 创建成功`)
         } catch (error) {
-          console.error(`✗ 创建用户 ${nickname} 失败:`, error instanceof Error ? error.message : String(error))
+          console.error(
+            `✗ 创建用户 ${nickname} 失败:`,
+            error instanceof Error ? error.message : String(error)
+          )
         }
       } else {
         console.log(`✓ 用户 ${nickname} 已存在 (ID: ${existingUser.id})`)
       }
     }
-    
+
     console.log('========================================')
     console.log('测试用户创建完成')
     console.log('========================================')
-    
+
     // 测试第一个用户的登录
     console.log('Testing login with first test user...')
     try {
@@ -173,18 +172,23 @@ async function createTestUserIfNotExists(): Promise<void> {
       const loginResult = await authService.login(loginRequest)
       console.log('Login test successful:', loginResult.user.nickname)
     } catch (loginError) {
-      console.error('Login test failed:', loginError instanceof Error ? loginError.message : String(loginError))
+      console.error(
+        'Login test failed:',
+        loginError instanceof Error ? loginError.message : String(loginError)
+      )
     }
-    
+
     // 输出所有可用的登录账号
     console.log('\n可用的登录账号:')
     for (const userConfig of testUsers) {
       console.log(`  ${userConfig.nickname}: ${userConfig.mobile} / 密码: ${userConfig.password}`)
     }
     console.log('========================================')
-    
   } catch (error) {
-    console.error('Failed to create test users:', error instanceof Error ? error.message : String(error))
+    console.error(
+      'Failed to create test users:',
+      error instanceof Error ? error.message : String(error)
+    )
   }
 }
 

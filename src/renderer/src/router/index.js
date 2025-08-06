@@ -3,9 +3,9 @@ import { isLogin } from '@/utils/auth.ts'
 import MainLayout from '@/layout/MainLayout.vue'
 
 import SettingRouter from './modules/setting.js'
-import ContactRouter from './modules/contact.js'
 import AuthRouter from './modules/auth.js'
 import P2PRouter from './modules/p2p.js'
+// ContactRouter 已迁移到插件中
 
 const routes = [
   {
@@ -15,18 +15,7 @@ const routes = [
     component: MainLayout,
     redirect: '/workspace',
     children: [
-      {
-        path: '/message',
-        name: 'message',
-        meta: { auth: true },
-        component: () => import('@/views/message/index.vue')
-      },
-      {
-        path: '/note',
-        name: 'note',
-        meta: { auth: true },
-        component: () => import('@/views/note/index.vue')
-      },
+      // 消息和笔记功能已迁移到插件中
       {
         path: '/example',
         name: 'example',
@@ -45,8 +34,8 @@ const routes = [
         component: () => import('@/views/plugin/PluginView.vue')
       },
       SettingRouter,
-      ContactRouter,
       P2PRouter
+      // ContactRouter 已迁移到插件中
     ]
   },
   AuthRouter,
@@ -76,7 +65,7 @@ router.beforeEach((to) => {
       query: { redirect: to.fullPath }
     }
   }
-  
+
   // 处理根路径重定向到用户设置的默认页面
   if (to.path === '/') {
     // 延迟导入store以避免初始化顺序问题

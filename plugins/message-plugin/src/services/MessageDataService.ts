@@ -1,4 +1,9 @@
-import { PluginDataAPI, MessageData, ConversationData, PluginDataOptions } from '../../../../src/renderer/src/services/plugin/PluginDataAPI'
+import {
+  PluginDataAPI,
+  MessageData,
+  ConversationData,
+  PluginDataOptions
+} from '../../../../src/renderer/src/services/plugin/PluginDataAPI'
 import { ContactWithGroup } from '../../../contact-plugin/src/services/ContactDataService'
 
 export interface MessageWithDetails extends MessageData {
@@ -131,7 +136,7 @@ export class MessageDataService {
       // 先尝试从缓存获取
       const cached = await this.api.getData<ConversationWithDetails[]>(this.conversationsCacheKey)
       let conversations: ConversationWithDetails[] = []
-      
+
       if (cached.success && cached.data) {
         conversations = cached.data
       } else {
@@ -142,7 +147,7 @@ export class MessageDataService {
           sortBy: options?.sortBy,
           sortOrder: options?.sortOrder
         })
-        
+
         if (dbResult.success && dbResult.data) {
           conversations = await this.enrichConversationsWithDetails(dbResult.data)
           // 更新缓存
@@ -185,7 +190,9 @@ export class MessageDataService {
   /**
    * 创建会话
    */
-  async createConversation(conversationData: ConversationData & { settings?: ConversationSettings }): Promise<ConversationWithDetails | null> {
+  async createConversation(
+    conversationData: ConversationData & { settings?: ConversationSettings }
+  ): Promise<ConversationWithDetails | null> {
     try {
       const permission = await this.api.checkPermission('conversations', 'write')
       if (!permission.success || !permission.data?.hasPermission) {
@@ -214,7 +221,7 @@ export class MessageDataService {
 
       // 清除缓存以强制刷新
       await this.clearConversationsCache()
-      
+
       // 获取完整的会话信息
       return await this.getConversation(result.data.conversationId)
     } catch (error) {
@@ -226,7 +233,10 @@ export class MessageDataService {
   /**
    * 更新会话
    */
-  async updateConversation(conversationId: number, updates: Partial<ConversationWithDetails>): Promise<boolean> {
+  async updateConversation(
+    conversationId: number,
+    updates: Partial<ConversationWithDetails>
+  ): Promise<boolean> {
     try {
       const permission = await this.api.checkPermission('conversations', 'write')
       if (!permission.success || !permission.data?.hasPermission) {
@@ -236,13 +246,13 @@ export class MessageDataService {
 
       // 分离数据库字段和自定义字段
       const { settings, unread_count, draft_message, ...dbUpdates } = updates
-      
+
       // 准备自定义数据更新
       const customDataUpdates: any = {}
       if (settings !== undefined) customDataUpdates.settings = settings
       if (unread_count !== undefined) customDataUpdates.unread_count = unread_count
       if (draft_message !== undefined) customDataUpdates.draft_message = draft_message
-      
+
       if (Object.keys(customDataUpdates).length > 0) {
         customDataUpdates.updated_at = new Date().toISOString()
         dbUpdates.custom_data = customDataUpdates
@@ -256,7 +266,7 @@ export class MessageDataService {
 
       // 更新缓存
       await this.updateConversationInCache(conversationId, updates)
-      
+
       return true
     } catch (error) {
       console.error('更新会话失败:', error)
@@ -283,7 +293,7 @@ export class MessageDataService {
 
       // 从缓存中移除
       await this.removeConversationFromCache(conversationId)
-      
+
       return true
     } catch (error) {
       console.error('删除会话失败:', error)
@@ -332,7 +342,10 @@ export class MessageDataService {
   /**
    * 获取消息列表
    */
-  async getMessages(conversationId?: number, options?: MessageSearchOptions): Promise<MessageWithDetails[]> {
+  async getMessages(
+    conversationId?: number,
+    options?: MessageSearchOptions
+  ): Promise<MessageWithDetails[]> {
     try {
       // 检查权限
       const permission = await this.api.checkPermission('messages', 'read')
@@ -342,12 +355,14 @@ export class MessageDataService {
       }
 
       // 构建缓存键
-      const cacheKey = conversationId ? `${this.messagesCacheKey}_${conversationId}` : this.messagesCacheKey
-      
+      const cacheKey = conversationId
+        ? `${this.messagesCacheKey}_${conversationId}`
+        : this.messagesCacheKey
+
       // 先尝试从缓存获取
       const cached = await this.api.getCachedMessages(conversationId)
       let messages: MessageWithDetails[] = []
-      
+
       if (cached.success && cached.data) {
         messages = cached.data
       } else {
@@ -358,7 +373,7 @@ export class MessageDataService {
           sortBy: options?.sortBy || 'created_at',
           sortOrder: options?.sortOrder || 'desc'
         })
-        
+
         if (dbResult.success && dbResult.data) {
           messages = await this.enrichMessagesWithDetails(dbResult.data)
           // 更新缓存
@@ -401,11 +416,13 @@ export class MessageDataService {
   /**
    * 发送消息
    */
-  async sendMessage(messageData: MessageData & { 
-    attachments?: Omit<MessageAttachment, 'id' | 'message_id'>[]
-    reply_to_message_id?: number
-    forward_from_message_id?: number
-  }): Promise<MessageWithDetails | null> {
+  async sendMessage(
+    messageData: MessageData & {
+      attachments?: Omit<MessageAttachment, 'id' | 'message_id'>[]
+      reply_to_message_id?: number
+      forward_from_message_id?: number
+    }
+  ): Promise<MessageWithDetails | null> {
     try {
       const permission = await this.api.checkPermission('messages', 'write')
       if (!permission.success || !permission.data?.hasPermission) {
@@ -442,7 +459,7 @@ export class MessageDataService {
 
       // 清除相关缓存
       await this.clearMessagesCache(messageData.conversation_id)
-      
+
       // 获取完整的消息信息
       return await this.getMessage(result.data.messageId)
     } catch (error) {
@@ -479,8 +496,18 @@ export class MessageDataService {
       }
 
       // 分离数据库字段和自定义字段
-      const { attachments, reactions, edit_history, delivery_status, reply_to_message, forward_from, local_path, thumbnail_path, ...dbUpdates } = updates
-      
+      const {
+        attachments,
+        reactions,
+        edit_history,
+        delivery_status,
+        reply_to_message,
+        forward_from,
+        local_path,
+        thumbnail_path,
+        ...dbUpdates
+      } = updates
+
       // 准备自定义数据更新
       const customDataUpdates: any = {}
       if (attachments !== undefined) customDataUpdates.attachments = attachments
@@ -489,7 +516,7 @@ export class MessageDataService {
       if (delivery_status !== undefined) customDataUpdates.delivery_status = delivery_status
       if (local_path !== undefined) customDataUpdates.local_path = local_path
       if (thumbnail_path !== undefined) customDataUpdates.thumbnail_path = thumbnail_path
-      
+
       if (Object.keys(customDataUpdates).length > 0) {
         customDataUpdates.updated_at = new Date().toISOString()
         dbUpdates.custom_data = customDataUpdates
@@ -503,7 +530,7 @@ export class MessageDataService {
 
       // 更新缓存
       await this.updateMessageInCache(messageId, updates)
-      
+
       return true
     } catch (error) {
       console.error('更新消息失败:', error)
@@ -530,7 +557,7 @@ export class MessageDataService {
 
       // 从缓存中移除
       await this.removeMessageFromCache(messageId)
-      
+
       return true
     } catch (error) {
       console.error('删除消息失败:', error)
@@ -587,11 +614,13 @@ export class MessageDataService {
       if (!message) return false
 
       const reactions = message.reactions || []
-      const existingReaction = reactions.find(r => r.user_id === userId && r.emoji === emoji)
-      
+      const existingReaction = reactions.find((r) => r.user_id === userId && r.emoji === emoji)
+
       if (existingReaction) {
         // 已存在相同反应，移除它
-        const updatedReactions = reactions.filter(r => !(r.user_id === userId && r.emoji === emoji))
+        const updatedReactions = reactions.filter(
+          (r) => !(r.user_id === userId && r.emoji === emoji)
+        )
         return await this.updateMessage(messageId, { reactions: updatedReactions })
       } else {
         // 添加新反应
@@ -613,7 +642,10 @@ export class MessageDataService {
   /**
    * 更新消息传输状态
    */
-  async updateMessageDeliveryStatus(messageId: number, status: 'sending' | 'sent' | 'delivered' | 'read' | 'failed'): Promise<boolean> {
+  async updateMessageDeliveryStatus(
+    messageId: number,
+    status: 'sending' | 'sent' | 'delivered' | 'read' | 'failed'
+  ): Promise<boolean> {
     try {
       return await this.updateMessage(messageId, { delivery_status: status })
     } catch (error) {
@@ -627,7 +659,10 @@ export class MessageDataService {
   /**
    * 添加文件附件
    */
-  async addMessageAttachment(messageId: number, attachment: Omit<MessageAttachment, 'id' | 'message_id'>): Promise<MessageAttachment | null> {
+  async addMessageAttachment(
+    messageId: number,
+    attachment: Omit<MessageAttachment, 'id' | 'message_id'>
+  ): Promise<MessageAttachment | null> {
     try {
       const message = await this.getMessage(messageId)
       if (!message) return null
@@ -642,7 +677,7 @@ export class MessageDataService {
 
       attachments.push(newAttachment)
       const success = await this.updateMessage(messageId, { attachments })
-      
+
       return success ? newAttachment : null
     } catch (error) {
       console.error('添加消息附件失败:', error)
@@ -653,12 +688,16 @@ export class MessageDataService {
   /**
    * 更新文件传输进度
    */
-  async updateAttachmentProgress(messageId: number, attachmentId: number, progress: { upload_progress?: number; download_progress?: number }): Promise<boolean> {
+  async updateAttachmentProgress(
+    messageId: number,
+    attachmentId: number,
+    progress: { upload_progress?: number; download_progress?: number }
+  ): Promise<boolean> {
     try {
       const message = await this.getMessage(messageId)
       if (!message || !message.attachments) return false
 
-      const attachments = message.attachments.map(att => 
+      const attachments = message.attachments.map((att) =>
         att.id === attachmentId ? { ...att, ...progress } : att
       )
 
@@ -676,15 +715,15 @@ export class MessageDataService {
     try {
       const messages = await this.getMessages(conversationId, { hasAttachments: true })
       const attachments: MessageAttachment[] = []
-      
-      messages.forEach(message => {
+
+      messages.forEach((message) => {
         if (message.attachments) {
           attachments.push(...message.attachments)
         }
       })
-      
-      return attachments.sort((a, b) => 
-        new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+
+      return attachments.sort(
+        (a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
       )
     } catch (error) {
       console.error('获取文件传输列表失败:', error)
@@ -697,24 +736,30 @@ export class MessageDataService {
   /**
    * 搜索消息
    */
-  async searchMessages(keyword: string, options?: MessageSearchOptions): Promise<MessageWithDetails[]> {
+  async searchMessages(
+    keyword: string,
+    options?: MessageSearchOptions
+  ): Promise<MessageWithDetails[]> {
     const searchOptions: MessageSearchOptions = {
       ...options,
       keyword: keyword.toLowerCase()
     }
-    
+
     return await this.getMessages(options?.conversationId, searchOptions)
   }
 
   /**
    * 搜索会话
    */
-  async searchConversations(keyword: string, options?: ConversationSearchOptions): Promise<ConversationWithDetails[]> {
+  async searchConversations(
+    keyword: string,
+    options?: ConversationSearchOptions
+  ): Promise<ConversationWithDetails[]> {
     const searchOptions: ConversationSearchOptions = {
       ...options,
       keyword: keyword.toLowerCase()
     }
-    
+
     return await this.getConversations(searchOptions)
   }
 
@@ -735,14 +780,15 @@ export class MessageDataService {
   /**
    * 获取媒体消息
    */
-  async getMediaMessages(conversationId?: number, mediaType?: 'image' | 'video' | 'audio' | 'file'): Promise<MessageWithDetails[]> {
+  async getMediaMessages(
+    conversationId?: number,
+    mediaType?: 'image' | 'video' | 'audio' | 'file'
+  ): Promise<MessageWithDetails[]> {
     const messages = await this.getMessages(conversationId, { hasAttachments: true })
-    
+
     if (!mediaType) return messages
-    
-    return messages.filter(message => 
-      message.attachments?.some(att => att.type === mediaType)
-    )
+
+    return messages.filter((message) => message.attachments?.some((att) => att.type === mediaType))
   }
 
   // ==================== 辅助方法 ====================
@@ -750,15 +796,17 @@ export class MessageDataService {
   /**
    * 为会话添加详细信息
    */
-  private async enrichConversationsWithDetails(conversations: any[]): Promise<ConversationWithDetails[]> {
+  private async enrichConversationsWithDetails(
+    conversations: any[]
+  ): Promise<ConversationWithDetails[]> {
     // 获取联系人信息（通过共享数据）
     const contactsResult = await this.api.getSharedData<ContactWithGroup[]>('contacts', 'cache')
     const contacts = contactsResult.success && contactsResult.data ? contactsResult.data : []
-    const contactMap = new Map(contacts.map(c => [c.user_id, c]))
-    
-    return conversations.map(conversation => {
+    const contactMap = new Map(contacts.map((c) => [c.user_id, c]))
+
+    return conversations.map((conversation) => {
       const customData = conversation.custom_data || {}
-      
+
       // 获取参与者信息
       const participants: ContactWithDetails[] = []
       if (conversation.participant_ids) {
@@ -776,7 +824,7 @@ export class MessageDataService {
           }
         })
       }
-      
+
       return {
         ...conversation,
         participants,
@@ -796,33 +844,37 @@ export class MessageDataService {
     // 获取联系人信息（通过共享数据）
     const contactsResult = await this.api.getSharedData<ContactWithGroup[]>('contacts', 'cache')
     const contacts = contactsResult.success && contactsResult.data ? contactsResult.data : []
-    const contactMap = new Map(contacts.map(c => [c.user_id, c]))
-    
-    return messages.map(message => {
+    const contactMap = new Map(contacts.map((c) => [c.user_id, c]))
+
+    return messages.map((message) => {
       const customData = message.custom_data || {}
-      
+
       // 获取发送者和接收者信息
       const sender = contactMap.get(message.sender_id)
       const receiver = contactMap.get(message.receiver_id)
-      
+
       return {
         ...message,
-        sender: sender ? {
-          id: sender.id,
-          user_id: message.sender_id,
-          nickname: sender.nickname,
-          avatar: sender.avatar,
-          status: sender.status,
-          last_seen: sender.last_seen
-        } : undefined,
-        receiver: receiver ? {
-          id: receiver.id,
-          user_id: message.receiver_id,
-          nickname: receiver.nickname,
-          avatar: receiver.avatar,
-          status: receiver.status,
-          last_seen: receiver.last_seen
-        } : undefined,
+        sender: sender
+          ? {
+              id: sender.id,
+              user_id: message.sender_id,
+              nickname: sender.nickname,
+              avatar: sender.avatar,
+              status: sender.status,
+              last_seen: sender.last_seen
+            }
+          : undefined,
+        receiver: receiver
+          ? {
+              id: receiver.id,
+              user_id: message.receiver_id,
+              nickname: receiver.nickname,
+              avatar: receiver.avatar,
+              status: receiver.status,
+              last_seen: receiver.last_seen
+            }
+          : undefined,
         attachments: customData.attachments || [],
         reactions: customData.reactions || [],
         edit_history: customData.edit_history || [],
@@ -838,7 +890,10 @@ export class MessageDataService {
   /**
    * 过滤消息
    */
-  private filterMessages(messages: MessageWithDetails[], options?: MessageSearchOptions): MessageWithDetails[] {
+  private filterMessages(
+    messages: MessageWithDetails[],
+    options?: MessageSearchOptions
+  ): MessageWithDetails[] {
     if (!options) return messages
 
     let filtered = messages
@@ -846,54 +901,51 @@ export class MessageDataService {
     // 关键词搜索
     if (options.keyword) {
       const keyword = options.keyword.toLowerCase()
-      filtered = filtered.filter(message => 
-        message.content.toLowerCase().includes(keyword) ||
-        message.sender?.nickname?.toLowerCase().includes(keyword)
+      filtered = filtered.filter(
+        (message) =>
+          message.content.toLowerCase().includes(keyword) ||
+          message.sender?.nickname?.toLowerCase().includes(keyword)
       )
     }
 
     // 会话过滤
     if (options.conversationId !== undefined) {
-      filtered = filtered.filter(message => message.conversation_id === options.conversationId)
+      filtered = filtered.filter((message) => message.conversation_id === options.conversationId)
     }
 
     // 发送者过滤
     if (options.senderId) {
-      filtered = filtered.filter(message => message.sender_id === options.senderId)
+      filtered = filtered.filter((message) => message.sender_id === options.senderId)
     }
 
     // 消息类型过滤
     if (options.messageType) {
-      filtered = filtered.filter(message => message.message_type === options.messageType)
+      filtered = filtered.filter((message) => message.message_type === options.messageType)
     }
 
     // 日期范围过滤
     if (options.dateFrom) {
       const fromDate = new Date(options.dateFrom)
-      filtered = filtered.filter(message => 
-        new Date(message.created_at || 0) >= fromDate
-      )
+      filtered = filtered.filter((message) => new Date(message.created_at || 0) >= fromDate)
     }
-    
+
     if (options.dateTo) {
       const toDate = new Date(options.dateTo)
-      filtered = filtered.filter(message => 
-        new Date(message.created_at || 0) <= toDate
-      )
+      filtered = filtered.filter((message) => new Date(message.created_at || 0) <= toDate)
     }
 
     // 附件过滤
     if (options.hasAttachments !== undefined) {
-      filtered = filtered.filter(message => 
-        options.hasAttachments ? 
-          (message.attachments && message.attachments.length > 0) :
-          (!message.attachments || message.attachments.length === 0)
+      filtered = filtered.filter((message) =>
+        options.hasAttachments
+          ? message.attachments && message.attachments.length > 0
+          : !message.attachments || message.attachments.length === 0
       )
     }
 
     // 未读过滤
     if (options.isUnread !== undefined) {
-      filtered = filtered.filter(message => 
+      filtered = filtered.filter((message) =>
         options.isUnread ? !message.is_read : message.is_read
       )
     }
@@ -904,7 +956,10 @@ export class MessageDataService {
   /**
    * 过滤会话
    */
-  private filterConversations(conversations: ConversationWithDetails[], options?: ConversationSearchOptions): ConversationWithDetails[] {
+  private filterConversations(
+    conversations: ConversationWithDetails[],
+    options?: ConversationSearchOptions
+  ): ConversationWithDetails[] {
     if (!options) return conversations
 
     let filtered = conversations
@@ -912,35 +967,36 @@ export class MessageDataService {
     // 关键词搜索
     if (options.keyword) {
       const keyword = options.keyword.toLowerCase()
-      filtered = filtered.filter(conversation => 
-        conversation.title?.toLowerCase().includes(keyword) ||
-        conversation.participants?.some(p => p.nickname?.toLowerCase().includes(keyword))
+      filtered = filtered.filter(
+        (conversation) =>
+          conversation.title?.toLowerCase().includes(keyword) ||
+          conversation.participants?.some((p) => p.nickname?.toLowerCase().includes(keyword))
       )
     }
 
     // 类型过滤
     if (options.type) {
-      filtered = filtered.filter(conversation => conversation.conversation_type === options.type)
+      filtered = filtered.filter((conversation) => conversation.conversation_type === options.type)
     }
 
     // 未读过滤
     if (options.hasUnread !== undefined) {
-      filtered = filtered.filter(conversation => 
-        options.hasUnread ? 
-          (conversation.unread_count && conversation.unread_count > 0) :
-          (!conversation.unread_count || conversation.unread_count === 0)
+      filtered = filtered.filter((conversation) =>
+        options.hasUnread
+          ? conversation.unread_count && conversation.unread_count > 0
+          : !conversation.unread_count || conversation.unread_count === 0
       )
     }
 
     // 置顶过滤
     if (options.isPinned !== undefined) {
-      filtered = filtered.filter(conversation => conversation.is_pinned === options.isPinned)
+      filtered = filtered.filter((conversation) => conversation.is_pinned === options.isPinned)
     }
 
     // 参与者过滤
     if (options.participantId) {
-      filtered = filtered.filter(conversation => 
-        conversation.participants?.some(p => p.user_id === options.participantId)
+      filtered = filtered.filter((conversation) =>
+        conversation.participants?.some((p) => p.user_id === options.participantId)
       )
     }
 
@@ -948,7 +1004,7 @@ export class MessageDataService {
     filtered.sort((a, b) => {
       if (a.is_pinned && !b.is_pinned) return -1
       if (!a.is_pinned && b.is_pinned) return 1
-      
+
       const aTime = new Date(a.last_message_at || a.updated_at || 0).getTime()
       const bTime = new Date(b.last_message_at || b.updated_at || 0).getTime()
       return bTime - aTime
@@ -960,7 +1016,10 @@ export class MessageDataService {
   /**
    * 更新会话的最后消息
    */
-  private async updateConversationLastMessage(conversationId: number, messageId: number): Promise<void> {
+  private async updateConversationLastMessage(
+    conversationId: number,
+    messageId: number
+  ): Promise<void> {
     try {
       await this.updateConversation(conversationId, {
         last_message_id: messageId,
@@ -974,14 +1033,17 @@ export class MessageDataService {
   /**
    * 更新缓存中的会话
    */
-  private async updateConversationInCache(conversationId: number, updates: Partial<ConversationWithDetails>): Promise<void> {
+  private async updateConversationInCache(
+    conversationId: number,
+    updates: Partial<ConversationWithDetails>
+  ): Promise<void> {
     try {
       const cached = await this.api.getData<ConversationWithDetails[]>(this.conversationsCacheKey)
       if (!cached.success || !cached.data) return
 
       const conversations = cached.data
-      const index = conversations.findIndex(c => c.id === conversationId)
-      
+      const index = conversations.findIndex((c) => c.id === conversationId)
+
       if (index >= 0) {
         conversations[index] = { ...conversations[index], ...updates }
         await this.api.setData(this.conversationsCacheKey, conversations, this.cacheExpiry)
@@ -994,7 +1056,10 @@ export class MessageDataService {
   /**
    * 更新缓存中的消息
    */
-  private async updateMessageInCache(messageId: number, updates: Partial<MessageWithDetails>): Promise<void> {
+  private async updateMessageInCache(
+    messageId: number,
+    updates: Partial<MessageWithDetails>
+  ): Promise<void> {
     try {
       // 更新所有相关的消息缓存
       const message = await this.getMessage(messageId)
@@ -1003,7 +1068,7 @@ export class MessageDataService {
         if (cached.success && cached.data) {
           const messages = cached.data
           const index = messages.findIndex((m: any) => m.id === messageId)
-          
+
           if (index >= 0) {
             messages[index] = { ...messages[index], ...updates }
             await this.api.cacheMessages(messages, message.conversation_id)
@@ -1023,7 +1088,7 @@ export class MessageDataService {
       const cached = await this.api.getData<ConversationWithDetails[]>(this.conversationsCacheKey)
       if (!cached.success || !cached.data) return
 
-      const conversations = cached.data.filter(c => c.id !== conversationId)
+      const conversations = cached.data.filter((c) => c.id !== conversationId)
       await this.api.setData(this.conversationsCacheKey, conversations, this.cacheExpiry)
     } catch (error) {
       console.error('从缓存移除会话失败:', error)
@@ -1083,10 +1148,10 @@ export class MessageDataService {
       // 清除所有缓存
       await this.clearMessagesCache()
       await this.clearConversationsCache()
-      
+
       // 重新获取数据
       const conversations = await this.getConversations()
-      
+
       console.log(`同步完成，共 ${conversations.length} 个会话`)
       return true
     } catch (error) {
@@ -1109,7 +1174,7 @@ export class MessageDataService {
       const allMessages = await this.getMessages()
       const unreadMessages = await this.getUnreadMessages()
       const attachments = await this.getFileTransfers()
-      
+
       return {
         totalConversations: conversations.length,
         totalMessages: allMessages.length,

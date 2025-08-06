@@ -27,7 +27,7 @@ function createTestWindow() {
 // 测试P2P API
 async function testP2PAPIs() {
   console.log('开始测试P2P功能...')
-  
+
   try {
     // 模拟IPC请求
     const testRequests = [
@@ -50,7 +50,7 @@ async function testP2PAPIs() {
 // 应用准备就绪时
 app.whenReady().then(() => {
   createTestWindow()
-  
+
   // 延迟执行测试，等待服务初始化
   setTimeout(testP2PAPIs, 3000)
 })

@@ -2,24 +2,8 @@ import { ipcMain, BrowserWindow } from 'electron'
 import { authService } from '../auth/AuthService'
 import { userService } from '../user/UserService'
 import { uploadService } from '../upload/UploadService'
-import { articleService } from '../article/ArticleService'
-import { serviceManager } from '../index'
-
-export interface IPCRequest {
-  id: string
-  method: string
-  url: string
-  data?: any
-  headers?: { [key: string]: string }
-}
-
-export interface IPCResponse {
-  id: string
-  status: number
-  code: number
-  message: string
-  data?: any
-}
+import { localSendP2PManager as p2pManager } from '../p2p/LocalSendP2PManager'
+import type { IPCRequest, IPCResponse } from './IPCHandler.d'
 
 export class IPCHandler {
   private currentUser: any = null
@@ -44,31 +28,31 @@ export class IPCHandler {
   private async handleRequest(request: IPCRequest): Promise<IPCResponse> {
     try {
       console.log('IPC API Request:', request.method, request.url)
-      
+
       // 验证用户身份（除了登录和注册接口）
       if (!this.isPublicEndpoint(request.url)) {
         const token = this.extractToken(request.headers)
         console.log('IPCHandler: Extracted token:', token ? 'present' : 'missing')
-        
+
         if (!token) {
           console.warn('IPCHandler: No token provided for protected endpoint:', request.url)
           return this.createErrorResponse(request.id, 401, '未授权访问')
         }
-        
+
         console.log('IPCHandler: Validating session for token:', token.substring(0, 20) + '...')
         this.currentUser = await authService.validateSession(token)
-        
+
         if (!this.currentUser) {
           console.warn('IPCHandler: Session validation failed for endpoint:', request.url)
           return this.createErrorResponse(request.id, 401, '登录已过期')
         }
-        
+
         console.log('IPCHandler: Session validated for user:', this.currentUser.mobile)
       }
 
       // 路由到对应的服务
       const result = await this.routeRequest(request)
-      
+
       return {
         id: request.id,
         status: 200,
@@ -85,30 +69,34 @@ export class IPCHandler {
   private async handleFileUpload(fileData: any): Promise<any> {
     try {
       const { buffer, fileName, mimeType, token } = fileData
-      
+
       // 验证用户身份
       if (!token) {
         throw new Error('未授权访问')
       }
-      
+
       const user = await authService.validateSession(token)
       if (!user) {
         throw new Error('登录已过期')
       }
-      
+
       // 转换buffer
       const fileBuffer = Buffer.from(buffer)
-      
+
       // 上传文件
-      const result = await uploadService.uploadFile(fileBuffer, fileName, mimeType, user.id)
-      
+      const result = await uploadService.uploadFile(fileBuffer, fileName)
+
+      if (!result.success) {
+        throw new Error(result.error || '文件上传失败')
+      }
+
       return {
-        file_id: result.file_id,
-        file_name: result.file_name,
-        file_size: result.file_size,
-        file_type: result.file_type,
-        file_url: result.file_url,
-        upload_time: result.upload_time
+        file_id: fileName,
+        file_name: result.fileName || fileName,
+        file_size: fileBuffer.length,
+        file_type: mimeType,
+        file_url: result.filePath || '',
+        upload_time: new Date().toISOString()
       }
     } catch (error: any) {
       console.error('File upload error:', error)
@@ -125,7 +113,7 @@ export class IPCHandler {
     userService.on('user:offline', (data) => {
       this.broadcastToUsers('user:offline', data)
     })
-    
+
     // TODO: 重新实现消息相关的实时事件监听
     // 当前消息服务已迁移到插件系统中
   }
@@ -193,172 +181,44 @@ export class IPCHandler {
       }
     }
 
-    // 联系人相关接口已迁移到 contact-plugin
-    if (url.startsWith('/api/v1/contact/')) {
-      throw new Error('联系人功能已迁移到通讯录插件，请通过插件访问')
+    // P2P 相关接口 - 现在使用LocalSend实现
+    // 直接使用导入的p2pManager，避免循环依赖
+    
+    // P2P 状态查询
+    if (url === '/api/v1/p2p/status') {
+      const nodeInfo = p2pManager.getNodeInfo()
+      return {
+        isRunning: p2pManager.isRunning(),
+        peerId: nodeInfo?.peerId || null,
+        identity: nodeInfo ? { peerId: nodeInfo.peerId } : null
+      }
     }
 
-    // 群组相关接口已迁移到 contact-plugin
-    if (url.startsWith('/api/v1/group/')) {
-      throw new Error('群组功能已迁移到通讯录插件，请通过插件访问')
+    // 获取已发现的节点
+    if (url === '/api/v1/p2p/peers') {
+      const discoveredPeers = await p2pManager.getDiscoveredPeers()
+      return discoveredPeers.map((peer: any) => ({
+        peerId: peer.fingerprint,
+        status: 'discovered',
+        addedAt: new Date().toISOString(),
+        nickname: peer.alias
+      }))
     }
 
-    // 聊天和消息相关接口已迁移到 message-plugin
-    if (url.startsWith('/api/v1/talk/')) {
-      throw new Error('聊天和消息功能已迁移到消息插件，请通过插件访问')
-    }
-
-    // 文件上传相关接口
-    if (url === '/api/v1/upload/file') {
-      // 文件上传通过单独的处理方法
-      throw new Error('文件上传请使用 upload-file 事件')
-    }
-
-    // 文章相关接口
-    if (url === '/api/v1/article/list') {
-      return await articleService.getArticleList(userId, data)
-    }
-    if (url === '/api/v1/article/detail') {
-      return await articleService.getArticleDetail(userId, data.article_id)
-    }
-    if (url === '/api/v1/article/editor') {
-      return await articleService.saveArticle(userId, data)
-    }
-    if (url === '/api/v1/article/delete') {
-      await articleService.deleteArticle(userId, data.article_id)
+    // 发送P2P消息
+    if (url === '/api/v1/p2p/message/send') {
+      if (!data.groupId) {
+        await p2pManager.sendDirectMessage(data.to, data.content)
+      }
+      // 群组消息暂时不支持
       return null
-    }
-    if (url === '/api/v1/article/forever-delete') {
-      await articleService.foreverDeleteArticle(userId, data.article_id)
-      return null
-    }
-    if (url === '/api/v1/article/recycle-list') {
-      return await articleService.getRecycleList(userId)
-    }
-    if (url === '/api/v1/article/recover-delete') {
-      await articleService.recoverArticle(userId, data.article_id)
-      return null
-    }
-    if (url === '/api/v1/article/collect') {
-      return await articleService.toggleCollect(userId, data.article_id)
-    }
-    if (url === '/api/v1/article/move-classify') {
-      await articleService.moveToClassify(userId, data.article_id, data.classify_id)
-      return null
-    }
-
-    // 文章分类相关接口
-    if (url === '/api/v1/article/classify/list') {
-      return await articleService.getClassifyList(userId)
-    }
-    if (url === '/api/v1/article/classify/create') {
-      return await articleService.createClassify(userId, data)
-    }
-    if (url === '/api/v1/article/classify/update') {
-      await articleService.updateClassify(userId, data.classify_id, data)
-      return null
-    }
-    if (url === '/api/v1/article/classify/delete') {
-      await articleService.deleteClassify(userId, data.classify_id)
-      return null
-    }
-
-    // 文章标签相关接口
-    if (url === '/api/v1/article/tag/list') {
-      return await articleService.getTagList(userId)
-    }
-    if (url === '/api/v1/article/tag/create') {
-      return await articleService.createTag(userId, data)
-    }
-    if (url === '/api/v1/article/tag/update') {
-      await articleService.updateTag(userId, data.tag_id, data)
-      return null
-    }
-    if (url === '/api/v1/article/tag/delete') {
-      await articleService.deleteTag(userId, data.tag_id)
-      return null
-    }
-
-    // P2P 相关接口
-    const p2pServiceClient = serviceManager.getP2PServiceClient()
-    if (p2pServiceClient) {
-      // P2P 状态查询
-      if (url === '/api/v1/p2p/status') {
-        const nodeInfo = await p2pServiceClient.getNodeInfo()
-        return {
-          isRunning: p2pServiceClient.isRunning(),
-          peerId: nodeInfo?.peerId || null,
-          identity: nodeInfo ? { peerId: nodeInfo.peerId } : null
-        }
-      }
-
-      // 获取已发现的节点
-      if (url === '/api/v1/p2p/peers') {
-        const connectedPeers = await p2pServiceClient.getConnectedPeers()
-        return connectedPeers.map(peerId => ({
-          peerId,
-          status: 'connected',
-          addedAt: new Date().toISOString()
-        }))
-      }
-
-      // 发送P2P消息
-      if (url === '/api/v1/p2p/message/send') {
-        if (!data.groupId) {
-          await p2pServiceClient.sendDirectMessage(data.to, data.content)
-        }
-        // 群组消息暂时不支持
-        return null
-      }
-
-      // 其他P2P功能暂时返回空实现
-      if (url === '/api/v1/p2p/group/create') {
-        throw new Error('P2P群组功能暂未实现')
-      }
-
-      if (url === '/api/v1/p2p/group/join') {
-        throw new Error('P2P群组功能暂未实现')
-      }
-
-      if (url === '/api/v1/p2p/group/leave') {
-        throw new Error('P2P群组功能暂未实现')
-      }
-
-      if (url === '/api/v1/p2p/contact/add') {
-        // 暂时返回成功，实际功能待实现
-        return null
-      }
-
-      if (url === '/api/v1/p2p/contact/list') {
-        // 暂时返回空列表
-        return []
-      }
-
-      if (url === '/api/v1/p2p/message/history') {
-        // 暂时返回空历史
-        return []
-      }
-
-      if (url === '/api/v1/p2p/peer/connect') {
-        // 暂时返回成功，实际连接功能待实现
-        return null
-      }
-
-      if (url === '/api/v1/p2p/peer/disconnect') {
-        // 暂时返回成功，实际断开功能待实现
-        return null
-      }
     }
 
     throw new Error(`未知的接口: ${url}`)
   }
 
   private isPublicEndpoint(url: string): boolean {
-    const publicEndpoints = [
-      '/api/v1/auth/login',
-      '/api/v1/auth/register',
-      '/api/v1/auth/forget'
-    ]
+    const publicEndpoints = ['/api/v1/auth/login', '/api/v1/auth/register', '/api/v1/auth/forget']
     return publicEndpoints.includes(url)
   }
 
@@ -366,12 +226,12 @@ export class IPCHandler {
     if (!headers || !headers.Authorization) {
       return null
     }
-    
+
     const authHeader = headers.Authorization
     if (authHeader.startsWith('Bearer ')) {
       return authHeader.substring(7)
     }
-    
+
     return null
   }
 
@@ -387,7 +247,7 @@ export class IPCHandler {
 
   private broadcastToUsers(event: string, data: any): void {
     const windows = BrowserWindow.getAllWindows()
-    windows.forEach(window => {
+    windows.forEach((window) => {
       if (!window.isDestroyed()) {
         window.webContents.send('realtime-event', { event, data })
       }

@@ -2,12 +2,11 @@ import p2pConnect from '@/p2p/P2PConnect'
 
 // P2P消息服务类
 export class P2PMessageService {
-  
   // 发送文本消息
   static async sendTextMessage(targetPeerId: string, content: string): Promise<any> {
     try {
       await p2pConnect.sendMessage(targetPeerId, content, 'text')
-      
+
       // 返回模拟的消息对象（兼容现有代码）
       return {
         success: true,
@@ -30,7 +29,7 @@ export class P2PMessageService {
   static async sendImageMessage(targetPeerId: string, imageData: any): Promise<any> {
     try {
       await p2pConnect.sendMessage(targetPeerId, imageData, 'image')
-      
+
       return {
         success: true,
         data: {
@@ -52,7 +51,7 @@ export class P2PMessageService {
   static async sendFileMessage(targetPeerId: string, fileData: any): Promise<any> {
     try {
       await p2pConnect.sendMessage(targetPeerId, fileData, 'file')
-      
+
       return {
         success: true,
         data: {
@@ -71,10 +70,14 @@ export class P2PMessageService {
   }
 
   // 发送群组消息
-  static async sendGroupMessage(groupId: string, content: string, type: 'text' | 'image' | 'file' = 'text'): Promise<any> {
+  static async sendGroupMessage(
+    groupId: string,
+    content: string,
+    type: 'text' | 'image' | 'file' = 'text'
+  ): Promise<any> {
     try {
       await p2pConnect.sendGroupMessage(groupId, content, type)
-      
+
       return {
         success: true,
         data: {
@@ -93,14 +96,18 @@ export class P2PMessageService {
   }
 
   // 获取对话历史（从本地P2P存储）
-  static async getChatHistory(targetPeerId: string, page: number = 1, limit: number = 20): Promise<any> {
+  static async getChatHistory(
+    targetPeerId: string,
+    page: number = 1,
+    limit: number = 20
+  ): Promise<any> {
     try {
       const result = await window.electron.ipcRenderer.invoke('p2p:getChatHistory', {
         targetPeerId,
         page,
         limit
       })
-      
+
       return {
         success: true,
         data: {
@@ -120,14 +127,18 @@ export class P2PMessageService {
   }
 
   // 获取群组消息历史
-  static async getGroupChatHistory(groupId: string, page: number = 1, limit: number = 20): Promise<any> {
+  static async getGroupChatHistory(
+    groupId: string,
+    page: number = 1,
+    limit: number = 20
+  ): Promise<any> {
     try {
       const result = await window.electron.ipcRenderer.invoke('p2p:getGroupChatHistory', {
         groupId,
         page,
         limit
       })
-      
+
       return {
         success: true,
         data: {
@@ -150,7 +161,7 @@ export class P2PMessageService {
   static async markMessageAsRead(messageIds: string[]): Promise<any> {
     try {
       await window.electron.ipcRenderer.invoke('p2p:markMessagesAsRead', { messageIds })
-      
+
       return {
         success: true,
         data: { marked: messageIds.length }
@@ -165,7 +176,7 @@ export class P2PMessageService {
   static async deleteMessage(messageId: string): Promise<any> {
     try {
       await window.electron.ipcRenderer.invoke('p2p:deleteMessage', { messageId })
-      
+
       return {
         success: true,
         data: { deleted: messageId }
@@ -180,7 +191,7 @@ export class P2PMessageService {
   static async recallMessage(messageId: string): Promise<any> {
     try {
       await window.electron.ipcRenderer.invoke('p2p:recallMessage', { messageId })
-      
+
       return {
         success: true,
         data: { recalled: messageId }
@@ -194,7 +205,7 @@ export class P2PMessageService {
   // 获取本地节点ID
   static async getLocalPeerId(): Promise<string> {
     try {
-      const result = await window.electron.ipcRenderer.invoke('p2p:getStatus')
+      const result = await window.electron.ipcRenderer.invoke('p2p:status')
       return result.peerId || ''
     } catch (error) {
       console.error('Failed to get local peer ID:', error)
@@ -226,16 +237,15 @@ export class P2PMessageService {
 
 // P2P联系人服务类
 export class P2PContactService {
-  
   // 获取联系人列表
   static async getContactList(): Promise<any> {
     try {
       const contacts = await p2pConnect.getContacts()
-      
+
       return {
         success: true,
         data: {
-          list: contacts.map(contact => ({
+          list: contacts.map((contact) => ({
             uid: contact.peerId,
             nickname: contact.nickname || contact.peerId,
             avatar: contact.avatar || '',
@@ -263,7 +273,7 @@ export class P2PContactService {
   static async addContact(peerId: string, nickname?: string, remark?: string): Promise<any> {
     try {
       await p2pConnect.addContact(peerId, nickname, remark)
-      
+
       return {
         success: true,
         data: {
@@ -283,7 +293,7 @@ export class P2PContactService {
   static async deleteContact(peerId: string): Promise<any> {
     try {
       await window.electron.ipcRenderer.invoke('p2p:deleteContact', { peerId })
-      
+
       return {
         success: true,
         data: { deleted: peerId }
@@ -298,7 +308,7 @@ export class P2PContactService {
   static async updateContact(peerId: string, updates: any): Promise<any> {
     try {
       await window.electron.ipcRenderer.invoke('p2p:updateContact', { peerId, updates })
-      
+
       return {
         success: true,
         data: { updated: peerId, ...updates }
@@ -313,7 +323,7 @@ export class P2PContactService {
   static async searchContacts(query: string): Promise<any> {
     try {
       const result = await window.electron.ipcRenderer.invoke('p2p:searchContacts', { query })
-      
+
       return {
         success: true,
         data: {
@@ -333,7 +343,7 @@ export class P2PContactService {
   static async getContactRequests(): Promise<any> {
     try {
       const result = await window.electron.ipcRenderer.invoke('p2p:getContactRequests')
-      
+
       return {
         success: true,
         data: {
@@ -353,7 +363,7 @@ export class P2PContactService {
   static async handleContactRequest(requestId: string, action: 'accept' | 'reject'): Promise<any> {
     try {
       await window.electron.ipcRenderer.invoke('p2p:handleContactRequest', { requestId, action })
-      
+
       return {
         success: true,
         data: { requestId, action }
@@ -367,12 +377,11 @@ export class P2PContactService {
 
 // P2P群组服务类
 export class P2PGroupService {
-  
   // 获取群组列表
   static async getGroupList(): Promise<any> {
     try {
       const result = await window.electron.ipcRenderer.invoke('p2p:getGroups')
-      
+
       return {
         success: true,
         data: {
@@ -396,7 +405,7 @@ export class P2PGroupService {
         description,
         members
       })
-      
+
       return {
         success: true,
         data: result.group
@@ -411,7 +420,7 @@ export class P2PGroupService {
   static async joinGroup(groupId: string): Promise<any> {
     try {
       await window.electron.ipcRenderer.invoke('p2p:joinGroup', { groupId })
-      
+
       return {
         success: true,
         data: { joined: groupId }
@@ -426,7 +435,7 @@ export class P2PGroupService {
   static async leaveGroup(groupId: string): Promise<any> {
     try {
       await window.electron.ipcRenderer.invoke('p2p:leaveGroup', { groupId })
-      
+
       return {
         success: true,
         data: { left: groupId }
@@ -441,7 +450,7 @@ export class P2PGroupService {
   static async getGroupMembers(groupId: string): Promise<any> {
     try {
       const result = await window.electron.ipcRenderer.invoke('p2p:getGroupMembers', { groupId })
-      
+
       return {
         success: true,
         data: {
@@ -461,7 +470,7 @@ export class P2PGroupService {
   static async inviteToGroup(groupId: string, peerIds: string[]): Promise<any> {
     try {
       await window.electron.ipcRenderer.invoke('p2p:inviteToGroup', { groupId, peerIds })
-      
+
       return {
         success: true,
         data: { invited: peerIds }

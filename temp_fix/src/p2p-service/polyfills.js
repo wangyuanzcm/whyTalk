@@ -27,7 +27,7 @@ if (typeof globalThis.EventTarget === 'undefined') {
     dispatchEvent(event) {
       event.target = this
       event.currentTarget = this
-      
+
       if (this._listeners.has(event.type)) {
         for (const listener of this._listeners.get(event.type)) {
           try {

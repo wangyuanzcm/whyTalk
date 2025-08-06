@@ -1,4 +1,4 @@
-import { useTalkStore, useUserStore } from '@/store'
+import { useUserStore } from '@/store'
 import { notifyIcon } from '@/constant/default'
 import { NAvatar } from 'naive-ui'
 import { h } from 'vue'
@@ -17,13 +17,13 @@ class SimpleEventEmitter {
 
   emit(event: string, ...args: any[]): void {
     if (this.events[event]) {
-      this.events[event].forEach(listener => listener(...args))
+      this.events[event].forEach((listener) => listener(...args))
     }
   }
 
   off(event: string, listener: Function): void {
     if (this.events[event]) {
-      this.events[event] = this.events[event].filter(l => l !== listener)
+      this.events[event] = this.events[event].filter((l) => l !== listener)
     }
   }
 
@@ -47,8 +47,6 @@ interface P2PMessage {
   timestamp: number
   signature?: string
 }
-
-
 
 interface P2PNetworkStatus {
   isOnline: boolean
@@ -77,7 +75,7 @@ class P2PConnect extends SimpleEventEmitter {
   async connect(): Promise<void> {
     try {
       console.log('Starting P2P connection...')
-      
+
       // 通过IPC启动P2P服务
       const result = await window.electron.ipcRenderer.invoke('p2p:start')
       if (result.success) {
@@ -85,19 +83,20 @@ class P2PConnect extends SimpleEventEmitter {
         this.networkStatus.isOnline = true
         this.networkStatus.networkHealth = 'good'
         this.networkStatus.lastSyncTime = Date.now()
-        
+
         // 更新用户在线状态
         useUserStore().updateSocketStatus(true)
-        
+
         // 只有在用户已登录时才加载对话列表
         if (isLogin()) {
-          useTalkStore().loadTalkList()
+          // TODO: 通过插件间通信加载对话列表
+        // useTalkStore().loadTalkList()
         }
-        
+
         // 启动心跳和同步
         this.startHeartbeat()
         this.startSync()
-        
+
         console.log('P2P connection established')
         this.emit('network:status', this.networkStatus)
       } else {
@@ -116,21 +115,21 @@ class P2PConnect extends SimpleEventEmitter {
         clearInterval(this.heartbeatInterval)
         this.heartbeatInterval = null
       }
-      
+
       if (this.syncInterval) {
         clearInterval(this.syncInterval)
         this.syncInterval = null
       }
-      
+
       await window.electron.ipcRenderer.invoke('p2p:stop')
-      
+
       this.isConnected = false
       this.networkStatus.isOnline = false
       this.networkStatus.networkHealth = 'offline'
       this.networkStatus.connectedPeers = 0
-      
+
       useUserStore().updateSocketStatus(false)
-      
+
       console.log('P2P connection closed')
       this.emit('network:status', this.networkStatus)
     } catch (error) {
@@ -149,7 +148,11 @@ class P2PConnect extends SimpleEventEmitter {
   }
 
   // 发送P2P消息
-  async sendMessage(targetPeerId: string, content: any, type: 'text' | 'image' | 'file' = 'text'): Promise<void> {
+  async sendMessage(
+    targetPeerId: string,
+    content: any,
+    type: 'text' | 'image' | 'file' = 'text'
+  ): Promise<void> {
     if (!this.isConnected) {
       throw new Error('P2P network not connected')
     }
@@ -180,7 +183,11 @@ class P2PConnect extends SimpleEventEmitter {
   }
 
   // 发送群组消息
-  async sendGroupMessage(groupId: string, content: any, type: 'text' | 'image' | 'file' = 'text'): Promise<void> {
+  async sendGroupMessage(
+    groupId: string,
+    content: any,
+    type: 'text' | 'image' | 'file' = 'text'
+  ): Promise<void> {
     if (!this.isConnected) {
       throw new Error('P2P network not connected')
     }
@@ -215,14 +222,22 @@ class P2PConnect extends SimpleEventEmitter {
     try {
       if (params.talk_mode === 2) {
         // 群组输入状态
-        await this.sendGroupMessage(params.to_from_id.toString(), {
-          typing: true
-        }, 'text')
+        await this.sendGroupMessage(
+          params.to_from_id.toString(),
+          {
+            typing: true
+          },
+          'text'
+        )
       } else {
         // 直接消息输入状态
-        await this.sendMessage(params.to_from_id.toString(), {
-          typing: true
-        }, 'text')
+        await this.sendMessage(
+          params.to_from_id.toString(),
+          {
+            typing: true
+          },
+          'text'
+        )
       }
     } catch (error) {
       console.error('发送输入状态失败:', error)
@@ -269,7 +284,7 @@ class P2PConnect extends SimpleEventEmitter {
   // 获取本地节点ID
   private async getLocalPeerId(): Promise<string> {
     try {
-      const result = await window.electron.ipcRenderer.invoke('p2p:getStatus')
+      const result = await window.electron.ipcRenderer.invoke('p2p:status')
       return result.peerId || ''
     } catch (error) {
       console.error('Failed to get local peer ID:', error)
@@ -286,11 +301,11 @@ class P2PConnect extends SimpleEventEmitter {
   private startHeartbeat(): void {
     this.heartbeatInterval = setInterval(async () => {
       try {
-        const status = await window.electron.ipcRenderer.invoke('p2p:getStatus')
+        const status = await window.electron.ipcRenderer.invoke('p2p:status')
         if (status.isRunning) {
           this.networkStatus.isOnline = true
           this.networkStatus.networkHealth = 'good'
-          
+
           // 获取连接的节点数量
           const peers = await this.getDiscoveredPeers()
           this.networkStatus.connectedPeers = peers.length
@@ -299,7 +314,7 @@ class P2PConnect extends SimpleEventEmitter {
           this.networkStatus.networkHealth = 'offline'
           this.networkStatus.connectedPeers = 0
         }
-        
+
         this.emit('network:status', this.networkStatus)
       } catch (error) {
         console.error('Heartbeat failed:', error)
@@ -314,10 +329,10 @@ class P2PConnect extends SimpleEventEmitter {
       try {
         // 同步联系人数据
         await this.syncContacts()
-        
+
         // 同步消息数据
         await this.syncMessages()
-        
+
         this.networkStatus.lastSyncTime = Date.now()
         this.emit('network:status', this.networkStatus)
       } catch (error) {
@@ -331,7 +346,7 @@ class P2PConnect extends SimpleEventEmitter {
     try {
       // 获取本地联系人变更
       const localChanges = await window.electron.ipcRenderer.invoke('p2p:getContactChanges')
-      
+
       // 广播联系人变更
       if (localChanges.length > 0) {
         await window.electron.ipcRenderer.invoke('p2p:broadcastContactChanges', localChanges)
@@ -346,8 +361,8 @@ class P2PConnect extends SimpleEventEmitter {
     try {
       // 获取未同步的消息
       const result = await window.electron.ipcRenderer.invoke('p2p:getUnsyncedMessages')
-      const unsyncedMessages = Array.isArray(result) ? result : (result?.messages || [])
-      
+      const unsyncedMessages = Array.isArray(result) ? result : result?.messages || []
+
       // 重试发送失败的消息
       for (const message of unsyncedMessages) {
         try {
@@ -403,20 +418,21 @@ class P2PConnect extends SimpleEventEmitter {
   // 处理接收到的消息
   private handleReceivedMessage(message: P2PMessage): void {
     console.log('P2P message received:', message)
-    
+
     // 触发消息事件（类似原来的WebSocket消息）
     this.emit('message:received', message)
-    
+
     // 只有在用户已登录时才更新对话列表
     if (isLogin()) {
-      useTalkStore().loadTalkList()
+      // TODO: 通过插件间通信加载对话列表
+      // useTalkStore().loadTalkList()
     }
   }
 
   // 处理联系人请求
   private handleContactRequest(request: any): void {
     console.log('Contact request received:', request)
-    
+
     window['$notification']?.create({
       title: '好友申请通知',
       content: request.message || '请求添加您为好友',
@@ -438,7 +454,7 @@ class P2PConnect extends SimpleEventEmitter {
   // 处理群组邀请
   private handleGroupInvite(invite: any): void {
     console.log('Group invite received:', invite)
-    
+
     window['$notification']?.create({
       title: '群组邀请通知',
       content: `邀请您加入群组: ${invite.groupName}`,
@@ -454,23 +470,24 @@ class P2PConnect extends SimpleEventEmitter {
       duration: 10000
     })
 
+    // TODO: 通过插件间通信更新群组申请状态
     useUserStore().isGroupApply = true
   }
 
   // 处理连接错误
   private handleConnectionError(error: any): void {
     console.error('P2P connection error:', error)
-    
+
     this.networkStatus.isOnline = false
     this.networkStatus.networkHealth = 'poor'
-    
+
     useUserStore().updateSocketStatus(false)
-    
+
     // 尝试重连
     setTimeout(() => {
       if (!this.isConnected) {
         console.log('Attempting to reconnect to P2P network...')
-        this.connect().catch(err => {
+        this.connect().catch((err) => {
           console.error('Reconnection failed:', err)
         })
       }

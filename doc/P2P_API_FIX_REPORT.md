@@ -25,11 +25,13 @@ src/renderer/src/api/p2p.ts:1:9:
 ### 修复导入语句
 
 将 P2P API 文件中的导入语句从：
+
 ```typescript
 import { request } from './request'
 ```
 
 修改为：
+
 ```typescript
 import { get, post } from './request'
 ```
@@ -51,6 +53,7 @@ import { get, post } from './request'
 ## 技术状态
 
 ### 正常功能
+
 - ✅ 应用构建和启动
 - ✅ 前端路由系统
 - ✅ P2P 页面 UI 组件
@@ -58,6 +61,7 @@ import { get, post } from './request'
 - ✅ 错误处理机制
 
 ### 已知限制
+
 - ⚠️ P2P 后端服务仍处于禁用状态
 - ⚠️ libp2p 依赖问题尚未解决
 - ⚠️ P2P 功能处于演示模式
@@ -80,5 +84,6 @@ import { get, post } from './request'
 P2P API 导入错误已成功修复，应用现在可以正常启动和运行。P2P 页面的前端部分完全可用，为后续启用完整 P2P 功能奠定了基础。
 
 ---
-*报告生成时间：2024年8月3日*
-*修复状态：✅ 完成*
+
+_报告生成时间：2024年8月3日_
+_修复状态：✅ 完成_

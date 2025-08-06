@@ -41,9 +41,13 @@ export class PluginAPI {
   /**
    * 获取所有插件列表
    */
-  static async listPlugins(): Promise<{ success: boolean; plugins?: PluginInfo[]; error?: string }> {
+  static async listPlugins(): Promise<{
+    success: boolean
+    plugins?: PluginInfo[]
+    error?: string
+  }> {
     try {
-      console.log(window.electron,'window.electron')
+      console.log(window.electron, 'window.electron')
       const result = await window.electron.ipcRenderer.invoke('plugin:manager:list')
       return result
     } catch (error: any) {
@@ -56,7 +60,10 @@ export class PluginAPI {
    */
   static async installLocalPlugin(zipPath: string): Promise<PluginInstallResult> {
     try {
-      const result = await window.electron.ipcRenderer.invoke('plugin:manager:install-local', zipPath)
+      const result = await window.electron.ipcRenderer.invoke(
+        'plugin:manager:install-local',
+        zipPath
+      )
       return result
     } catch (error: any) {
       return { success: false, error: error.message }
@@ -128,7 +135,11 @@ export class PluginAPI {
    */
   static async setPluginConfig(pluginId: string, config: any): Promise<PluginOperationResult> {
     try {
-      const result = await window.electron.ipcRenderer.invoke('plugin:manager:setConfig', pluginId, config)
+      const result = await window.electron.ipcRenderer.invoke(
+        'plugin:manager:setConfig',
+        pluginId,
+        config
+      )
       return result
     } catch (error: any) {
       return { success: false, error: error.message }
@@ -138,7 +149,9 @@ export class PluginAPI {
   /**
    * 加载前端插件
    */
-  static async loadFrontendPlugin(pluginId: string): Promise<{ success: boolean; data?: any; error?: string }> {
+  static async loadFrontendPlugin(
+    pluginId: string
+  ): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
       const result = await window.electron.ipcRenderer.invoke('plugin:frontend:load', pluginId)
       return result
@@ -159,11 +172,11 @@ export class PluginAPI {
           { name: '所有文件', extensions: ['*'] }
         ]
       })
-      
+
       if (result.canceled || !result.filePaths || result.filePaths.length === 0) {
         return { success: false, error: '用户取消选择' }
       }
-      
+
       return { success: true, filePath: result.filePaths[0] }
     } catch (error: any) {
       return { success: false, error: error.message }

@@ -6,12 +6,12 @@
 
 ## 已创建的用户账号
 
-| 客户端 | 用户名 | 手机号 | 密码 | 数据目录 | 端口 |
-|--------|--------|--------|------|----------|------|
-| 客户端1 | Alice | 13800138001 | 123456 | userData-client-1 | 5173 |
-| 客户端2 | Bob | 13800138002 | 123456 | userData-client-2 | 5174 |
+| 客户端  | 用户名  | 手机号      | 密码   | 数据目录          | 端口 |
+| ------- | ------- | ----------- | ------ | ----------------- | ---- |
+| 客户端1 | Alice   | 13800138001 | 123456 | userData-client-1 | 5173 |
+| 客户端2 | Bob     | 13800138002 | 123456 | userData-client-2 | 5174 |
 | 客户端3 | Charlie | 13800138003 | 123456 | userData-client-3 | 5175 |
-| 客户端4 | Diana | 13800138004 | 123456 | userData-client-4 | 5176 |
+| 客户端4 | Diana   | 13800138004 | 123456 | userData-client-4 | 5176 |
 
 ## 快速启动方法
 
@@ -28,6 +28,7 @@
 ### 方法2: 手动启动（逐步控制）
 
 #### 启动客户端1 (Alice)
+
 ```powershell
 # 新开一个PowerShell窗口
 $env:ELECTRON_USER_DATA='userData-client-1'
@@ -35,6 +36,7 @@ npm run dev
 ```
 
 #### 启动客户端2 (Bob)
+
 ```powershell
 # 新开另一个PowerShell窗口
 $env:ELECTRON_USER_DATA='userData-client-2'
@@ -43,6 +45,7 @@ npm run dev
 ```
 
 #### 启动客户端3 (Charlie)
+
 ```powershell
 # 新开第三个PowerShell窗口
 $env:ELECTRON_USER_DATA='userData-client-3'
@@ -51,6 +54,7 @@ npm run dev
 ```
 
 #### 启动客户端4 (Diana)
+
 ```powershell
 # 新开第四个PowerShell窗口
 $env:ELECTRON_USER_DATA='userData-client-4'
@@ -109,6 +113,7 @@ npm run dev
 ### 数据隔离
 
 每个客户端使用独立的：
+
 - **用户数据目录**: `userData-client-X`
 - **数据库文件**: `userData-client-X/app.db`
 - **用户身份**: 独立的用户ID和登录状态
@@ -133,6 +138,7 @@ npm run dev
 **症状**: P2P状态显示"未连接"或"服务已停止"
 
 **解决方案**:
+
 1. 检查终端日志，查看P2P服务启动情况
 2. 重启客户端
 3. 检查防火墙设置，确保P2P端口未被阻止
@@ -142,6 +148,7 @@ npm run dev
 **症状**: 节点列表为空或只显示自己
 
 **解决方案**:
+
 1. 确保所有客户端都在同一网络中
 2. 等待30-60秒，mDNS发现需要时间
 3. 检查网络防火墙设置
@@ -152,6 +159,7 @@ npm run dev
 **症状**: 消息发送后对方收不到
 
 **解决方案**:
+
 1. 确认双方都已建立P2P连接
 2. 检查联系人关系是否正确建立
 3. 查看终端日志中的错误信息
@@ -162,6 +170,7 @@ npm run dev
 **症状**: 启动时出现数据库相关错误
 
 **解决方案**:
+
 1. 删除对应的用户数据目录
 2. 重新运行用户创建脚本：`node create-users-simple.js`
 3. 重新启动客户端

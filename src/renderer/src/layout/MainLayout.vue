@@ -16,7 +16,6 @@ import { isElectronMode } from '@/utils/electron.ts'
       </section>
     </main>
   </section>
-
 </template>
 <style lang="less" scoped>
 .im-container {

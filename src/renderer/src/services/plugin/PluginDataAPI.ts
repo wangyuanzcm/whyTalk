@@ -82,7 +82,7 @@ export class PluginDataAPI {
         data,
         options
       }
-      
+
       const response = await ipcRenderer.invoke(channel, request)
       return response as APIResponse<T>
     } catch (error) {
@@ -122,7 +122,9 @@ export class PluginDataAPI {
   async listData(
     prefix?: string,
     options?: PluginDataOptions
-  ): Promise<APIResponse<Array<{ key: string; value: any; created_at: string; updated_at: string }>>> {
+  ): Promise<
+    APIResponse<Array<{ key: string; value: any; created_at: string; updated_at: string }>>
+  > {
     return this.sendRequest('plugin-data:list', { prefix }, options)
   }
 
@@ -143,10 +145,7 @@ export class PluginDataAPI {
   /**
    * 获取共享数据
    */
-  async getSharedData<T = any>(
-    namespace: string,
-    key: string
-  ): Promise<APIResponse<T>> {
+  async getSharedData<T = any>(namespace: string, key: string): Promise<APIResponse<T>> {
     return this.sendRequest<T>('plugin-shared-data:get', { namespace, key })
   }
 
@@ -167,7 +166,11 @@ export class PluginDataAPI {
     namespace: string,
     prefix?: string,
     options?: PluginDataOptions
-  ): Promise<APIResponse<Array<{ key: string; value: any; created_by: string; created_at: string; updated_at: string }>>> {
+  ): Promise<
+    APIResponse<
+      Array<{ key: string; value: any; created_by: string; created_at: string; updated_at: string }>
+    >
+  > {
     return this.sendRequest('plugin-shared-data:list', { namespace, prefix }, options)
   }
 
@@ -183,10 +186,7 @@ export class PluginDataAPI {
   /**
    * 获取联系人列表
    */
-  async getContacts(
-    userId?: number,
-    options?: PluginDataOptions
-  ): Promise<APIResponse<any[]>> {
+  async getContacts(userId?: number, options?: PluginDataOptions): Promise<APIResponse<any[]>> {
     return this.sendRequest('plugin-contacts:list', { userId }, options)
   }
 
@@ -217,10 +217,7 @@ export class PluginDataAPI {
   /**
    * 置顶/取消置顶联系人
    */
-  async pinContact(
-    contactId: number,
-    pinned: boolean
-  ): Promise<APIResponse<{ updated: boolean }>> {
+  async pinContact(contactId: number, pinned: boolean): Promise<APIResponse<{ updated: boolean }>> {
     return this.sendRequest('plugin-contacts:pin', { contactId, pinned })
   }
 
@@ -371,7 +368,7 @@ export class PluginDataAPI {
     }
 
     const contacts = cachedResponse.data
-    const index = contacts.findIndex(c => c.id === contactId)
+    const index = contacts.findIndex((c) => c.id === contactId)
     if (index >= 0) {
       contacts[index] = { ...contacts[index], ...contactData }
       return this.cacheContacts(contacts)
@@ -389,7 +386,7 @@ export class PluginDataAPI {
       return { success: false, error: 'No cached contacts found' }
     }
 
-    const contacts = cachedResponse.data.filter(c => c.id !== contactId)
+    const contacts = cachedResponse.data.filter((c) => c.id !== contactId)
     return this.cacheContacts(contacts)
   }
 
@@ -417,13 +414,13 @@ export class PluginDataAPI {
   async addMessageToCache(conversationId: number, message: any): Promise<APIResponse> {
     const cachedResponse = await this.getCachedMessageHistory(conversationId)
     let messages: any[] = []
-    
+
     if (cachedResponse.success && cachedResponse.data) {
       messages = cachedResponse.data
     }
 
     messages.push(message)
-    
+
     // 保持最近1000条消息
     if (messages.length > 1000) {
       messages = messages.slice(-1000)
@@ -466,10 +463,10 @@ export class PluginDataAPI {
   async recordUsageStats(action: string, metadata?: any): Promise<APIResponse> {
     const timestamp = new Date().toISOString()
     const statsKey = `usage_stats_${new Date().toISOString().split('T')[0]}` // 按日期分组
-    
+
     const existingStats = await this.getData(statsKey)
     let stats: any[] = []
-    
+
     if (existingStats.success && existingStats.data) {
       stats = existingStats.data
     }
@@ -507,15 +504,15 @@ export class PluginDataAPI {
       // 分批执行操作
       for (let i = 0; i < operations.length; i += concurrency) {
         const batch = operations.slice(i, i + concurrency)
-        const batchResults = await Promise.all(batch.map(op => op()))
-        
+        const batchResults = await Promise.all(batch.map((op) => op()))
+
         for (const result of batchResults) {
           if (result.success && result.data !== undefined) {
             results.push(result.data)
           } else if (result.error) {
             errors.push(result.error)
           }
-          
+
           if (result.warnings) {
             warnings.push(...result.warnings)
           }
@@ -548,7 +545,7 @@ export class PluginDataAPI {
 
       let cleaned = 0
       const now = new Date()
-      
+
       for (const item of dataList.data) {
         // 检查是否有TTL且已过期
         if (item.key.includes('_ttl_')) {
