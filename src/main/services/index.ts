@@ -4,6 +4,7 @@ import { authService } from './auth/AuthService'
 import { userService } from './user/UserService'
 import { uploadService } from './upload/UploadService'
 import { loggerService } from './logger/LoggerService'
+import { updaterService } from './updater/UpdaterService'
 // settingsService removed - functionality moved to user preferences
 // pluginManager removed - functionality integrated into plugin services
 // import { p2pManager } from './p2p/P2PManager' // 替换为LocalSend实现
@@ -55,6 +56,10 @@ export class ServiceManager {
       await authService.initialize()
       await userService.initialize()
       await uploadService.initialize()
+      
+      // 初始化更新服务
+      await updaterService.initialize()
+      console.log('Updater service initialized')
 
       // 初始化插件权限管理器（必须在pluginDataService之前）
       await PluginPermissionManager.getInstance().initialize()
@@ -112,6 +117,7 @@ export class ServiceManager {
       await pluginAPIHandler.cleanup()
       await pluginDataIPC.cleanup()
       await pluginDataService.cleanup()
+      await updaterService.cleanup()
       await uploadService.cleanup()
       await userService.cleanup()
       await authService.cleanup()
@@ -170,7 +176,9 @@ export class ServiceManager {
     return uploadService
   }
 
-
+  public getUpdaterService() {
+    return updaterService
+  }
 
   public getP2PManager() {
     return p2pManager
@@ -193,6 +201,7 @@ export {
   authService,
   userService,
   uploadService,
+  updaterService,
   loggerService,
   // settingsService removed
   // pluginManager removed

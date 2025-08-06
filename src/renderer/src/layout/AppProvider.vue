@@ -5,6 +5,7 @@ import { IconProvider, DEFAULT_ICON_CONFIGS } from '@icon-park/vue-next'
 import { zhCN, dateZhCN } from 'naive-ui'
 import hljs from 'highlight.js/lib/core'
 import { NotificationApi, MessageApi, DialogApi, ModalApi } from '@/layout/common'
+import UpdateManager from '@/components/UpdateManager.vue'
 import {
   useThemeMode,
   useVisibilityChange,
@@ -57,6 +58,9 @@ onMounted(() => {
             <n-layout-content>
               <slot></slot>
             </n-layout-content>
+            
+            <!-- 更新管理器组件 -->
+            <UpdateManager />
           </n-modal-provider>
         </n-dialog-provider>
       </n-notification-provider>

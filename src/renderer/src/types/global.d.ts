@@ -61,6 +61,53 @@ declare global {
         getContactChanges: () => Promise<any>
         broadcastContactChanges: (changes: any) => Promise<any>
       }
+
+      // 更新API
+      updater: {
+        // 检查更新
+        checkForUpdates: () => Promise<void>
+        
+        // 下载更新
+        downloadUpdate: () => Promise<void>
+        
+        // 安装更新并重启
+        quitAndInstall: () => Promise<void>
+        
+        // 获取当前版本
+        getVersion: () => Promise<string>
+        
+        // 获取更新状态
+        getStatus: () => Promise<{
+          status: string
+          currentVersion: string
+          availableVersion?: string
+          downloadProgress?: any
+          error?: string
+          lastChecked?: Date
+        }>
+        
+        // 获取更新配置
+        getConfig: () => Promise<any>
+        
+        // 更新配置
+        updateConfig: (config: any) => Promise<{ success: boolean; error?: string }>
+        
+        // 事件监听器
+        onUpdateAvailable: (callback: (info: any) => void) => any
+        onUpdateNotAvailable: (callback: (info: any) => void) => any
+        onDownloadProgress: (callback: (progress: any) => void) => any
+        onUpdateDownloaded: (callback: (info: any) => void) => any
+        onError: (callback: (error: Error) => void) => any
+        onCheckingForUpdate: (callback: () => void) => any
+        
+        // 移除事件监听器
+        removeUpdateAvailableListener: (listener: any) => void
+        removeUpdateNotAvailableListener: (listener: any) => void
+        removeDownloadProgressListener: (listener: any) => void
+        removeUpdateDownloadedListener: (listener: any) => void
+        removeErrorListener: (listener: any) => void
+        removeCheckingForUpdateListener: (listener: any) => void
+      }
     }
 
     // 旧版 Electron API (保持兼容性)
@@ -110,6 +157,53 @@ declare global {
         getUnsyncedMessages: () => Promise<any>
         getContactChanges: () => Promise<any>
         broadcastContactChanges: (changes: any) => Promise<any>
+      }
+
+      // 更新API
+      updater: {
+        // 检查更新
+        checkForUpdates: () => Promise<void>
+        
+        // 下载更新
+        downloadUpdate: () => Promise<void>
+        
+        // 安装更新并重启
+        quitAndInstall: () => Promise<void>
+        
+        // 获取当前版本
+        getVersion: () => Promise<string>
+        
+        // 获取更新状态
+        getStatus: () => Promise<{
+          status: string
+          currentVersion: string
+          availableVersion?: string
+          downloadProgress?: any
+          error?: string
+          lastChecked?: Date
+        }>
+        
+        // 获取更新配置
+        getConfig: () => Promise<any>
+        
+        // 更新配置
+        updateConfig: (config: any) => Promise<{ success: boolean; error?: string }>
+        
+        // 事件监听器
+        onUpdateAvailable: (callback: (info: any) => void) => any
+        onUpdateNotAvailable: (callback: (info: any) => void) => any
+        onDownloadProgress: (callback: (progress: any) => void) => any
+        onUpdateDownloaded: (callback: (info: any) => void) => any
+        onError: (callback: (error: Error) => void) => any
+        onCheckingForUpdate: (callback: () => void) => any
+        
+        // 移除事件监听器
+        removeUpdateAvailableListener: (listener: any) => void
+        removeUpdateNotAvailableListener: (listener: any) => void
+        removeDownloadProgressListener: (listener: any) => void
+        removeUpdateDownloadedListener: (listener: any) => void
+        removeErrorListener: (listener: any) => void
+        removeCheckingForUpdateListener: (listener: any) => void
       }
     }
 

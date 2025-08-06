@@ -6,8 +6,9 @@ import { initPlugins } from './plugin'
 import { serviceManager } from './services'
 import { authService } from './services/auth/AuthService'
 import { databaseManager } from './services/database/Database'
+import { updaterService } from './services/updater/UpdaterService'
 
-function createWindow(): void {
+function createWindow(): BrowserWindow {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 900,
@@ -43,6 +44,8 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
+  
+  return mainWindow
 }
 
 // This method will be called when Electron has finished
@@ -75,11 +78,25 @@ app.whenReady().then(async () => {
     return
   }
 
-  createWindow()
-  // 针对mac用户：应用关闭所有窗口后仍保持运行，点击图标可重新打开窗口
-  app.on('activate', function () {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
-  })
+  const mainWindow = createWindow()
+  
+  // 设置主窗口到更新服务
+    updaterService.setMainWindow(mainWindow)
+    
+    // 启动时自动检查更新（延迟执行，避免影响启动速度）
+    setTimeout(() => {
+      updaterService.autoCheckForUpdates().catch(error => {
+        console.error('Auto check for updates failed:', error)
+      })
+    }, 10000) // 启动后10秒检查更新
+    
+    // 在 macOS 平台，当应用被重新激活时
+    app.on('activate', function () {
+      if (BrowserWindow.getAllWindows().length === 0) {
+        const newWindow = createWindow()
+        updaterService.setMainWindow(newWindow)
+      }
+    })
 
   // 初始化插件系统
   try {

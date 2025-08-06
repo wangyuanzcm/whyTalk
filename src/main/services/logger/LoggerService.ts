@@ -279,6 +279,70 @@ export class LoggerService {
   getLogDirectory(): string {
     return this.logDir
   }
+
+  /**
+   * 记录信息日志
+   * @param message 日志消息
+   * @param extra 额外信息
+   */
+  info(message: string, extra?: any): void {
+    this.log('info', message, extra)
+  }
+
+  /**
+   * 记录错误日志
+   * @param message 日志消息
+   * @param extra 额外信息
+   */
+  error(message: string, extra?: any): void {
+    this.log('error', message, extra)
+  }
+
+  /**
+   * 记录警告日志
+   * @param message 日志消息
+   * @param extra 额外信息
+   */
+  warn(message: string, extra?: any): void {
+    this.log('warn', message, extra)
+  }
+
+  /**
+   * 记录调试日志
+   * @param message 日志消息
+   * @param extra 额外信息
+   */
+  debug(message: string, extra?: any): void {
+    this.log('debug', message, extra)
+  }
+
+  /**
+   * 通用日志记录方法
+   * @param level 日志级别
+   * @param message 日志消息
+   * @param extra 额外信息
+   */
+  private log(level: string, message: string, extra?: any): void {
+    const logEntry: LogEntry = {
+      timestamp: new Date().toISOString(),
+      level,
+      message,
+      source: 'main',
+      ...extra
+    }
+
+    // 输出到控制台
+    if (this.enableConsoleOutput) {
+      this.outputToConsole(logEntry)
+    }
+
+    // 写入到文件
+    if (this.enableFileOutput) {
+      this.writeToFile(logEntry).catch(error => {
+        console.error('写入日志文件失败:', error)
+      })
+    }
+  }
 }
 
 // 导出单例

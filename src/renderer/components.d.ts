@@ -45,6 +45,7 @@ declare module 'vue' {
     NModalProvider: typeof import('naive-ui')['NModalProvider']
     NNotificationProvider: typeof import('naive-ui')['NNotificationProvider']
     NPopover: typeof import('naive-ui')['NPopover']
+    NProgress: typeof import('naive-ui')['NProgress']
     NRadio: typeof import('naive-ui')['NRadio']
     NRadioGroup: typeof import('naive-ui')['NRadioGroup']
     NSelect: typeof import('naive-ui')['NSelect']
@@ -61,6 +62,7 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     SkipBottomButton: typeof import('./src/components/chat/SkipBottomButton.vue')['default']
     TreeMenu: typeof import('./src/components/basic/tree-menu/TreeMenu.vue')['default']
+    UpdateManager: typeof import('./src/components/UpdateManager.vue')['default']
     UserSearchModal: typeof import('./src/components/user/UserSearchModal.vue')['default']
     Xtime: typeof import('./src/components/basic/Xtime.vue')['default']
   }

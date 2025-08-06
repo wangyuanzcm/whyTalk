@@ -27,7 +27,8 @@
     "plugins:dev": "pnpm --filter=@whytalk/plugins run dev",
     "plugins:build": "pnpm --filter=@whytalk/plugins run build",
     "plugins:install": "pnpm --filter=@whytalk/plugins run install:all",
-    "plugins:clean": "pnpm --filter=@whytalk/plugins run clean"
+    "plugins:clean": "pnpm --filter=@whytalk/plugins run clean",
+    "test:update": "electron scripts/test-update.js"
   },
   "dependencies": {
     "@chainsafe/libp2p-gossipsub": "^14.1.1",

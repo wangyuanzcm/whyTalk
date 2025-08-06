@@ -39,6 +39,11 @@ export default {
       path: '/settings/menu',
       meta: { auth: false },
       component: () => import('@/views/setting/menu.vue')
+    },
+    {
+      path: '/settings/update',
+      meta: { auth: false },
+      component: () => import('@/views/setting/update.vue')
     }
   ]
 }

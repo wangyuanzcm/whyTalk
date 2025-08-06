@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import SubViewLayout from '@/layout/SubViewLayout.vue'
-import { Tool, Remind, LinkThree, User, Plug, SettingTwo } from '@icon-park/vue-next'
+import { Tool, Remind, LinkThree, User, Plug, SettingTwo, Download } from '@icon-park/vue-next'
 
 const menus = [
   {
@@ -32,6 +32,11 @@ const menus = [
     name: '菜单配置',
     path: '/settings/menu',
     icon: SettingTwo
+  },
+  {
+    name: '应用更新',
+    path: '/settings/update',
+    icon: Download
   }
 ]
 </script>
