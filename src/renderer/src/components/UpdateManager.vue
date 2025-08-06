@@ -4,16 +4,16 @@
     <div v-if="showUpdateDialog" class="update-dialog-overlay">
       <div class="update-dialog">
         <div class="update-header">
-          <h3>{{ $t('update.available') }}</h3>
+          <h3>发现新版本</h3>
           <button @click="closeDialog" class="close-btn">&times;</button>
         </div>
         
         <div class="update-content">
           <div class="update-info">
-            <p><strong>{{ $t('update.currentVersion') }}:</strong> {{ currentVersion }}</p>
-            <p><strong>{{ $t('update.newVersion') }}:</strong> {{ availableVersion }}</p>
+            <p><strong>当前版本:</strong> {{ currentVersion }}</p>
+            <p><strong>新版本:</strong> {{ availableVersion }}</p>
             <div v-if="updateInfo?.releaseNotes" class="release-notes">
-              <h4>{{ $t('update.releaseNotes') }}:</h4>
+              <h4>更新说明:</h4>
               <div class="notes-content" v-html="updateInfo.releaseNotes"></div>
             </div>
           </div>
@@ -35,7 +35,7 @@
           
           <!-- 错误信息 -->
           <div v-if="error" class="error-message">
-            <p>{{ $t('update.error') }}: {{ error }}</p>
+            <p>错误: {{ error }}</p>
           </div>
         </div>
         
@@ -46,7 +46,7 @@
             class="btn btn-primary"
             :disabled="isLoading"
           >
-            {{ $t('update.download') }}
+            下载更新
           </button>
           
           <button 
@@ -54,7 +54,7 @@
             @click="installUpdate" 
             class="btn btn-primary"
           >
-            {{ $t('update.installAndRestart') }}
+            安装并重启
           </button>
           
           <button 
@@ -62,7 +62,7 @@
             @click="closeDialog" 
             class="btn btn-secondary"
           >
-            {{ $t('update.later') }}
+            稍后
           </button>
         </div>
       </div>

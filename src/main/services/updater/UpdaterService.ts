@@ -270,7 +270,7 @@ class UpdaterService {
     })
 
     // 更新配置
-    ipcMain.handle('updater:update-config', async (event, config) => {
+    ipcMain.handle('updater:update-config', async (_, config) => {
       try {
         // 验证并保存配置
         const saved = saveUpdateConfig(config)
@@ -458,6 +458,13 @@ class UpdaterService {
     ipcMain.removeHandler('updater:update-config')
 
     loggerService.info('UpdaterService shutdown')
+  }
+
+  /**
+   * 清理资源（cleanup 方法别名）
+   */
+  async cleanup(): Promise<void> {
+    await this.shutdown()
   }
 }
 

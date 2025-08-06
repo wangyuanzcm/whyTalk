@@ -122,7 +122,7 @@
           </n-button>
 
           <n-button
-            v-if="status.status === 'update-available'"
+            v-if="status.status === 'update-available' || status.status === 'downloading'"
             type="success"
             :loading="status.status === 'downloading'"
             @click="downloadUpdate"
