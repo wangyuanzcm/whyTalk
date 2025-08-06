@@ -154,13 +154,17 @@ export class LocalSendDiscovery extends EventEmitter {
 
       // 验证消息格式
       if (!this.isValidAnnouncement(data)) {
+        console.log('Invalid announcement format:', data)
         return
       }
 
       // 忽略自己的广播
       if (data.fingerprint === this.localFingerprint) {
+        console.log(`Ignoring own broadcast: ${data.fingerprint} (local: ${this.localFingerprint})`)
         return
       }
+
+      console.log(`Processing discovery message from ${data.alias} (${data.fingerprint}) at ${rinfo.address}`)
 
       const peer: LocalSendPeer = {
         fingerprint: data.fingerprint,

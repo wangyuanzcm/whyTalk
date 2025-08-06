@@ -14,13 +14,13 @@ import * as os from 'os'
  */
 export class LocalSendHttpServer extends EventEmitter {
   private server: http.Server | https.Server | null = null
-  private port: number = 53317
+  private port: number = 53318
   private useHttps: boolean = false
   private certificate: { cert: string; key: string } | null = null
   private localFingerprint: string
   private deviceInfo: any
 
-  constructor(port: number = 53317, useHttps: boolean = false) {
+  constructor(port: number = 53318, useHttps: boolean = false) {
     super()
     this.port = port
     this.useHttps = useHttps

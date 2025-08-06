@@ -73,5 +73,6 @@ export interface PluginInstance {
   config: CubeModuleConfig | SystemPluginConfig
   path: string
   enabled: boolean
+  isBuiltin?: boolean // 标识是否为内置插件（开发目录中的插件）
   extismPlugin?: any // 仅系统插件使用
 }

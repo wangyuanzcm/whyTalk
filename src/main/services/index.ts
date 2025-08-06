@@ -3,6 +3,7 @@ import { databaseManager } from './database/Database'
 import { authService } from './auth/AuthService'
 import { userService } from './user/UserService'
 import { uploadService } from './upload/UploadService'
+import { loggerService } from './logger/LoggerService'
 // settingsService removed - functionality moved to user preferences
 // pluginManager removed - functionality integrated into plugin services
 // import { p2pManager } from './p2p/P2PManager' // 替换为LocalSend实现
@@ -192,6 +193,7 @@ export {
   authService,
   userService,
   uploadService,
+  loggerService,
   // settingsService removed
   // pluginManager removed
   p2pManager,

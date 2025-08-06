@@ -374,9 +374,14 @@ export class LocalSendIPCHandler {
 
     ipcMain.handle('p2p:getConnectedPeers', async () => {
       try {
-        const peers = await localSendP2PManager.getDiscoveredPeers()
-        // LocalSend 没有持久连接概念，返回发现的设备
-        return { success: true, data: peers }
+        const allPeers = await localSendP2PManager.getDiscoveredPeers()
+        // LocalSend 没有持久连接概念，但我们可以返回最近活跃的设备（30秒内）
+        const activePeers = allPeers.filter((peer: any) => {
+          const lastSeen = new Date(peer.lastSeen).getTime()
+          const now = Date.now()
+          return (now - lastSeen) < 30000 // 30秒内视为"连接"状态
+        })
+        return { success: true, data: activePeers }
       } catch (error) {
         console.error('Failed to get LocalSend connected peers:', error)
         return { success: false, error: error instanceof Error ? error.message : String(error) }
@@ -420,7 +425,7 @@ export class LocalSendIPCHandler {
         const settings = {
           deviceAlias: localSendP2PManager.getNodeInfo().alias,
           autoStart: false, // 可以从配置文件读取
-          port: 53317 // 可以从配置文件读取
+          port: 53318 // 可以从配置文件读取
         }
         return { success: true, data: settings }
       } catch (error) {

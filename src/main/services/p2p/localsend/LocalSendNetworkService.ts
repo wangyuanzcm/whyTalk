@@ -24,7 +24,7 @@ export class LocalSendNetworkService extends EventEmitter {
   private isStarted = false
   private deviceAlias: string
   private messageHandlers: Map<string, (message: LocalSendMessage) => void> = new Map()
-  private port = 53317
+  private port = 53318
   private useHttps = false
 
   constructor(alias?: string) {
@@ -217,9 +217,29 @@ export class LocalSendNetworkService extends EventEmitter {
     if (this.httpServer) {
       return this.httpServer.getFingerprint()
     }
-    // 生成基于设备信息的指纹
-    const deviceInfo = `${this.deviceAlias}-${os.hostname()}-${this.port}`
-    return crypto.createHash('sha256').update(deviceInfo).digest('hex').substring(0, 16)
+    
+    // 使用与LocalSendHttpServer相同的指纹生成逻辑
+    const hostname = os.hostname()
+    const platform = os.platform()
+    const arch = os.arch()
+    const networkInterfaces = os.networkInterfaces()
+
+    // 获取第一个非回环网络接口的MAC地址
+    let macAddress = ''
+    for (const [_name, interfaces] of Object.entries(networkInterfaces)) {
+      if (interfaces) {
+        for (const iface of interfaces) {
+          if (!iface.internal && iface.mac && iface.mac !== '00:00:00:00:00:00') {
+            macAddress = iface.mac
+            break
+          }
+        }
+      }
+      if (macAddress) break
+    }
+
+    const data = `${hostname}-${platform}-${arch}-${macAddress}`
+    return crypto.createHash('sha256').update(data).digest('hex').substring(0, 16)
   }
 
   /**

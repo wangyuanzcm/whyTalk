@@ -19,7 +19,7 @@ import type {
  * 支持设备发现、消息传输和文件传输
  */
 export class LocalSendProtocol extends EventEmitter {
-  private readonly DEFAULT_PORT = 53317
+  private readonly DEFAULT_PORT = 53318
   private readonly MULTICAST_GROUP = '224.0.0.167'
   private readonly MULTICAST_PORT = 53317
   private readonly DISCOVERY_INTERVAL = 5000 // 5秒

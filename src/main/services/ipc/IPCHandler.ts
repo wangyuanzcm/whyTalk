@@ -3,6 +3,7 @@ import { authService } from '../auth/AuthService'
 import { userService } from '../user/UserService'
 import { uploadService } from '../upload/UploadService'
 import { localSendP2PManager as p2pManager } from '../p2p/LocalSendP2PManager'
+import { loggerService } from '../logger/LoggerService'
 import type { IPCRequest, IPCResponse } from './IPCHandler.d'
 
 export class IPCHandler {
@@ -22,6 +23,21 @@ export class IPCHandler {
     // 监听文件上传
     ipcMain.handle('upload-file', async (_event, fileData) => {
       return await this.handleFileUpload(fileData)
+    })
+
+    // 监听日志写入请求
+    ipcMain.handle('logger:write', async (_event, logData) => {
+      return await this.handleLogWrite(logData)
+    })
+
+    // 监听日志文件查询请求
+    ipcMain.handle('logger:getFiles', async (_event) => {
+      return await this.handleGetLogFiles()
+    })
+
+    // 监听日志文件读取请求
+    ipcMain.handle('logger:readFile', async (_event, { fileName, lines }) => {
+      return await this.handleReadLogFile(fileName, lines)
     })
   }
 
@@ -252,6 +268,48 @@ export class IPCHandler {
         window.webContents.send('realtime-event', { event, data })
       }
     })
+  }
+
+  /**
+   * 处理日志写入请求
+   * @param logData 日志数据
+   */
+  private async handleLogWrite(logData: any): Promise<any> {
+    try {
+      await loggerService.writeLog(logData)
+      return { success: true }
+    } catch (error: any) {
+      console.error('日志写入失败:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  /**
+   * 处理获取日志文件列表请求
+   */
+  private async handleGetLogFiles(): Promise<any> {
+    try {
+      const files = await loggerService.getLogFiles()
+      return { success: true, files }
+    } catch (error: any) {
+      console.error('获取日志文件列表失败:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  /**
+   * 处理读取日志文件请求
+   * @param fileName 文件名
+   * @param lines 读取行数
+   */
+  private async handleReadLogFile(fileName: string, lines: number = 100): Promise<any> {
+    try {
+      const content = await loggerService.readLogFile(fileName, lines)
+      return { success: true, content }
+    } catch (error: any) {
+      console.error('读取日志文件失败:', error)
+      return { success: false, error: error.message }
+    }
   }
 }
 

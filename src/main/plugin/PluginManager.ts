@@ -39,12 +39,13 @@ export class PluginManager {
   // private extism: any // 暂时未使用
 
   constructor() {
-    // 在开发环境中使用项目根目录的 plugins 文件夹
+    // 在开发环境中将运行时插件目录与开发目录分离
     // 在生产环境中使用用户数据目录的 plugins 文件夹
     if (process.env.NODE_ENV === 'development' || !app.isPackaged) {
-      // 开发环境：使用项目根目录的 plugins 文件夹
-      this.pluginsDir = join(process.cwd(), 'plugins')
-      this.builtinPluginsDir = this.pluginsDir
+      // 开发环境：运行时插件目录使用临时目录，避免与开发目录冲突
+      this.pluginsDir = join(app.getPath('userData'), 'dev-plugins')
+      // 内置插件目录指向项目根目录的 plugins 文件夹（只读）
+      this.builtinPluginsDir = join(process.cwd(), 'plugins')
     } else {
       // 生产环境：使用用户数据目录的 plugins 文件夹
       this.pluginsDir = join(app.getPath('userData'), 'plugins')
@@ -170,7 +171,7 @@ export class PluginManager {
    * 扫描并加载所有插件
    */
   public async loadAllPlugins() {
-    // 首先加载内置插件
+    // 首先加载内置插件（开发目录中的插件）
     if (existsSync(this.builtinPluginsDir)) {
       console.log('Loading builtin plugins...')
       const builtinPluginDirs = readdirSync(this.builtinPluginsDir).filter((dir) => {
@@ -179,7 +180,7 @@ export class PluginManager {
       })
 
       for (const dir of builtinPluginDirs) {
-        await this.loadPlugin(join(this.builtinPluginsDir, dir))
+        await this.loadPlugin(join(this.builtinPluginsDir, dir), true) // 标记为内置插件
       }
     }
 
@@ -195,7 +196,7 @@ export class PluginManager {
       })
 
       for (const dir of userPluginDirs) {
-        await this.loadPlugin(join(this.pluginsDir, dir))
+        await this.loadPlugin(join(this.pluginsDir, dir), false) // 标记为用户插件
       }
     }
 
@@ -204,8 +205,10 @@ export class PluginManager {
 
   /**
    * 加载单个插件
+   * @param pluginPath 插件路径
+   * @param isBuiltin 是否为内置插件（开发目录中的插件）
    */
-  private async loadPlugin(pluginPath: string) {
+  private async loadPlugin(pluginPath: string, isBuiltin: boolean = false) {
     try {
       // 检查 cubeModule.json 配置文件
       const cubeConfigPath = join(pluginPath, 'cubeModule.json')
@@ -215,10 +218,10 @@ export class PluginManager {
         const config = JSON.parse(configContent)
 
         if (config.type === 'system') {
-          await this.loadSystemPluginFromPath(pluginPath, cubeConfigPath)
+          await this.loadSystemPluginFromPath(pluginPath, cubeConfigPath, isBuiltin)
         } else {
           // 默认为前端插件
-          await this.loadFrontendPluginFromPath(pluginPath, cubeConfigPath)
+          await this.loadFrontendPluginFromPath(pluginPath, cubeConfigPath, isBuiltin)
         }
         return
       }
@@ -226,7 +229,7 @@ export class PluginManager {
       // 检查是否为旧格式的系统插件
       const systemConfigPath = join(pluginPath, 'plugin.json')
       if (existsSync(systemConfigPath)) {
-        await this.loadSystemPluginFromPath(pluginPath, systemConfigPath)
+        await this.loadSystemPluginFromPath(pluginPath, systemConfigPath, isBuiltin)
         return
       }
 
@@ -238,8 +241,11 @@ export class PluginManager {
 
   /**
    * 加载前端插件
+   * @param pluginPath 插件路径
+   * @param configPath 配置文件路径
+   * @param isBuiltin 是否为内置插件
    */
-  private async loadFrontendPluginFromPath(pluginPath: string, configPath: string) {
+  private async loadFrontendPluginFromPath(pluginPath: string, configPath: string, isBuiltin: boolean = false) {
     const configContent = readFileSync(configPath, 'utf-8')
     const config: CubeModuleConfig = JSON.parse(configContent)
 
@@ -255,17 +261,21 @@ export class PluginManager {
       type: PluginType.FRONTEND,
       config,
       path: pluginPath,
-      enabled: true
+      enabled: true,
+      isBuiltin
     }
 
     this.plugins.set(pluginId, plugin)
-    console.log(`Loaded frontend plugin: ${config.name} v${config.version}`)
+    console.log(`Loaded frontend plugin: ${config.name} v${config.version} ${isBuiltin ? '(builtin)' : '(user)'}`)
   }
 
   /**
    * 加载系统插件
+   * @param pluginPath 插件路径
+   * @param configPath 配置文件路径
+   * @param isBuiltin 是否为内置插件
    */
-  private async loadSystemPluginFromPath(pluginPath: string, configPath: string) {
+  private async loadSystemPluginFromPath(pluginPath: string, configPath: string, isBuiltin: boolean = false) {
     try {
       const configContent = readFileSync(configPath, 'utf-8')
       const config: SystemPluginConfig = JSON.parse(configContent)
@@ -330,7 +340,8 @@ export class PluginManager {
         type: PluginType.SYSTEM,
         config,
         path: pluginPath,
-        enabled: true
+        enabled: true,
+        isBuiltin
       }
 
       this.plugins.set(config.name, plugin)
@@ -609,6 +620,7 @@ export class PluginManager {
 
   /**
    * 卸载插件
+   * @param pluginId 插件ID
    */
   public async uninstallPlugin(pluginId: string) {
     try {
@@ -617,12 +629,18 @@ export class PluginManager {
         throw new Error('插件不存在')
       }
 
+      // 检查是否为内置插件（开发目录中的插件）
+      if (plugin.isBuiltin) {
+        throw new Error('无法卸载内置插件，内置插件位于开发目录中，请通过开发工具管理')
+      }
+
       // 先卸载插件
       await this.unloadPlugin(pluginId)
 
-      // 删除插件文件
+      // 删除插件文件（仅删除用户安装的插件）
       if (existsSync(plugin.path)) {
         rmSync(plugin.path, { recursive: true, force: true })
+        console.log(`Deleted user plugin files: ${plugin.path}`)
       }
 
       // 从插件列表中移除
