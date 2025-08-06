@@ -477,7 +477,7 @@ export class PluginManager {
 
       // 处理JS文件
       htmlContent = htmlContent.replace(
-        /<script[^>]+src=["']([^"']+)["'][^>]*><\/script>/gi,
+        /<script[^>]*src=["']?([^"'\s>]+)["']?[^>]*><\/script>/gi,
         (match, src) => {
           try {
             const jsPath = join(pluginPath, src)
