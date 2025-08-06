@@ -395,12 +395,21 @@ export class PluginAPIHandler {
    * 选择文件
    */
   private async handleSelectFile(_: Electron.IpcMainInvokeEvent, options?: any) {
-    const result = await dialog.showOpenDialog({
-      properties: ['openFile'],
-      filters: options?.filters || [{ name: 'All Files', extensions: ['*'] }]
-    })
+    try {
+      const result = await dialog.showOpenDialog({
+        properties: ['openFile'],
+        filters: options?.filters || [{ name: 'All Files', extensions: ['*'] }],
+        title: options?.title || '选择文件'
+      })
 
-    return result.filePaths
+      if (result.canceled || !result.filePaths || result.filePaths.length === 0) {
+        return { success: false, error: '用户取消选择' }
+      }
+
+      return { success: true, filePath: result.filePaths[0] }
+    } catch (error: any) {
+      return { success: false, error: error.message }
+    }
   }
 
   /**

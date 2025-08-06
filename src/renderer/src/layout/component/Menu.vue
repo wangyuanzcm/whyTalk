@@ -47,9 +47,21 @@ const isActive = (menu) => {
   return router.currentRoute.value.path.indexOf(menu.link) >= 0
 }
 
-// 初始化菜单配置
-onMounted(() => {
+// 初始化菜单配置和插件同步
+onMounted(async () => {
   menuStore.loadMenuConfig()
+  
+  // 同步插件到菜单系统
+  try {
+    const PluginAPI = (await import('@/api/plugin')).default
+    const result = await PluginAPI.listPlugins()
+    if (result.success && result.plugins) {
+      const enabledPlugins = result.plugins.filter((plugin) => plugin.enabled)
+      menuStore.syncPluginsToMenuItems(enabledPlugins)
+    }
+  } catch (error) {
+    console.error('同步插件到菜单失败:', error)
+  }
 })
 </script>
 

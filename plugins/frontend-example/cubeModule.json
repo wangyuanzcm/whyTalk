@@ -4,6 +4,8 @@
   "description": "一个示例前端插件，展示基本的插件功能",
   "author": "Why-Talk Team",
   "main": "index.html",
+  "menuTitle": "前端示例",
+  "shortName": "示例",
   "permissions": ["storage", "notifications"],
   "dependencies": {}
 }

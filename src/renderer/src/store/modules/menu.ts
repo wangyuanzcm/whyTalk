@@ -103,6 +103,7 @@ export const useMenuStore = defineStore('menu', {
         .map((coreId) => state.coreMenuItems.find((item) => item.id === coreId))
         .filter(Boolean) as MenuItem[]
 
+      // 获取所有启用的插件菜单项（包括动态添加的）
       const enabledPluginItems = state.pluginMenuItems.filter((item) =>
         state.menuConfig.enabledPlugins.includes(item.pluginId || '')
       )
@@ -150,6 +151,50 @@ export const useMenuStore = defineStore('menu', {
         // 添加新项
         this.pluginMenuItems.push(item)
       }
+    },
+
+    // 动态创建前端插件菜单项
+    createPluginMenuItem(pluginId: string, pluginConfig: any): MenuItem {
+      // 优先使用shortName，然后是menuTitle，最后是name
+      const displayTitle = pluginConfig?.shortName || pluginConfig?.menuTitle || pluginConfig?.name || pluginId
+      
+      return {
+        id: pluginId,
+        link: `/plugin/${pluginId}`,
+        icon: markRaw(Application), // 默认使用Application图标
+        title: displayTitle,
+        pluginId: pluginId
+      }
+    },
+
+    // 同步所有插件到菜单项（支持前端插件和系统插件）
+    syncPluginsToMenuItems(plugins: any[]) {
+      // 获取所有可以显示在菜单中的插件（前端插件和有UI配置的系统插件）
+      const menuablePlugins = plugins.filter(plugin => {
+        if (plugin.type === 'frontend') {
+          return true
+        }
+        // 系统插件需要有UI配置才能显示在菜单中
+        if (plugin.type === 'system' && plugin.config?.ui) {
+          return true
+        }
+        return false
+      })
+      
+      // 为每个插件创建菜单项（如果不存在）
+      menuablePlugins.forEach(plugin => {
+        const existingItem = this.pluginMenuItems.find(item => item.pluginId === plugin.id)
+        if (!existingItem) {
+          const menuItem = this.createPluginMenuItem(plugin.id, plugin.config)
+          this.addPluginMenuItem(menuItem)
+        }
+      })
+      
+      // 移除不存在的插件菜单项
+      const existingPluginIds = menuablePlugins.map(p => p.id)
+      this.pluginMenuItems = this.pluginMenuItems.filter(item => 
+        !item.pluginId || existingPluginIds.includes(item.pluginId)
+      )
     },
 
     // 移除插件菜单项

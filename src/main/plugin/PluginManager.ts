@@ -13,10 +13,12 @@ import { createWriteStream } from 'fs'
 import * as https from 'https'
 import * as http from 'http'
 import * as yauzl from 'yauzl'
+import * as tar from 'tar'
 // import { SecurityManager } from './SecurityManager'
 // import { PluginAPIHandler } from './PluginAPIHandler'
 import { wasmPluginRunner, WasmExecutionResult } from './WasmPluginRunner'
 import { getPluginDatabase, PluginDatabase } from './PluginDatabase'
+// import { PluginPermissionManager } from '../services/plugin/PluginPermissionManager' // 暂时未使用
 import { PluginType } from './PluginManager.d'
 import type {
   CubeModuleConfig,
@@ -33,6 +35,7 @@ export class PluginManager {
   private pluginsDir: string
   private builtinPluginsDir: string // 应用程序包内的插件目录
   private database: PluginDatabase
+  // private permissionManager: PluginPermissionManager // 暂时未使用
   // private extism: any // 暂时未使用
 
   constructor() {
@@ -52,6 +55,7 @@ export class PluginManager {
     console.log(`Plugin directory: ${this.pluginsDir}`)
     console.log(`Builtin plugin directory: ${this.builtinPluginsDir}`)
     this.database = getPluginDatabase()
+    // this.permissionManager = PluginPermissionManager.getInstance() // 暂时未使用
     this.initializeExtism()
     this.setupIpcHandlers()
   }
@@ -98,7 +102,35 @@ export class PluginManager {
       }
     )
 
+    // 获取插件信息
+    ipcMain.handle('plugin:getPluginInfo', (_, pluginId: string) => {
+      const plugin = this.plugins.get(pluginId)
+      if (!plugin) {
+        return { success: false, error: 'Plugin not found' }
+      }
+      return {
+        success: true,
+        data: {
+          id: plugin.id,
+          type: plugin.type,
+          config: plugin.config,
+          enabled: plugin.enabled,
+          path: plugin.path
+        }
+      }
+    })
+
     // 获取前端插件内容
+    ipcMain.handle('plugin:loadFrontendPlugin', (_, pluginId: string) => {
+      return this.loadFrontendPlugin(pluginId)
+    })
+
+    // 加载系统插件HTML
+    ipcMain.handle('plugin:loadSystemPluginHTML', (_, pluginId: string) => {
+      return this.loadSystemPluginHTML(pluginId)
+    })
+
+    // 兼容旧的API
     ipcMain.handle('plugin:frontend:load', (_, pluginId: string) => {
       return this.loadFrontendPlugin(pluginId)
     })
@@ -350,7 +382,10 @@ export class PluginManager {
     try {
       const config = plugin.config as CubeModuleConfig
       const mainPath = join(plugin.path, config.main)
-      const htmlContent = readFileSync(mainPath, 'utf-8')
+      let htmlContent = readFileSync(mainPath, 'utf-8')
+
+      // 处理CSS文件内联
+      htmlContent = this.inlinePluginResources(htmlContent, plugin.path)
 
       return {
         success: true,
@@ -363,6 +398,93 @@ export class PluginManager {
     } catch (error) {
       console.error(`Error loading frontend plugin ${pluginId}:`, error)
       return { success: false, error: error instanceof Error ? error.message : String(error) }
+    }
+  }
+
+  /**
+   * 加载系统插件HTML内容
+   */
+  private loadSystemPluginHTML(pluginId: string) {
+    const plugin = this.plugins.get(pluginId)
+    if (!plugin || plugin.type !== PluginType.SYSTEM) {
+      return { success: false, error: 'System plugin not found' }
+    }
+
+    try {
+      // 检查系统插件是否有HTML界面
+      if (!plugin.config.main || !plugin.config.main.endsWith('.html')) {
+        return { success: false, error: 'System plugin does not have HTML interface' }
+      }
+
+      const mainPath = join(plugin.path, plugin.config.main)
+      if (!existsSync(mainPath)) {
+        return { success: false, error: 'Main HTML file not found' }
+      }
+
+      let htmlContent = readFileSync(mainPath, 'utf-8')
+      
+      // 内联CSS和JS资源
+      htmlContent = this.inlinePluginResources(htmlContent, plugin.path)
+
+      return {
+        success: true,
+        data: {
+          html: htmlContent,
+          config: plugin.config
+        }
+      }
+    } catch (error) {
+      console.error(`Error loading system plugin HTML ${pluginId}:`, error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }
+    }
+  }
+
+  /**
+   * 内联插件资源文件（CSS和JS）
+   */
+  private inlinePluginResources(htmlContent: string, pluginPath: string): string {
+    try {
+      // 处理CSS文件
+      htmlContent = htmlContent.replace(
+        /<link[^>]+rel=["']stylesheet["'][^>]*href=["']([^"']+)["'][^>]*>/gi,
+        (match, href) => {
+          try {
+            const cssPath = join(pluginPath, href)
+            if (existsSync(cssPath)) {
+              const cssContent = readFileSync(cssPath, 'utf-8')
+              return `<style>\n${cssContent}\n</style>`
+            }
+          } catch (error) {
+            console.warn(`Failed to inline CSS file ${href}:`, error)
+          }
+          return match
+        }
+      )
+
+      // 处理JS文件
+      htmlContent = htmlContent.replace(
+        /<script[^>]+src=["']([^"']+)["'][^>]*><\/script>/gi,
+        (match, src) => {
+          try {
+            const jsPath = join(pluginPath, src)
+            if (existsSync(jsPath)) {
+              const jsContent = readFileSync(jsPath, 'utf-8')
+              return `<script>\n${jsContent}\n</script>`
+            }
+          } catch (error) {
+            console.warn(`Failed to inline JS file ${src}:`, error)
+          }
+          return match
+        }
+      )
+
+      return htmlContent
+    } catch (error) {
+      console.error('Error inlining plugin resources:', error)
+      return htmlContent
     }
   }
 
@@ -430,19 +552,19 @@ export class PluginManager {
   /**
    * 安装本地插件
    */
-  public async installLocalPlugin(zipPath: string) {
+  public async installLocalPlugin(filePath: string) {
     try {
-      if (!existsSync(zipPath)) {
-        throw new Error('插件文件不存在')
+      if (!existsSync(filePath)) {
+        return { success: false, error: '文件不存在' }
       }
 
-      const pluginId = await this.extractAndInstallPlugin(zipPath)
+      const pluginId = await this.extractAndInstallPlugin(filePath)
       const plugin = this.plugins.get(pluginId)
 
       if (plugin) {
         // 保存到数据库
         this.database.savePluginConfig(pluginId, plugin.config, plugin.enabled)
-        this.database.recordPluginInstallation(pluginId, plugin.config.version, 'local', zipPath)
+        this.database.recordPluginInstallation(pluginId, plugin.config.version, 'local', filePath)
       }
 
       return { success: true, pluginId }
@@ -639,7 +761,20 @@ export class PluginManager {
   /**
    * 解压并安装插件
    */
-  private async extractAndInstallPlugin(zipPath: string): Promise<string> {
+  private async extractAndInstallPlugin(filePath: string): Promise<string> {
+    const fileExtension = filePath.toLowerCase()
+    
+    if (fileExtension.endsWith('.tgz') || fileExtension.endsWith('.tar.gz')) {
+      return this.extractTgzAndInstallPlugin(filePath)
+    } else {
+      return this.extractZipAndInstallPlugin(filePath)
+    }
+  }
+
+  /**
+   * 解压ZIP文件并安装插件
+   */
+  private async extractZipAndInstallPlugin(zipPath: string): Promise<string> {
     return new Promise((resolve, reject) => {
       yauzl.open(zipPath, { lazyEntries: true }, (err, zipfile) => {
         if (err) {
@@ -648,7 +783,6 @@ export class PluginManager {
         }
 
         let pluginId = ''
-        let configFound = false
         const tempDir = join(app.getPath('temp'), `plugin-extract-${Date.now()}`)
         mkdirSync(tempDir, { recursive: true })
 
@@ -684,7 +818,7 @@ export class PluginManager {
                   try {
                     const config = JSON.parse(readFileSync(filePath, 'utf-8'))
                     pluginId = config.name || entry.fileName.split('/')[0]
-                    configFound = true
+                    // configFound = true // 已移除configFound变量
                   } catch (e) {
                     // 忽略配置文件解析错误
                   }
@@ -697,8 +831,9 @@ export class PluginManager {
 
         zipfile.on('end', async () => {
           try {
-            if (!configFound) {
-              throw new Error('插件配置文件不存在')
+            // 检查插件ID是否有效
+            if (!pluginId) {
+              throw new Error('插件配置文件不存在或无效')
             }
 
             // 检查插件是否已存在
@@ -776,6 +911,102 @@ export class PluginManager {
           }
         })
       })
+    })
+  }
+
+  /**
+   * 解压TGZ文件并安装插件
+   */
+  private async extractTgzAndInstallPlugin(tgzPath: string): Promise<string> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        let pluginId = ''
+        const tempDir = join(app.getPath('temp'), `plugin-extract-${Date.now()}`)
+        mkdirSync(tempDir, { recursive: true })
+
+        // 解压tgz文件
+        await tar.extract({
+          file: tgzPath,
+          cwd: tempDir,
+          strip: 0 // 保持原始目录结构
+        })
+
+        // 查找配置文件
+        const findConfigFile = (dir: string): string | null => {
+          const entries = readdirSync(dir)
+          for (const entry of entries) {
+            const fullPath = join(dir, entry)
+            if (statSync(fullPath).isDirectory()) {
+              const result = findConfigFile(fullPath)
+              if (result) return result
+            } else if (entry === 'cubeModule.json' || entry === 'plugin.json') {
+              return fullPath
+            }
+          }
+          return null
+        }
+
+        const configPath = findConfigFile(tempDir)
+        if (!configPath) {
+          rmSync(tempDir, { recursive: true, force: true })
+          reject(new Error('插件配置文件未找到'))
+          return
+        }
+
+        const configContent = readFileSync(configPath, 'utf-8')
+        const config = JSON.parse(configContent)
+        pluginId = config.id || config.name
+
+        if (!pluginId) {
+          rmSync(tempDir, { recursive: true, force: true })
+          reject(new Error('插件ID未找到'))
+          return
+        }
+
+        // 确定插件根目录（配置文件所在目录）
+        const pluginRootDir = join(configPath, '..')
+        const finalPluginPath = join(this.pluginsDir, pluginId)
+
+        // 检查插件是否已存在
+        if (existsSync(finalPluginPath)) {
+          const existingConfigPath = existsSync(join(finalPluginPath, 'cubeModule.json'))
+            ? join(finalPluginPath, 'cubeModule.json')
+            : join(finalPluginPath, 'plugin.json')
+
+          if (existsSync(existingConfigPath)) {
+            const existingConfig = JSON.parse(readFileSync(existingConfigPath, 'utf-8'))
+            const existingVersion = existingConfig.version || '1.0.0'
+            const newVersion = config.version || '1.0.0'
+
+            console.log(
+              `插件 ${pluginId} 已存在，版本: ${existingVersion}，新版本: ${newVersion}`
+            )
+
+            // 删除旧版本（如果仍然存在）
+            if (existsSync(finalPluginPath)) {
+              rmSync(finalPluginPath, { recursive: true, force: true })
+            }
+          }
+        }
+
+        // 删除旧版本（如果仍然存在）
+        if (existsSync(finalPluginPath)) {
+          rmSync(finalPluginPath, { recursive: true, force: true })
+        }
+
+        // 复制文件
+        this.copyDirectory(pluginRootDir, finalPluginPath)
+
+        // 清理临时目录
+        rmSync(tempDir, { recursive: true, force: true })
+
+        // 加载插件
+        await this.loadPlugin(finalPluginPath)
+
+        resolve(pluginId)
+      } catch (error) {
+        reject(error)
+      }
     })
   }
 

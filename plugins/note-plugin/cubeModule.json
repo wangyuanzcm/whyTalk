@@ -6,6 +6,7 @@
   "main": "index.html",
   "icon": "📝",
   "menuTitle": "笔记",
+  "shortName": "笔记",
   "permissions": ["storage", "notifications", "ipc", "database"],
   "dependencies": {
     "vue": "^3.0.0",

@@ -1,14 +1,41 @@
 // 前端插件示例脚本
 
-// 检查插件API是否可用
-if (typeof window.pluginAPI === 'undefined') {
-  console.error('Plugin API not available')
+// 等待插件API注入完成
+function waitForPluginAPI() {
+  if (typeof window.pluginAPI !== 'undefined') {
+    console.log('Plugin API available:', window.pluginAPI)
+    initializePlugin()
+  } else {
+    // 监听pluginAPIReady事件
+    window.addEventListener('pluginAPIReady', () => {
+      console.log('Plugin API ready event received')
+      if (typeof window.pluginAPI !== 'undefined') {
+        console.log('Plugin API available:', window.pluginAPI)
+        initializePlugin()
+      } else {
+        console.error('Plugin API still not available after ready event')
+        showAPIError()
+      }
+    })
+    
+    // 设置超时检查，防止API永远不可用
+    setTimeout(() => {
+      if (typeof window.pluginAPI === 'undefined') {
+        console.error('Plugin API not available after timeout')
+        showAPIError()
+      }
+    }, 5000)
+  }
+}
+
+// 显示API不可用错误
+function showAPIError() {
   document.body.innerHTML =
     '<div style="padding: 20px; text-align: center; color: red;">插件API不可用，请确保在Why-Talk插件环境中运行</div>'
-} else {
-  console.log('Plugin API available:', window.pluginAPI)
-  initializePlugin()
 }
+
+// 启动插件API等待逻辑
+waitForPluginAPI()
 
 // 插件初始化
 async function initializePlugin() {

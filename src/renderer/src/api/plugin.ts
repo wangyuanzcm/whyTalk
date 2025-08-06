@@ -73,9 +73,33 @@ export class PluginAPI {
   /**
    * 安装远程插件
    */
-  static async installRemotePlugin(url: string): Promise<PluginInstallResult> {
+  static async installRemotePlugin(
+    url: string,
+    npmRegistry?: string
+  ): Promise<PluginInstallResult> {
     try {
-      const result = await window.electron.ipcRenderer.invoke('plugin:manager:install-remote', url)
+      const result = await window.electron.ipcRenderer.invoke('plugin:manager:install-remote', {
+        url,
+        npmRegistry
+      })
+      return result
+    } catch (error: any) {
+      return { success: false, error: error.message }
+    }
+  }
+
+  /**
+   * 通过npm包名安装插件
+   */
+  static async installNpmPlugin(
+    packageName: string,
+    npmRegistry?: string
+  ): Promise<PluginInstallResult> {
+    try {
+      const result = await window.electron.ipcRenderer.invoke('plugin:manager:install-npm', {
+        packageName,
+        npmRegistry
+      })
       return result
     } catch (error: any) {
       return { success: false, error: error.message }
@@ -147,16 +171,56 @@ export class PluginAPI {
   }
 
   /**
+   * 获取插件信息
+   */
+  static async getPluginInfo(
+    pluginId: string
+  ): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      const result = await window.electron.ipcRenderer.invoke('plugin:getPluginInfo', pluginId)
+      return result
+    } catch (error) {
+      console.error('Failed to get plugin info:', error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }
+    }
+  }
+
+  /**
    * 加载前端插件
    */
   static async loadFrontendPlugin(
     pluginId: string
   ): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
-      const result = await window.electron.ipcRenderer.invoke('plugin:frontend:load', pluginId)
+      const result = await window.electron.ipcRenderer.invoke('plugin:loadFrontendPlugin', pluginId)
       return result
-    } catch (error: any) {
-      return { success: false, error: error.message }
+    } catch (error) {
+      console.error('Failed to load frontend plugin:', error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }
+    }
+  }
+
+  /**
+   * 加载系统插件HTML
+   */
+  static async loadSystemPluginHTML(
+    pluginId: string
+  ): Promise<{ success: boolean; data?: any; error?: string }> {
+    try {
+      const result = await window.electron.ipcRenderer.invoke('plugin:loadSystemPluginHTML', pluginId)
+      return result
+    } catch (error) {
+      console.error('Failed to load system plugin HTML:', error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }
     }
   }
 
@@ -168,16 +232,17 @@ export class PluginAPI {
       const result = await window.electron.ipcRenderer.invoke('plugin:files:select-file', {
         title: '选择插件文件',
         filters: [
+          { name: 'TGZ文件', extensions: ['tgz', 'tar.gz'] },
           { name: 'ZIP文件', extensions: ['zip'] },
           { name: '所有文件', extensions: ['*'] }
         ]
       })
-
-      if (result.canceled || !result.filePaths || result.filePaths.length === 0) {
+      console.log(result, 'result==')
+      if (result.canceled || !result.filePath) {
         return { success: false, error: '用户取消选择' }
       }
 
-      return { success: true, filePath: result.filePaths[0] }
+      return { success: true, filePath: result.filePath }
     } catch (error: any) {
       return { success: false, error: error.message }
     }

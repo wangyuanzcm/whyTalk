@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { NResult, NButton, NSpin } from 'naive-ui'
 import { PluginAPI } from '@/api/plugin'
@@ -51,7 +51,35 @@ const loadPlugin = async () => {
     loading.value = true
     error.value = ''
 
-    const result = await PluginAPI.loadFrontendPlugin(pluginId.value)
+    // 首先尝试作为前端插件加载
+    let result = await PluginAPI.loadFrontendPlugin(pluginId.value)
+    
+    // 如果前端插件加载失败，尝试作为系统插件加载
+    if (!result.success) {
+      // 检查是否为系统插件（不带frontend_前缀的ID）
+      if (!pluginId.value.startsWith('frontend_')) {
+        // 尝试获取系统插件信息
+        const pluginInfo = await PluginAPI.getPluginInfo(pluginId.value)
+        if (pluginInfo.success && pluginInfo.data) {
+          const plugin = pluginInfo.data
+          // 检查系统插件是否有HTML界面
+          if (plugin.config && plugin.config.main && plugin.config.main.endsWith('.html')) {
+            // 读取系统插件的HTML文件
+            const htmlResult = await PluginAPI.loadSystemPluginHTML(pluginId.value)
+            if (htmlResult.success) {
+              result = {
+                success: true,
+                data: {
+                  html: htmlResult.data.html,
+                  config: plugin.config
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    
     if (result.success) {
       pluginData.value = result.data
       // 创建插件的blob URL
@@ -69,8 +97,11 @@ const loadPlugin = async () => {
 }
 
 // 插件加载完成
-const onPluginLoad = () => {
+const onPluginLoad = async () => {
   if (pluginFrame.value && pluginFrame.value.contentWindow) {
+    // 注入插件API
+    await injectPluginAPI()
+    
     // 向插件发送初始化消息，确保数据可序列化
     const initData = {
       type: 'PLUGIN_INIT',
@@ -78,6 +109,144 @@ const onPluginLoad = () => {
       config: pluginData.value?.config ? JSON.parse(JSON.stringify(pluginData.value.config)) : null
     }
     pluginFrame.value.contentWindow.postMessage(initData, '*')
+  }
+}
+
+// 注入插件API到iframe
+const injectPluginAPI = async () => {
+  if (!pluginFrame.value?.contentWindow) return
+  
+  const iframe = pluginFrame.value
+  const iframeWindow = iframe.contentWindow
+  
+  // 创建插件API对象
+  const pluginAPI = {
+    // 基础信息
+    async getPluginInfo() {
+      return {
+        id: pluginId.value,
+        name: pluginData.value?.config?.name || 'Unknown',
+        version: pluginData.value?.config?.version || '1.0.0',
+        description: pluginData.value?.config?.description || '',
+        author: pluginData.value?.config?.author || 'Unknown',
+        path: pluginData.value?.basePath || ''
+      }
+    },
+    
+    // 权限管理
+    async requestPermission(permission) {
+      try {
+        return await window.electron.ipcRenderer.invoke('plugin:permission:request', {
+          pluginId: pluginId.value,
+          permission
+        })
+      } catch (error) {
+        console.error('Permission request failed:', error)
+        return { granted: false, error: error instanceof Error ? error.message : String(error) }
+      }
+    },
+    
+    async hasPermission(permission) {
+      try {
+        return await window.electron.ipcRenderer.invoke('plugin:permission:check', {
+          pluginId: pluginId.value,
+          permission
+        })
+      } catch (error) {
+        console.error('Permission check failed:', error)
+        return false
+      }
+    },
+    
+    // 数据存储
+    async setData(key, value) {
+      try {
+        return await window.electron.ipcRenderer.invoke('plugin:data:set', {
+          pluginId: pluginId.value,
+          key,
+          value
+        })
+      } catch (error) {
+        console.error('Set data failed:', error)
+        return { success: false, error: error instanceof Error ? error.message : String(error) }
+      }
+    },
+    
+    async getData(key) {
+      try {
+        return await window.electron.ipcRenderer.invoke('plugin:data:get', {
+          pluginId: pluginId.value,
+          key
+        })
+      } catch (error) {
+        console.error('Get data failed:', error)
+        return { success: false, error: error instanceof Error ? error.message : String(error) }
+      }
+    },
+    
+    async removeData(key) {
+      try {
+        return await window.electron.ipcRenderer.invoke('plugin:data:remove', {
+          pluginId: pluginId.value,
+          key
+        })
+      } catch (error) {
+        console.error('Remove data failed:', error)
+        return { success: false, error: error instanceof Error ? error.message : String(error) }
+      }
+    },
+    
+    // 通知功能
+    async showNotification(title, options = {}) {
+      try {
+        return await window.electron.ipcRenderer.invoke('plugin:notification:show', {
+          pluginId: pluginId.value,
+          title,
+          options
+        })
+      } catch (error) {
+        console.error('Show notification failed:', error)
+        return { success: false, error: error instanceof Error ? error.message : String(error) }
+      }
+    },
+    
+    // 消息通信
+    onMessage(_callback: any) {
+      // 这里可以实现消息监听
+      console.log('Message listener registered')
+    },
+    
+    sendMessage(message) {
+      // 向主应用发送消息
+      window.parent.postMessage({
+        type: 'PLUGIN_MESSAGE',
+        pluginId: pluginId.value,
+        data: message
+      }, '*')
+    }
+  }
+  
+  // 将API注入到iframe的window对象中
+  try {
+    // 等待iframe的document完全加载
+    if (iframe.contentDocument?.readyState !== 'complete') {
+      await new Promise((resolve) => {
+        iframe.addEventListener('load', resolve, { once: true })
+      })
+    }
+    
+    // 注入API
+    if (iframeWindow) {
+      (iframeWindow as any).pluginAPI = pluginAPI
+      
+      // 触发pluginAPIReady事件
+      const readyEvent = new (iframeWindow as any).CustomEvent('pluginAPIReady')
+      iframeWindow.dispatchEvent(readyEvent)
+    }
+    
+    console.log(`Plugin API injected for ${pluginId.value}`)
+  } catch (error) {
+    console.error('Failed to inject plugin API:', error)
   }
 }
 
@@ -108,6 +277,19 @@ const handlePluginMessage = (event: MessageEvent) => {
       console.log('Unknown plugin message:', type, data)
   }
 }
+
+// 监听pluginId变化，重新加载插件
+watch(pluginId, (newPluginId, oldPluginId) => {
+  if (newPluginId && newPluginId !== oldPluginId) {
+    // 清理旧的blob URL
+    if (pluginUrl.value) {
+      URL.revokeObjectURL(pluginUrl.value)
+      pluginUrl.value = ''
+    }
+    // 重新加载新插件
+    loadPlugin()
+  }
+}, { immediate: false })
 
 onMounted(() => {
   loadPlugin()

@@ -82,7 +82,12 @@ app.whenReady().then(async () => {
   })
 
   // 初始化插件系统
-  initPlugins()
+  try {
+    await initPlugins()
+    console.log('Plugin system initialized successfully')
+  } catch (error) {
+    console.error('Failed to initialize plugin system:', error)
+  }
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common

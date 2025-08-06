@@ -11,6 +11,7 @@ import {
   NSwitch,
   NSpace,
   NPopconfirm,
+  NSelect,
   useMessage
 } from 'naive-ui'
 import { Download, Delete, Setting } from '@icon-park/vue-next'
@@ -31,11 +32,27 @@ const installResult = ref<{ success: boolean; message: string } | null>(null)
 
 // 远程下载相关
 const showRemoteModal = ref(false)
+const showNpmModal = ref(false)
 const remoteForm = reactive({
   url: '',
   name: '',
-  description: ''
+  description: '',
+  npmRegistry: 'https://registry.npmjs.org/'
 })
+
+// npm安装相关
+const npmForm = reactive({
+  packageName: '',
+  npmRegistry: 'https://registry.npmjs.org/'
+})
+
+// npm源预设
+const npmRegistries = [
+  { label: 'npm官方源', value: 'https://registry.npmjs.org/' },
+  { label: '淘宝源', value: 'https://registry.npmmirror.com/' },
+  { label: 'cnpm源', value: 'https://r.cnpmjs.org/' },
+  { label: '华为云源', value: 'https://mirrors.huaweicloud.com/repository/npm/' }
+]
 
 // 插件配置相关
 const showConfigModal = ref(false)
@@ -136,11 +153,14 @@ const savePluginConfig = async () => {
 const handleFileUpload = async () => {
   try {
     const result = await PluginAPI.selectLocalFile()
+    console.log(result, 'result===')
     if (result.success && result.filePath) {
       await installLocalPlugin(result.filePath)
-    } else {
+    } else if (result.error && result.error !== '用户取消选择') {
+      // 只有在非用户取消的情况下才显示错误信息
       message.error(result.error || '文件选择失败')
     }
+    // 用户取消选择时不显示任何信息
   } catch (error: any) {
     message.error(`文件选择失败: ${error.message}`)
   }
@@ -189,11 +209,41 @@ const installFromRemote = async () => {
 
   uploadLoading.value = true
   try {
-    const result = await PluginAPI.installRemotePlugin(remoteForm.url)
+    const result = await PluginAPI.installRemotePlugin(remoteForm.url, remoteForm.npmRegistry)
     if (result.success) {
       message.success('插件安装成功')
       showRemoteModal.value = false
-      Object.assign(remoteForm, { url: '', name: '', description: '' })
+      Object.assign(remoteForm, {
+        url: '',
+        name: '',
+        description: '',
+        npmRegistry: 'https://registry.npmjs.org/'
+      })
+      await loadInstalledPlugins()
+    } else {
+      message.error(result.error || '安装失败')
+    }
+  } catch (error: any) {
+    message.error(`安装失败: ${error.message}`)
+  } finally {
+    uploadLoading.value = false
+  }
+}
+
+// npm包安装插件
+const installFromNpm = async () => {
+  if (!npmForm.packageName) {
+    message.error('请输入npm包名')
+    return
+  }
+
+  uploadLoading.value = true
+  try {
+    const result = await PluginAPI.installNpmPlugin(npmForm.packageName, npmForm.npmRegistry)
+    if (result.success) {
+      message.success('插件安装成功')
+      showNpmModal.value = false
+      Object.assign(npmForm, { packageName: '', npmRegistry: 'https://registry.npmjs.org/' })
       await loadInstalledPlugins()
     } else {
       message.error(result.error || '安装失败')
@@ -246,6 +296,12 @@ onMounted(() => {
             <Download />
           </template>
           远程安装
+        </n-button>
+        <n-button type="success" @click="showNpmModal = true">
+          <template #icon>
+            <Download />
+          </template>
+          NPM安装
         </n-button>
         <n-button :loading="loading" @click="loadInstalledPlugins"> 刷新列表 </n-button>
       </n-space>
@@ -324,7 +380,7 @@ onMounted(() => {
     >
       <div class="upload-content">
         <div v-if="!uploadLoading && !installResult">
-          <p>请选择插件zip文件进行安装：</p>
+          <p>请选择插件文件进行安装（支持 .tgz、.tar.gz、.zip 格式）：</p>
           <n-button type="primary" @click="handleFileUpload"> 选择插件文件 </n-button>
         </div>
 
@@ -368,7 +424,14 @@ onMounted(() => {
     <n-modal v-model:show="showRemoteModal" preset="dialog" title="远程安装插件">
       <n-form :model="remoteForm" label-placement="left" label-width="80px">
         <n-form-item label="下载地址" required>
-          <n-input v-model:value="remoteForm.url" placeholder="请输入插件zip文件的下载地址" />
+          <n-input v-model:value="remoteForm.url" placeholder="请输入插件tgz文件的下载地址" />
+        </n-form-item>
+        <n-form-item label="NPM源">
+          <n-select
+            v-model:value="remoteForm.npmRegistry"
+            :options="npmRegistries"
+            placeholder="选择NPM源"
+          />
         </n-form-item>
         <n-form-item label="插件名称">
           <n-input v-model:value="remoteForm.name" placeholder="可选，插件显示名称" />
@@ -386,6 +449,33 @@ onMounted(() => {
         <n-space>
           <n-button @click="showRemoteModal = false">取消</n-button>
           <n-button type="primary" :loading="uploadLoading" @click="installFromRemote">
+            安装
+          </n-button>
+        </n-space>
+      </template>
+    </n-modal>
+
+    <!-- NPM安装模态框 -->
+    <n-modal v-model:show="showNpmModal" preset="dialog" title="NPM安装插件">
+      <n-form :model="npmForm" label-placement="left" label-width="80px">
+        <n-form-item label="包名" required>
+          <n-input
+            v-model:value="npmForm.packageName"
+            placeholder="请输入npm包名，如：@scope/package-name"
+          />
+        </n-form-item>
+        <n-form-item label="NPM源">
+          <n-select
+            v-model:value="npmForm.npmRegistry"
+            :options="npmRegistries"
+            placeholder="选择NPM源"
+          />
+        </n-form-item>
+      </n-form>
+      <template #action>
+        <n-space>
+          <n-button @click="showNpmModal = false">取消</n-button>
+          <n-button type="primary" :loading="uploadLoading" @click="installFromNpm">
             安装
           </n-button>
         </n-space>

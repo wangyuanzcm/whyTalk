@@ -35,6 +35,8 @@ const loadPlugins = async () => {
     const result = await PluginAPI.listPlugins()
     if (result.success && result.plugins) {
       plugins.value = result.plugins.filter((plugin) => plugin.enabled)
+      // 同步所有前端插件到菜单系统
+      menuStore.syncPluginsToMenuItems(plugins.value)
     } else {
       message.error(result.error || '加载插件列表失败')
     }
@@ -161,6 +163,7 @@ onMounted(() => {
               </div>
               <p class="plugin-description">{{ plugin.config?.description || '无描述' }}</p>
               <p class="plugin-version">版本: {{ plugin.config?.version || '未知' }}</p>
+              <p class="plugin-menu-name">菜单显示: {{ (plugin.config as any)?.shortName || (plugin.config as any)?.menuTitle || plugin.config?.name || plugin.id }}</p>
             </div>
 
             <div class="plugin-controls">
