@@ -262,6 +262,8 @@ interface ConfigItem {
   step?: number
   rows?: number
   options?: Array<{ label: string; value: any }>
+  default?: any
+  required?: boolean
 }
 
 // 响应式数据

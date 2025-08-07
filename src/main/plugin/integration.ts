@@ -195,7 +195,7 @@ export class PluginSystemManager {
     })
 
     // 注册获取扩展文件URL处理器
-    ipcMain.handle('plugin:get-extension-file-url', async (event, extensionPath: string, relativePath: string) => {
+    ipcMain.handle('plugin:get-extension-file-url', async (_event, extensionPath: string, relativePath: string) => {
       try {
         return this.getExtensionFileUrl(extensionPath, relativePath)
       } catch (error) {
@@ -205,12 +205,12 @@ export class PluginSystemManager {
     })
 
     // 注册插件配置窗口相关的IPC处理器
-    ipcMain.handle('plugin:window:open-config', async (event, pluginId: string) => {
+    ipcMain.handle('plugin:window:open-config', async (_event, pluginId: string) => {
       return this.openConfigWindow(pluginId)
     })
 
     // 测试用的IPC处理器
-    ipcMain.handle('plugin:window:open-test-config', async (event) => {
+    ipcMain.handle('plugin:window:open-test-config', async (_event) => {
       try {
         const window = this.openTestConfigWindow()
         return { success: true, windowId: window.id }
@@ -273,17 +273,17 @@ export class PluginSystemManager {
     })
 
     // 插件显示配置处理器
-    ipcMain.handle('plugin:display-config:save', async (event, { pluginId, displayConfig }) => {
+    ipcMain.handle('plugin:display-config:save', async (_event, { pluginId, displayConfig }) => {
       try {
         await this.saveDisplayConfig(pluginId, displayConfig)
         return { success: true }
       } catch (error) {
         logger.error('保存显示配置失败:', error)
-        return { success: false, error: error.message }
+        return { success: false, error: error instanceof Error ? error.message : String(error) }
       }
     })
 
-    ipcMain.handle('plugin:display-config:get', async (event, pluginId: string) => {
+    ipcMain.handle('plugin:display-config:get', async (_event, pluginId: string) => {
       try {
         return await this.getDisplayConfig(pluginId)
       } catch (error) {
@@ -293,12 +293,12 @@ export class PluginSystemManager {
     })
 
     // 在新窗口中打开插件
-    ipcMain.handle('plugin:window:open-plugin', async (event, { pluginId, windowOptions }) => {
+    ipcMain.handle('plugin:window:open-plugin', async (_event, { pluginId, windowOptions }) => {
       try {
         return await this.openPluginWindow(pluginId, windowOptions)
       } catch (error) {
         logger.error('在新窗口中打开插件失败:', error)
-        return { success: false, error: error.message }
+        return { success: false, error: error instanceof Error ? error.message : String(error) }
       }
     })
 
@@ -646,7 +646,7 @@ export class PluginSystemManager {
       
       const configData = await readFile(configFile, 'utf-8')
       return JSON.parse(configData)
-    } catch (error) {
+    } catch (error: any) {
       // 如果文件不存在，返回默认配置
       if (error.code === 'ENOENT') {
         logger.info(`插件 ${pluginId} 显示配置文件不存在，返回默认配置`)

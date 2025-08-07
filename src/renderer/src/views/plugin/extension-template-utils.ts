@@ -8,7 +8,7 @@
  * @returns 生成的HTML字符串
  */
 export const createExtensionInfoPage = (extensionData: any): string => {
-  const { manifest, config } = extensionData
+  const { manifest } = extensionData
   
   // 获取扩展基本信息
   const name = manifest?.displayName || manifest?.name || '未知扩展'

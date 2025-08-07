@@ -189,38 +189,7 @@ const loadPlugin = async () => {
   }
 }
 
-/**
- * 获取插件基础URL
- */
-const getPluginBaseUrl = async (pluginId: string): Promise<string> => {
-  try {
-    const result = await (window as any).electron.ipcRenderer.invoke(
-      'plugin:get-base-url',
-      pluginId
-    )
-    if (result?.success && result?.url) {
-      return result.url
-    }
-    throw new Error(result?.error || '获取插件URL失败')
-  } catch (error) {
-    console.error('Failed to get plugin base URL:', error)
-    throw error
-  }
-}
-
-/**
- * 为VSCode风格扩展生成信息页面
- */
-const generateExtensionInfoPage = async (extensionData: any): Promise<string> => {
-  try {
-    const htmlContent = createExtensionInfoPage(extensionData)
-    const blob = new Blob([htmlContent], { type: 'text/html' })
-    return URL.createObjectURL(blob)
-  } catch (error) {
-    console.error('Failed to generate extension info page:', error)
-    throw new Error('生成扩展信息页面失败')
-  }
-}
+// 删除了未使用的函数 getPluginBaseUrl 和 generateExtensionInfoPage
 
 /**
  * 插件加载完成处理

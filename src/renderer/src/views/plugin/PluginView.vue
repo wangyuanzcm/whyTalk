@@ -97,13 +97,13 @@ const loadPlugin = async () => {
                  } catch (error) {
                    console.error('Failed to get extension file URL:', error)
                    // 降级到默认页面
-                   const extensionInfoHTML = await createExtensionInfoPage(extension, contributes)
+                   const extensionInfoHTML = await createExtensionInfoPage({ manifest: extension, config: contributes })
                    const blob = new Blob([extensionInfoHTML], { type: 'text/html' })
                    pluginUrl.value = URL.createObjectURL(blob)
                  }
               } else {
                 // 如果没有webview目录，创建默认的扩展信息页面
-                const extensionInfoHTML = await createExtensionInfoPage(extension, contributes)
+                const extensionInfoHTML = await createExtensionInfoPage({ manifest: extension, config: contributes })
                 
                 pluginData.value = {
                   html: extensionInfoHTML,
@@ -123,7 +123,7 @@ const loadPlugin = async () => {
             } catch (fsError) {
               console.warn('Failed to check webview directory, falling back to info page:', fsError)
               // 如果文件系统检查失败，创建默认信息页面
-              const extensionInfoHTML = await createExtensionInfoPage(extension, contributes)
+              const extensionInfoHTML = await createExtensionInfoPage({ manifest: extension, config: contributes })
               
               pluginData.value = {
                 html: extensionInfoHTML,

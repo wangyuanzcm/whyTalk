@@ -542,18 +542,18 @@ export class APIProvider extends EventEmitter {
   /**
    * 获取配置
    */
-  private getConfiguration(section?: string, _resource?: Uri): any {
+  private getConfiguration(_section?: string, _resource?: Uri): any {
     // 为扩展API提供配置对象，包含get、has、update方法
     return {
-      get: (key: string, defaultValue?: any) => {
+      get: (_key: string, defaultValue?: any) => {
         // 这里需要扩展ID，但在这个上下文中我们无法获取
         // 这个方法主要用于扩展内部调用，实际配置获取通过IPC处理
         return defaultValue
       },
-      has: (key: string) => {
+      has: (_key: string) => {
         return false
       },
-      update: async (key: string, value: any, configurationTarget?: any) => {
+      update: async (key: string, value: any, _configurationTarget?: any) => {
         // 这里也需要扩展ID，实际更新通过IPC处理
         console.log(`配置更新请求: ${key} = ${JSON.stringify(value)}`)
       }
@@ -566,9 +566,9 @@ export class APIProvider extends EventEmitter {
    * @param value 配置值
    * @param configurationTarget 配置目标
    */
-  private async updateConfiguration(section: string, value: any, configurationTarget?: any): Promise<void> {
-    console.log(`配置更新: ${section} = ${JSON.stringify(value)}`)
-  }
+  // private async updateConfiguration(section: string, value: any, _configurationTarget?: any): Promise<void> {
+  //   console.log(`配置更新: ${section} = ${JSON.stringify(value)}`)
+  // }
 
   /**
    * 监听配置变化
