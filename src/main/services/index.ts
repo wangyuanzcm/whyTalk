@@ -10,12 +10,7 @@ import { updaterService } from './updater/UpdaterService'
 // import { p2pManager } from './p2p/P2PManager' // 替换为LocalSend实现
 import { localSendP2PManager as p2pManager } from './p2p/LocalSendP2PManager'
 import { localSendIPCHandler } from './p2p/LocalSendIPCHandler'
-import { pluginDataService } from './plugin/PluginDataService'
-import { pluginDataIPC } from './plugin/PluginDataIPC'
-import { PluginPermissionManager } from './plugin/PluginPermissionManager'
-// import { p2pIPCHandler } from './p2p/P2PIPCHandler' // 不再使用，已被P2PIPCBridge替代
-import { pluginAPIHandler } from './plugin/PluginAPIHandler'
-import { pluginCommunicationService } from './plugin/PluginCommunicationService'
+// 插件相关服务已移除，VSCode风格插件系统使用独立的管理器
 import { ipcHandler } from './ipc/IPCHandler'
 // P2PServiceClient and P2PIPCBridge removed - using LocalSend implementation
 import { ensureDirectories } from '../config'
@@ -61,14 +56,7 @@ export class ServiceManager {
       await updaterService.initialize()
       console.log('Updater service initialized')
 
-      // 初始化插件权限管理器（必须在pluginDataService之前）
-      await PluginPermissionManager.getInstance().initialize()
-      console.log('Plugin permission manager initialized')
-
-      await pluginDataService.initialize()
-      await pluginDataIPC.initialize()
-      await pluginAPIHandler.initialize()
-      await pluginCommunicationService.initialize()
+      // 插件服务初始化已移除，VSCode风格插件系统独立管理
       
       // 初始化 LocalSend IPC 处理器
       localSendIPCHandler.initialize()
@@ -113,10 +101,7 @@ export class ServiceManager {
       // 清理所有服务
       await p2pManager.cleanup()
       localSendIPCHandler.cleanup()
-      await pluginCommunicationService.cleanup()
-      await pluginAPIHandler.cleanup()
-      await pluginDataIPC.cleanup()
-      await pluginDataService.cleanup()
+      // 插件服务清理已移除，VSCode风格插件系统独立管理
       await updaterService.cleanup()
       await uploadService.cleanup()
       await userService.cleanup()
@@ -206,10 +191,6 @@ export {
   // settingsService removed
   // pluginManager removed
   p2pManager,
-  pluginDataService,
-  pluginDataIPC,
-  // p2pIPCHandler, // 不再使用，已被P2PIPCBridge替代
-  pluginAPIHandler,
-  pluginCommunicationService,
+  // 插件服务导出已移除，VSCode风格插件系统独立管理
   ipcHandler
 }

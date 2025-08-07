@@ -1,0 +1,95 @@
+{
+  "name": "sample-extension",
+  "displayName": "Sample Extension",
+  "description": "A sample extension for WhyTalk",
+  "version": "1.0.0",
+  "publisher": "whytalk",
+  "engines": {
+    "whytalk": "^1.0.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "sample",
+    "demo",
+    "example"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:sample.helloWorld"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "sample.helloWorld",
+        "title": "Hello World",
+        "category": "Sample"
+      },
+      {
+        "command": "sample.showInfo",
+        "title": "Show Info",
+        "category": "Sample"
+      },
+      {
+        "command": "sample.openWebview",
+        "title": "Open WebView",
+        "category": "Sample"
+      }
+    ],
+    "webviews": {
+      "sample.webview": {
+        "title": "Sample Extension",
+        "when": "true",
+        "retainContextWhenHidden": true,
+        "enableScripts": true,
+        "localResourceRoots": [
+          "./webview"
+        ]
+      }
+    },
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "sample.helloWorld",
+          "when": "true"
+        },
+        {
+          "command": "sample.showInfo",
+          "when": "true"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Sample Extension",
+      "properties": {
+        "sample.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable sample extension"
+        },
+        "sample.message": {
+          "type": "string",
+          "default": "Hello from Sample Extension!",
+          "description": "Default message to show"
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "command": "sample.helloWorld",
+        "key": "ctrl+shift+h",
+        "when": "true"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "typescript": "^5.0.0"
+  }
+}

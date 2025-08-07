@@ -273,6 +273,35 @@ const getStatusText = (enabled: boolean) => {
   return enabled ? '已启用' : '已禁用'
 }
 
+// 获取插件类型显示文本
+const getPluginTypeText = (type: string) => {
+  switch (type) {
+    case 'system':
+      return '系统插件'
+    case 'frontend':
+      return '前端插件'
+    case 'cubeModule':
+      return 'CubeModule插件'
+    case 'unified':
+      return '统一插件'
+    default:
+      return type
+  }
+}
+
+// 检查插件是否有设置配置
+const hasPluginSettings = (plugin: PluginInfo) => {
+  // 系统插件的设置
+  if (plugin.config?.ui?.settings) {
+    return true
+  }
+  // CubeModule插件的设置
+  if (plugin.type === 'cubeModule' || plugin.type === 'unified') {
+    return plugin.config?.frontend?.settings || plugin.config?.backend?.functions
+  }
+  return false
+}
+
 onMounted(() => {
   loadInstalledPlugins()
 })
@@ -327,7 +356,7 @@ onMounted(() => {
               <span>版本: {{ plugin.config?.version || '未知' }}</span>
               <span>作者: {{ plugin.config?.author || '未知' }}</span>
             </p>
-            <p class="plugin-type">类型: {{ plugin.type }}</p>
+            <p class="plugin-type">类型: {{ getPluginTypeText(plugin.type) }}</p>
           </div>
 
           <template #action>
@@ -338,7 +367,7 @@ onMounted(() => {
                 @update:value="() => togglePlugin(plugin)"
               />
               <n-button
-                v-if="plugin.config?.ui?.settings"
+                v-if="hasPluginSettings(plugin)"
                 size="small"
                 @click="configurePlugin(plugin)"
               >

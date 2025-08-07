@@ -3,15 +3,28 @@
   "version": "1.0.0",
   "description": "A simple WASM plugin example using native WebAssembly API",
   "author": "Why-Talk Team",
-  "main": "index.html",
-  "type": "system",
-  "menuTitle": "WASM示例",
-  "shortName": "WAS",
+  "type": "cubeModule",
   "permissions": [
     "system.info",
     "storage.read",
     "storage.write"
   ],
+  "backend": {
+    "main": "plugin.wasm",
+    "autoRegister": true
+  },
+  "frontend": {
+    "main": "index.html",
+    "routes": [
+      {
+        "path": "/wasm-example",
+        "component": "WasmExample",
+        "name": "WASM示例"
+      }
+    ]
+  },
+  "menuTitle": "WASM示例",
+  "shortName": "WAS",
   "functions": [
     "add",
     "multiply",

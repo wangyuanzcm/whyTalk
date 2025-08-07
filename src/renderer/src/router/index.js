@@ -33,10 +33,23 @@ const routes = [
         meta: { auth: true },
         component: () => import('@/views/plugin/PluginView.vue')
       },
+      {
+        path: '/plugin-config/:pluginId',
+        name: 'plugin-config',
+        meta: { auth: false },
+        component: () => import('@/views/plugin-config/index.vue')
+      },
       SettingRouter,
       P2PRouter
       // ContactRouter 已迁移到插件中
     ]
+  },
+  // 独立的插件窗口路由（不包含主布局）
+  {
+    path: '/plugin-window/:pluginId',
+    name: 'plugin-window',
+    meta: { auth: true },
+    component: () => import('@/views/plugin/PluginWindow.vue')
   },
   AuthRouter,
   {

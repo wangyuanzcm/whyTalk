@@ -1,0 +1,84 @@
+{
+  "name": "测试CubeModule插件",
+  "version": "1.0.0",
+  "description": "一个用于测试CubeModule格式的示例插件",
+  "author": "开发者",
+  "type": "cubeModule",
+  "permissions": ["storage", "notification"],
+  "backend": {
+    "main": "plugin.wasm",
+    "functions": {
+      "hello": {
+        "name": "hello",
+        "description": "返回问候语",
+        "parameters": [
+          {
+            "name": "name",
+            "type": "string",
+            "description": "用户名称"
+          }
+        ],
+        "returnType": "string"
+      },
+      "calculate": {
+        "name": "calculate",
+        "description": "执行简单计算",
+        "parameters": [
+          {
+            "name": "a",
+            "type": "number",
+            "description": "第一个数字"
+          },
+          {
+            "name": "b",
+            "type": "number",
+            "description": "第二个数字"
+          }
+        ],
+        "returnType": "number"
+      }
+    },
+    "autoRegister": true
+  },
+  "frontend": {
+    "main": "index.html",
+    "routes": [
+      {
+        "path": "/test-cube",
+        "component": "TestCubeComponent",
+        "name": "测试CubeModule"
+      }
+    ],
+    "components": [
+      {
+        "name": "TestCubeComponent",
+        "file": "components/TestCube.vue"
+      }
+    ],
+    "settings": {
+      "title": "CubeModule设置",
+      "sections": [
+        {
+          "title": "基本设置",
+          "fields": [
+            {
+              "key": "enableNotifications",
+              "label": "启用通知",
+              "type": "boolean",
+              "default": true
+            },
+            {
+              "key": "maxItems",
+              "label": "最大项目数",
+              "type": "number",
+              "default": 10,
+              "min": 1,
+              "max": 100
+            }
+          ]
+        }
+      ]
+    },
+    "lazyLoad": false
+  }
+}

@@ -3,16 +3,23 @@
   "version": "1.0.0",
   "description": "笔记管理插件",
   "author": "WhyTalk Team",
-  "main": "index.html",
+  "type": "cubeModule",
+  "permissions": ["storage", "notifications", "ipc", "database"],
+  "frontend": {
+    "main": "index.html",
+    "routes": [
+      {
+        "path": "/note",
+        "component": "NoteView",
+        "name": "笔记"
+      }
+    ]
+  },
   "icon": "📝",
   "menuTitle": "笔记",
   "shortName": "笔记",
-  "permissions": ["storage", "notifications", "ipc", "database"],
   "dependencies": {
     "vue": "^3.0.0",
     "naive-ui": "^2.0.0"
-  },
-  "routes": {
-    "/note": "NoteView"
   }
 }

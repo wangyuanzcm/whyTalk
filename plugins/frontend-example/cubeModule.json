@@ -3,9 +3,19 @@
   "version": "1.0.0",
   "description": "一个示例前端插件，展示基本的插件功能",
   "author": "Why-Talk Team",
-  "main": "index.html",
+  "type": "cubeModule",
+  "permissions": ["storage", "notifications"],
+  "frontend": {
+    "main": "index.html",
+    "routes": [
+      {
+        "path": "/frontend-example",
+        "component": "FrontendExample",
+        "name": "前端示例"
+      }
+    ]
+  },
   "menuTitle": "前端示例",
   "shortName": "示例",
-  "permissions": ["storage", "notifications"],
   "dependencies": {}
 }

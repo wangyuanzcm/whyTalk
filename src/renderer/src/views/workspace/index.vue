@@ -15,6 +15,17 @@ interface Plugin {
       components: any[]
       settings: any
     }
+    // CubeModule插件配置
+    backend?: {
+      main: string
+      functions?: Record<string, any>
+    }
+    frontend?: {
+      main: string
+      routes?: any[]
+      components?: any[]
+      settings?: any
+    }
   }
   enabled: boolean
 }
@@ -34,11 +45,30 @@ const loadPlugins = async () => {
       throw new Error('此功能需要在Electron环境中运行')
     }
 
-    const pluginList = await window.electron.ipcRenderer.invoke('plugin:list')
-    // 显示所有类型的插件，包括前端插件和系统插件
-    plugins.value = pluginList.filter(
-      (plugin: Plugin) => plugin.type === 'system' || plugin.type === 'frontend'
-    )
+    // 使用新的VSCode风格插件系统API
+    const extensionList = await window.electron.ipcRenderer.invoke('plugin:getAllExtensions')
+    
+    // 转换扩展信息为插件格式以保持兼容性
+    plugins.value = extensionList.map((ext: any) => {
+      // 确保manifest存在并提供默认值
+      const manifest = ext.manifest || {}
+      
+      return {
+        id: ext.id,
+        type: 'frontend', // VSCode风格扩展主要是前端类型
+        name: manifest.displayName || manifest.name || ext.id,
+        version: manifest.version || '1.0.0',
+        description: manifest.description || '暂无描述',
+        author: manifest.publisher || manifest.author || '未知作者',
+        enabled: ext.isActive || false,
+        config: {
+          name: manifest.displayName || manifest.name || ext.id,
+          version: manifest.version || '1.0.0',
+          description: manifest.description || '暂无描述',
+          author: manifest.publisher || manifest.author || '未知作者'
+        }
+      }
+    })
   } catch (err: any) {
     error.value = err.message || '加载插件失败'
     console.error('加载插件失败:', err)
@@ -53,46 +83,74 @@ const openPlugin = async (plugin: Plugin) => {
     console.log('打开插件:', plugin.id, 'type:', plugin.type)
     ;(window as any).$message?.success(`正在打开 ${plugin.config.name}`)
 
-    // 根据插件类型调用不同的IPC处理器
-    let result
-    if (plugin.type === 'frontend') {
-      // 前端插件直接打开，不需要检查UI配置
-      console.log('Calling IPC: plugin:frontend:open for', plugin.id)
-      result = await window.electron.ipcRenderer.invoke('plugin:frontend:open', plugin.id)
-      console.log('IPC result:', result)
-    } else if (plugin.type === 'system') {
-      // 系统插件需要检查是否有UI配置
-      if (!plugin.config.ui || !plugin.config.ui.components) {
-        ;(window as any).$message?.warning('此系统插件暂无可用的UI界面')
-        return
-      }
-      // 系统插件使用UI配置窗口
-      console.log('Calling IPC: plugin:system:open-ui for', plugin.id)
-      result = await window.electron.ipcRenderer.invoke('plugin:system:open-ui', plugin.id)
-      console.log('IPC result:', result)
-    } else {
-      ;(window as any).$message?.error('不支持的插件类型')
-      return
-    }
+    // 获取插件显示配置
+    const displayConfig = await (window as any).electron.ipcRenderer.invoke(
+      'plugin:display-config:get',
+      plugin.id
+    )
 
-    if (result && !result.success) {
-      console.error('Plugin open failed:', result.error)
-      ;(window as any).$message?.error(`打开插件失败: ${result.error}`)
+    console.log('插件显示配置:', displayConfig)
+
+    // 根据显示配置决定打开方式
+    if (displayConfig?.openMode === 'newWindow') {
+      // 在新窗口中打开插件
+      const result = await (window as any).electron.ipcRenderer.invoke(
+        'plugin:window:open-plugin',
+        {
+          pluginId: plugin.id,
+          windowOptions: {
+            width: displayConfig.windowWidth || 800,
+            height: displayConfig.windowHeight || 600,
+            resizable: displayConfig.resizable !== false,
+            minimizable: displayConfig.minimizable !== false,
+            maximizable: displayConfig.maximizable !== false,
+            alwaysOnTop: displayConfig.alwaysOnTop === true
+          }
+        }
+      )
+      
+      if (result?.success) {
+        ;(window as any).$message?.success(`${plugin.config.name} 已在新窗口中打开`)
+      } else {
+        throw new Error(result?.error || '打开新窗口失败')
+      }
+    } else if (displayConfig?.openMode === 'sidebar') {
+      // 在侧边栏中打开插件（暂时跳转到插件页面）
+      ;(window as any).$message?.info('侧边栏模式暂未实现，将在当前窗口打开')
+      window.location.hash = `/plugin/${plugin.id}`
     } else {
-      console.log('Plugin opened successfully')
+      // 默认在当前窗口中打开插件
+      console.log('Opening plugin in current window:', plugin.id)
+      window.location.hash = `/plugin/${plugin.id}`
     }
   } catch (err: any) {
+    console.error('打开插件失败:', err)
     ;(window as any).$message?.error(
       `打开插件失败: ${err instanceof Error ? err.message : String(err)}`
     )
   }
 }
 
-// 配置插件
-const configurePlugin = (plugin: Plugin) => {
-  console.log('配置插件:', plugin.id)
-  ;(window as any).$message?.info(`配置 ${plugin.config.name} 功能开发中...`)
+/**
+ * 配置插件 - 在主窗口跳转到配置页面
+ * @param plugin 插件对象
+ */
+const configurePlugin = async (plugin: Plugin) => {
+  try {
+    console.log('配置插件:', plugin.id)
+    ;(window as any).$message?.info(`正在打开 ${plugin.config.name} 配置页面...`)
+    
+    // 在主窗口跳转到插件配置页面
+    window.location.hash = `/plugin-config/${plugin.id}`
+    
+    ;(window as any).$message?.success(`已跳转到 ${plugin.config.name} 配置页面`)
+  } catch (error) {
+    console.error('配置插件失败:', error)
+    ;(window as any).$message?.error(`配置插件失败: ${error instanceof Error ? error.message : String(error)}`)
+  }
 }
+
+
 
 // 获取插件状态颜色
 const getStatusColor = (enabled: boolean) => {

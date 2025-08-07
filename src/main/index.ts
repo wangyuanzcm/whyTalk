@@ -20,7 +20,8 @@ function createWindow(): BrowserWindow {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
       contextIsolation: true,
-      nodeIntegration: false
+      nodeIntegration: false,
+      webSecurity: false // 允许加载本地HTTP资源，用于插件系统
     }
   })
 
@@ -120,6 +121,14 @@ app.on('window-all-closed', () => {
 app.on('before-quit', async () => {
   console.log('App is about to quit')
   try {
+    // 导入插件系统
+    const { pluginSystem } = await import('./plugin')
+    
+    // 清理插件系统
+    await pluginSystem.cleanup()
+    console.log('Plugin system shut down successfully')
+    
+    // 清理服务
     await serviceManager.shutdown()
     console.log('Services shut down successfully')
   } catch (error) {

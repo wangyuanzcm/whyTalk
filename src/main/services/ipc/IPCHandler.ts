@@ -39,6 +39,11 @@ export class IPCHandler {
     ipcMain.handle('logger:readFile', async (_event, { fileName, lines }) => {
       return await this.handleReadLogFile(fileName, lines)
     })
+
+    // 监听文件存在检查请求
+    ipcMain.handle('check-file-exists', async (_event, filePath: string) => {
+      return await this.handleCheckFileExists(filePath)
+    })
   }
 
   private async handleRequest(request: IPCRequest): Promise<IPCResponse> {
@@ -309,6 +314,20 @@ export class IPCHandler {
     } catch (error: any) {
       console.error('读取日志文件失败:', error)
       return { success: false, error: error.message }
+    }
+  }
+
+  /**
+   * 处理文件存在检查请求
+   * @param filePath 文件路径
+   */
+  private async handleCheckFileExists(filePath: string): Promise<boolean> {
+    try {
+      const fs = await import('fs')
+      return fs.existsSync(filePath)
+    } catch (error: any) {
+      console.error('检查文件存在失败:', error)
+      return false
     }
   }
 }

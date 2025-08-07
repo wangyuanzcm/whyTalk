@@ -40,7 +40,7 @@ export default defineConfig({
         }
       }
     },
-    assetsInclude: ['**/*.sql', '**/*.mjs']
+    assetsInclude: ['**/*.sql', '**/*.mjs', '**/*.html']
   },
   preload: {
     plugins: [externalizeDepsPlugin()],

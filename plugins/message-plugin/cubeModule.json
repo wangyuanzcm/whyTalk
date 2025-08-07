@@ -3,10 +3,7 @@
   "version": "2.0.0",
   "description": "基于LocalSend的消息聊天插件，支持文件传输、截屏、群组聊天等功能",
   "author": "Why-Talk Team",
-  "main": "index.html",
-  "icon": "message",
-  "menuTitle": "消息",
-  "shortName": "消息",
+  "type": "cubeModule",
   "permissions": [
     "storage", 
     "notifications", 
@@ -17,14 +14,21 @@
     "file-system", 
     "screen-capture"
   ],
+  "frontend": {
+    "main": "index.html",
+    "routes": [
+      {
+        "path": "/message",
+        "component": "MessageView",
+        "name": "消息"
+      }
+    ]
+  },
+  "icon": "message",
+  "menuTitle": "消息",
+  "shortName": "消息",
   "dependencies": {
     "vue": "^3.0.0",
     "naive-ui": "^2.0.0"
-  },
-  "routes": [
-    {
-      "path": "/message",
-      "component": "MessageView"
-    }
-  ]
+  }
 }
