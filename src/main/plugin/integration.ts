@@ -4,7 +4,7 @@
  */
 
 import { VSCodeStylePluginManager } from './vscode-style/VSCodeStylePluginManager'
-import { ipcMain, BrowserWindow, app } from 'electron'
+import { ipcMain, BrowserWindow, app, dialog } from 'electron'
 import path from 'path'
 import { createServer } from 'http'
 import { readFile, stat, writeFile, mkdir } from 'fs/promises'
@@ -191,6 +191,60 @@ export class PluginSystemManager {
       } catch (error) {
         logger.error('检查文件存在失败:', error)
         return false
+      }
+    })
+
+    // 插件文件存在检查处理器（保持与preload一致）
+    ipcMain.handle('plugin:files:exists', async (_, filePath: string) => {
+      try {
+        const fs = await import('fs')
+        return fs.existsSync(filePath)
+      } catch (error) {
+        logger.error('检查文件存在失败:', error)
+        return false
+      }
+    })
+
+    // 文件选择对话框处理器
+    ipcMain.handle('plugin:files:select-file', async (event, options?: any) => {
+      try {
+        const window = BrowserWindow.fromWebContents(event.sender)
+        const result = await dialog.showOpenDialog(window || undefined, {
+          properties: ['openFile'],
+          filters: options?.filters || [
+            { name: 'All Files', extensions: ['*'] }
+          ],
+          defaultPath: options?.defaultPath
+        })
+        
+        if (result.canceled) {
+          return { canceled: true, filePaths: [] }
+        }
+        
+        return { canceled: false, filePaths: result.filePaths }
+      } catch (error) {
+        logger.error('文件选择对话框失败:', error)
+        throw error
+      }
+    })
+
+    // 目录选择对话框处理器
+    ipcMain.handle('plugin:files:select-directory', async (event, options?: any) => {
+      try {
+        const window = BrowserWindow.fromWebContents(event.sender)
+        const result = await dialog.showOpenDialog(window || undefined, {
+          properties: ['openDirectory'],
+          defaultPath: options?.defaultPath
+        })
+        
+        if (result.canceled) {
+          return { canceled: true, filePaths: [] }
+        }
+        
+        return { canceled: false, filePaths: result.filePaths }
+      } catch (error) {
+        logger.error('目录选择对话框失败:', error)
+        throw error
       }
     })
 

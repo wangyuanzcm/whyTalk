@@ -572,11 +572,11 @@ export class PluginAPI {
         ]
       })
       console.log(result, 'result==')
-      if (result.canceled || !result.filePath) {
+      if (result.canceled || !result.filePaths || result.filePaths.length === 0) {
         return { success: false, error: '用户取消选择' }
       }
 
-      return { success: true, filePath: result.filePath }
+      return { success: true, filePath: result.filePaths[0] }
     } catch (error: any) {
       return { success: false, error: error.message }
     }
