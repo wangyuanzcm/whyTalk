@@ -4,7 +4,7 @@ import MainLayout from '@/layout/MainLayout.vue'
 
 import SettingRouter from './modules/setting.js'
 import AuthRouter from './modules/auth.js'
-import P2PRouter from './modules/p2p.js'
+// P2P路由模块已被移除
 // ContactRouter 已迁移到插件中
 
 const routes = [
@@ -39,8 +39,8 @@ const routes = [
         meta: { auth: false },
         component: () => import('@/views/plugin-config/index.vue')
       },
-      SettingRouter,
-      P2PRouter
+      SettingRouter
+      // P2P路由已被移除
       // ContactRouter 已迁移到插件中
     ]
   },

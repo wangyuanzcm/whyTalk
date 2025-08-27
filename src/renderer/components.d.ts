@@ -56,7 +56,6 @@ declare module 'vue' {
     NTag: typeof import('naive-ui')['NTag']
     NText: typeof import('naive-ui')['NText']
     NThing: typeof import('naive-ui')['NThing']
-    P2PStatusIndicator: typeof import('./src/components/P2PStatusIndicator.vue')['default']
     QuillEditor: typeof import('./src/components/quill-editor/QuillEditor.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { useUserStore, useMenuStore, useSettingsStore } from '@/store'
 import AccountCard from './AccountCard.vue'
-import P2PStatusIndicator from '@/components/P2PStatusIndicator.vue'
+// P2P状态组件已被移除
 
 const userStore = useUserStore()
 const router = useRouter()
@@ -87,10 +87,7 @@ onMounted(async () => {
           <AccountCard />
         </n-popover>
 
-        <!-- P2P状态圆点 -->
-        <div class="p2p-status-dot">
-          <P2PStatusIndicator />
-        </div>
+        <!-- P2P状态圆点已被移除 -->
       </div>
 
       <span class="online-status" :class="{ online: userStore.online }">

@@ -19,7 +19,8 @@ declare global {
         removeAllListeners: (channel: string) => void
       }
 
-      // P2P API
+      // P2P API已被移除
+      /*
       p2p: {
         // 服务控制
         start: () => Promise<any>
@@ -43,6 +44,8 @@ declare global {
         searchContacts: (params: any) => Promise<any>
         getContactRequests: () => Promise<any>
         handleContactRequest: (params: any) => Promise<any>
+      }
+      */
 
         // 群组相关
         createGroup: (params: any) => Promise<any>
@@ -61,6 +64,7 @@ declare global {
         getContactChanges: () => Promise<any>
         broadcastContactChanges: (changes: any) => Promise<any>
       }
+      */
 
       // 更新API
       updater: {
@@ -117,7 +121,8 @@ declare global {
       on: (channel: string, listener: (...args: any[]) => void) => void
       removeAllListeners: (channel: string) => void
 
-      // P2P API
+      // P2P API已被移除
+      /*
       p2p: {
         // 服务控制
         start: () => Promise<any>

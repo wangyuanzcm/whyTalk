@@ -18,7 +18,7 @@ const coreMenuItems = [
   { id: 'register', name: '注册', icon: 'UserAdd', path: '/auth/register', core: true },
   { id: 'workspace', name: '工作台', icon: 'Application', path: '/workspace', core: true },
   { id: 'settings', name: '设置', icon: 'SettingTwo', path: '/settings', core: true },
-  { id: 'p2p', name: '网络', icon: 'Connection', path: '/p2p', core: true }
+  // P2P网络菜单项已被移除
 ]
 
 // 可插件化的功能（将被移除的核心功能）
@@ -108,7 +108,7 @@ onMounted(() => {
   <section>
     <h3 class="title">菜单配置</h3>
     <p class="description">
-      配置左侧菜单显示的插件。核心功能（登录、工作台、设置、P2P网络）将始终显示，
+      配置左侧菜单显示的插件。核心功能（登录、工作台、设置）将始终显示，
       而消息、通讯录等功能将通过插件实现。
     </p>
 

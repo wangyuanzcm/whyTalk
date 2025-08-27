@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { loadSetting } from '@/utils/setting'
 import { isLogin } from '@/utils/auth'
-import p2pConnect from '@/p2p/P2PConnect'
+// P2P功能已被移除
 import AppProvider from '@/layout/AppProvider.vue'
 
 const isInitialized = ref(false)
@@ -21,16 +21,14 @@ const init = async () => {
 
       // 检查是否已有有效的登录状态
       try {
-        // 如果用户已登录，初始化P2P连接
+        // 如果用户已登录
         if (isLogin()) {
-          console.log('User already logged in, initializing P2P...')
-          await p2pConnect.connect()
-          console.log('P2P connection initialized successfully')
+          console.log('User already logged in')
         } else {
           console.log('User not logged in, will redirect to login page')
         }
       } catch (error) {
-        console.error('Failed to initialize P2P:', error)
+        console.error('Failed to initialize app:', error)
       }
     } else {
       console.log('Browser environment detected, skipping P2P initialization')

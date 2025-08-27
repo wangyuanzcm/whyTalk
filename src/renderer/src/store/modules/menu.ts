@@ -40,21 +40,24 @@ export const useMenuStore = defineStore('menu', {
           icon: markRaw(Application),
           title: '工作台',
           core: true
-        },
-        {
-          id: 'p2p',
-          link: '/p2p',
-          icon: markRaw(Connection),
-          title: '网络',
-          core: true
-        },
-        {
-          id: 'settings',
-          link: '/settings',
-          icon: markRaw(SettingTwo),
-          title: '设置',
-          core: true
-        }
+    },
+    // P2P网络菜单项已被移除
+    /*
+    {
+      id: 'p2p',
+      link: '/p2p',
+      icon: markRaw(Connection),
+      title: '网络',
+      core: true
+    },
+    */
+    {
+      id: 'settings',
+      link: '/settings',
+      icon: markRaw(SettingTwo),
+      title: '设置',
+      core: true
+    }
       ] as MenuItem[],
 
       // 插件菜单项
@@ -90,7 +93,7 @@ export const useMenuStore = defineStore('menu', {
           'frontend_contact-plugin_1.0.0',
           'frontend_note-plugin_1.0.0'
         ],
-        coreMenuOrder: ['workspace', 'p2p', 'settings'] // 核心菜单项的默认顺序
+        coreMenuOrder: ['workspace', 'settings'] // 核心菜单项的默认顺序（P2P已移除）
       } as MenuConfig
     }
   },
@@ -130,7 +133,7 @@ export const useMenuStore = defineStore('menu', {
       const defaultConfig = {
         enabledPlugins: ['message-plugin', 'contact-plugin'], // 笔记插件默认不启用
         pluginOrder: ['message-plugin', 'contact-plugin', 'note-plugin'],
-        coreMenuOrder: ['workspace', 'p2p', 'settings'] // 核心菜单项的默认顺序
+        coreMenuOrder: ['workspace', 'settings'] // 核心菜单项的默认顺序（P2P已移除）
       }
       const savedConfig = storage.get('menuConfig', defaultConfig)
       this.menuConfig = savedConfig
@@ -278,7 +281,7 @@ export const useMenuStore = defineStore('menu', {
       this.menuConfig = {
         enabledPlugins: ['message-plugin', 'contact-plugin'], // 重置为默认启用的插件
         pluginOrder: ['message-plugin', 'contact-plugin', 'note-plugin'],
-        coreMenuOrder: ['workspace', 'p2p', 'settings'] // 重置为默认的核心菜单顺序
+        coreMenuOrder: ['workspace', 'settings'] // 重置为默认的核心菜单顺序（P2P已移除）
       }
       this.saveMenuConfig()
     },

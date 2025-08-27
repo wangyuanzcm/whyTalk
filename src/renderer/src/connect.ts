@@ -14,11 +14,7 @@ const urlCallback = () => {
     window.location.reload()
   }
 
-  // 检查是否为 P2P 模式
-  if (import.meta.env.VITE_P2P_MODE === 'true') {
-    // P2P 模式下不使用 WebSocket
-    return null
-  }
+  // P2P 模式已被移除，始终使用 WebSocket 连接
 
   // 检查 SOCKET_API 是否配置
   if (!import.meta.env.VITE_SOCKET_API) {
@@ -31,18 +27,20 @@ const urlCallback = () => {
 
 class Connect {
   private conn: WsSocket | null = null
-  private isP2PMode: boolean
+  // P2P 模式已被移除
+  // private isP2PMode: boolean
   private initialized: boolean = false
 
   constructor() {
-    this.isP2PMode = import.meta.env.VITE_P2P_MODE === 'true'
+    // P2P 模式已被移除
+    // this.isP2PMode = import.meta.env.VITE_P2P_MODE === 'true'
   }
 
   private initialize() {
     if (this.initialized) return
     this.initialized = true
 
-    if (!this.isP2PMode && import.meta.env.VITE_SOCKET_API) {
+    if (import.meta.env.VITE_SOCKET_API) {
       const url = urlCallback()
       if (!url) {
         console.warn('WebSocket URL is null, skipping connection')
@@ -78,43 +76,31 @@ class Connect {
 
   connect() {
     this.initialize()
-    if (this.isP2PMode) {
-      console.log('P2P mode: connect() called but using P2P instead of WebSocket')
-      return
-    }
+    // P2P 模式已被移除，直接使用 WebSocket 连接
     this.conn?.connection()
   }
 
   disconnect() {
     this.initialize()
-    if (this.isP2PMode) {
-      console.log('P2P mode: disconnect() called but using P2P instead of WebSocket')
-      return
-    }
+    // P2P 模式已被移除，直接使用 WebSocket 断开
     this.conn?.close()
   }
 
   isConnect() {
     this.initialize()
-    if (this.isP2PMode) {
-      // 在 P2P 模式下，假设总是连接的
-      return true
-    }
+    // P2P 模式已被移除，直接检查 WebSocket 连接状态
     return this.conn?.connect?.readyState === WebSocket.OPEN
   }
 
   emit(event: string, data: any) {
     this.initialize()
-    if (this.isP2PMode) {
-      console.log('P2P mode: emit() called but using P2P instead of WebSocket', event, data)
-      return
-    }
+    // P2P 模式已被移除，直接使用 WebSocket 发送事件
     this.conn?.emit(event, data)
   }
 
   bindEvents() {
-    if (this.isP2PMode || !this.conn) {
-      console.log('P2P mode: skipping WebSocket event binding')
+    // P2P 模式已被移除，直接绑定 WebSocket 事件
+    if (!this.conn) {
       return
     }
 

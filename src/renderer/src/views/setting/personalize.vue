@@ -49,10 +49,7 @@ const defaultPages = [
     label: '笔记',
     value: '/note'
   },
-  {
-    label: '网络',
-    value: '/p2p'
-  }
+  // 网络页面已被移除
 ]
 </script>
 

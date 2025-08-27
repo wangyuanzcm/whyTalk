@@ -2,7 +2,7 @@ import { ipcMain, BrowserWindow } from 'electron'
 import { authService } from '../auth/AuthService'
 import { userService } from '../user/UserService'
 import { uploadService } from '../upload/UploadService'
-import { localSendP2PManager as p2pManager } from '../p2p/LocalSendP2PManager'
+// P2P功能已被移除
 import { loggerService } from '../logger/LoggerService'
 import type { IPCRequest, IPCResponse } from './IPCHandler.d'
 
@@ -202,38 +202,7 @@ export class IPCHandler {
       }
     }
 
-    // P2P 相关接口 - 现在使用LocalSend实现
-    // 直接使用导入的p2pManager，避免循环依赖
-    
-    // P2P 状态查询
-    if (url === '/api/v1/p2p/status') {
-      const nodeInfo = p2pManager.getNodeInfo()
-      return {
-        isRunning: p2pManager.isRunning(),
-        peerId: nodeInfo?.peerId || null,
-        identity: nodeInfo ? { peerId: nodeInfo.peerId } : null
-      }
-    }
-
-    // 获取已发现的节点
-    if (url === '/api/v1/p2p/peers') {
-      const discoveredPeers = await p2pManager.getDiscoveredPeers()
-      return discoveredPeers.map((peer: any) => ({
-        peerId: peer.fingerprint,
-        status: 'discovered',
-        addedAt: new Date().toISOString(),
-        nickname: peer.alias
-      }))
-    }
-
-    // 发送P2P消息
-    if (url === '/api/v1/p2p/message/send') {
-      if (!data.groupId) {
-        await p2pManager.sendDirectMessage(data.to, data.content)
-      }
-      // 群组消息暂时不支持
-      return null
-    }
+    // P2P功能已被移除
 
     throw new Error(`未知的接口: ${url}`)
   }
