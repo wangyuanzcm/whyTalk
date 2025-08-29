@@ -5,13 +5,22 @@ import 'vue-cropper/dist/index.css'
 import { VueCropper } from 'vue-cropper'
 import { uploadFile } from '@/api/ipc-request'
 
+// VueCropper实例类型定义
+interface CropperInstance {
+  getCropData: (callback: (data: string) => void) => void
+  getCropBlob: (callback: (blob: Blob) => void) => void
+  rotateLeft: () => void
+  rotateRight: () => void
+  refresh: () => void
+}
+
 const emit = defineEmits(['close', 'success'])
 const state = reactive({
   show: true,
   src: ''
 })
 
-const cropper = ref('cropper')
+const cropper = ref<CropperInstance>()
 
 const option = reactive({
   img: '',
@@ -35,20 +44,23 @@ const onMaskClick = () => {
 }
 
 function onTriggerUpload() {
-  document.getElementById('upload-avatar').click()
+  (document.getElementById('upload-avatar') as HTMLInputElement)?.click()
 }
 
-const onUpload = (e) => {
-  let file = e.target.files[0]
+const onUpload = (e: Event) => {
+  const target = e.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
 
-  let reader = new FileReader()
-  reader.onload = (e) => {
-    let data
+  const reader = new FileReader()
+  reader.onload = (e: ProgressEvent<FileReader>) => {
+    if (!e.target) return
+    let data: string
     if (typeof e.target.result === 'object') {
       // 把Array Buffer转化为blob 如果是base64不需要
-      data = window.URL.createObjectURL(new Blob([e.target.result]))
+      data = window.URL.createObjectURL(new Blob([e.target.result as ArrayBuffer]))
     } else {
-      data = e.target.result
+      data = e.target.result as string
     }
 
     option.img = data
@@ -57,31 +69,31 @@ const onUpload = (e) => {
   reader.readAsArrayBuffer(file)
 }
 
-const realTime = (data) => {
-  cropper.value.getCropData((img) => {
+const realTime = () => {
+  cropper.value?.getCropData((img: string) => {
     option.preview = img
   })
 }
 
 const rotateLeft = () => {
-  cropper.value.rotateLeft()
+  cropper.value?.rotateLeft()
 }
 const rotateRight = () => {
-  cropper.value.rotateRight()
+  cropper.value?.rotateRight()
 }
 
 const refreshCrop = () => {
-  cropper.value.refresh()
+  cropper.value?.refresh()
 }
 
 const onSubmit = () => {
-  cropper.value.getCropBlob(async (blob) => {
+  cropper.value?.getCropBlob(async (blob: Blob) => {
     const file = new File([blob], 'avatar.png', {
       type: blob.type,
       lastModified: Date.now()
     })
 
-    const { code, data } = await uploadFile(file)
+    const { code, data } = await uploadFile(file) as { code: number; data: { src: string } }
 
     code == 200 && emit('success', data.src)
   })

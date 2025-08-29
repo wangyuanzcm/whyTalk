@@ -94,14 +94,14 @@ const onSendSms = async () => {
       loading,
       successText: '短信发送成功'
     }
-  )
+  ) as { code: number; data: { is_debug?: boolean; sms_code?: string } }
 
   if (code != 200) return
 
   startCountdown()
 
   if (data?.is_debug) {
-    model.sms_code = data.sms_code
+    model.sms_code = data.sms_code || ''
     window['$message'].success('已开启验证码自动填充')
   }
 }

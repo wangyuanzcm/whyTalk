@@ -209,7 +209,7 @@ export class PluginSystemManager {
     ipcMain.handle('plugin:files:select-file', async (event, options?: any) => {
       try {
         const window = BrowserWindow.fromWebContents(event.sender)
-        const result = await dialog.showOpenDialog(window || undefined, {
+        const result = await dialog.showOpenDialog(window!, {
           properties: ['openFile'],
           filters: options?.filters || [{ name: 'All Files', extensions: ['*'] }],
           defaultPath: options?.defaultPath
@@ -230,7 +230,7 @@ export class PluginSystemManager {
     ipcMain.handle('plugin:files:select-directory', async (event, options?: any) => {
       try {
         const window = BrowserWindow.fromWebContents(event.sender)
-        const result = await dialog.showOpenDialog(window || undefined, {
+        const result = await dialog.showOpenDialog(window!, {
           properties: ['openDirectory'],
           defaultPath: options?.defaultPath
         })

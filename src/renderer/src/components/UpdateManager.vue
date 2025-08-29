@@ -222,9 +222,9 @@ onMounted(async () => {
 
   // 监听更新事件
   if (window.electronAPI?.updater) {
-    const updateAvailableListener = (info: any) => {
-      updateInfo.value = info
-      availableVersion.value = info.version
+    const updateAvailableListener = (info: Record<string, unknown>) => {
+      updateInfo.value = info as { version: string; [key: string]: any }
+      availableVersion.value = (info.version as string) || ''
       status.value = 'available'
       showStatusIndicator.value = true
       showUpdateDialog.value = true
@@ -235,8 +235,8 @@ onMounted(async () => {
       showStatusIndicator.value = false
     }
 
-    const downloadProgressListener = (progress: any) => {
-      downloadProgress.value = progress
+    const downloadProgressListener = (progress: Record<string, unknown>) => {
+      downloadProgress.value = progress as { percent: number; bytesPerSecond: number; total: number; transferred: number }
       status.value = 'downloading'
       showStatusIndicator.value = true
     }
@@ -246,7 +246,7 @@ onMounted(async () => {
       showStatusIndicator.value = true
     }
 
-    const updateErrorListener = (err: Error) => {
+    const updateErrorListener = (err: { message: string }) => {
       error.value = err.message
       status.value = 'error'
       showStatusIndicator.value = true
@@ -268,12 +268,12 @@ onMounted(async () => {
 
     // 保存移除监听器的函数
     removeListeners = [
-      () => window.electronAPI.updater.removeUpdateAvailableListener(updateAvailableListener),
-      () => window.electronAPI.updater.removeUpdateNotAvailableListener(updateNotAvailableListener),
-      () => window.electronAPI.updater.removeDownloadProgressListener(downloadProgressListener),
-      () => window.electronAPI.updater.removeUpdateDownloadedListener(updateDownloadedListener),
-      () => window.electronAPI.updater.removeErrorListener(updateErrorListener),
-      () => window.electronAPI.updater.removeCheckingForUpdateListener(checkingForUpdateListener)
+      () => (window.electronAPI.updater.removeUpdateAvailableListener as (listener: (info: { version: string; [key: string]: any }) => void) => void)(updateAvailableListener),
+      () => (window.electronAPI.updater.removeUpdateNotAvailableListener as (listener: () => void) => void)(updateNotAvailableListener),
+      () => (window.electronAPI.updater.removeDownloadProgressListener as (listener: (progress: { percent: number; [key: string]: any }) => void) => void)(downloadProgressListener),
+      () => (window.electronAPI.updater.removeUpdateDownloadedListener as (listener: () => void) => void)(updateDownloadedListener),
+      () => (window.electronAPI.updater.removeErrorListener as (listener: (err: { message: string }) => void) => void)(updateErrorListener),
+      () => (window.electronAPI.updater.removeCheckingForUpdateListener as (listener: () => void) => void)(checkingForUpdateListener)
     ]
   }
 

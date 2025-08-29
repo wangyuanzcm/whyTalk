@@ -25,15 +25,7 @@
     "build:mac:upload": "pnpm run build:mac && node scripts/upload-release.js",
     "build:linux": "pnpm run build && electron-builder --linux",
     "build:linux:upload": "pnpm run build:linux && node scripts/upload-release.js",
-    "upload": "node scripts/upload-release.js",
-    "test:upload-config": "node scripts/test-config.js",
-    "test:plugins": "electron test-plugins.js",
-    "create-users": "electron create-multiple-users.js",
-    "plugins:dev": "pnpm --filter=@whytalk/plugins run dev",
-    "plugins:build": "pnpm --filter=@whytalk/plugins run build",
-    "plugins:install": "pnpm --filter=@whytalk/plugins run install:all",
-    "plugins:clean": "pnpm --filter=@whytalk/plugins run clean",
-    "test:update": "electron scripts/test-update.js"
+    "upload": "node scripts/upload-release.js"
   },
   "dependencies": {
     "@chainsafe/libp2p-gossipsub": "^14.1.1",

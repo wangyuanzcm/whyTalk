@@ -68,10 +68,10 @@ interface PluginMessage {
   source?: string
 }
 
-interface PluginExecuteResult {
-  success: boolean
-  result?: unknown
-  error?: string
+interface UIConfig {
+  components?: unknown[]
+  layout?: unknown
+  theme?: Record<string, unknown>
 }
 
 interface PluginExportsResult {
@@ -83,24 +83,6 @@ interface PluginExportsResult {
 interface PluginInfoResult {
   success: boolean
   info?: PluginInfo
-  error?: string
-}
-
-interface UIConfig {
-  components?: unknown[]
-  layout?: unknown
-  theme?: Record<string, unknown>
-}
-
-interface UIConfigResult {
-  success: boolean
-  ui?: UIConfig
-  error?: string
-}
-
-interface ActionResult {
-  success: boolean
-  result?: unknown
   error?: string
 }
 
@@ -482,6 +464,11 @@ function wrapWithErrorHandling<T extends (...args: unknown[]) => unknown>(fn: T)
 }
 
 // 包装所有API方法以添加错误处理
+/**
+ * 为API对象包装错误处理
+ * @param api - 需要包装的API对象
+ * @returns 包装后的API对象
+ */
 function wrapAPIWithErrorHandling(api: Record<string, unknown>): Record<string, unknown> {
   const wrapped: Record<string, unknown> = {}
 
@@ -489,7 +476,7 @@ function wrapAPIWithErrorHandling(api: Record<string, unknown>): Record<string, 
     if (typeof value === 'function') {
       wrapped[key] = wrapWithErrorHandling(value as (...args: unknown[]) => unknown)
     } else if (typeof value === 'object' && value !== null) {
-      wrapped[key] = wrapAPIWithErrorHandling(value)
+      wrapped[key] = wrapAPIWithErrorHandling(value as Record<string, unknown>)
     } else {
       wrapped[key] = value
     }
@@ -501,7 +488,7 @@ function wrapAPIWithErrorHandling(api: Record<string, unknown>): Record<string, 
 // 暴露API到渲染进程
 if (process.contextIsolated) {
   try {
-    contextBridge.exposeInMainWorld('pluginAPI', wrapAPIWithErrorHandling(pluginAPI))
+    contextBridge.exposeInMainWorld('pluginAPI', wrapAPIWithErrorHandling(pluginAPI as unknown as Record<string, unknown>))
 
     // 暴露一些基础的Electron API（受限版本）
     contextBridge.exposeInMainWorld('electron', {
@@ -519,8 +506,8 @@ if (process.contextIsolated) {
   }
 } else {
   // 非隔离上下文（不推荐，但作为后备）
-  ;(window as Record<string, unknown>).pluginAPI = wrapAPIWithErrorHandling(pluginAPI)
-  ;(window as Record<string, unknown>).electron = {
+  ;(window as unknown as Record<string, unknown>).pluginAPI = wrapAPIWithErrorHandling(pluginAPI as unknown as Record<string, unknown>)
+  ;(window as unknown as Record<string, unknown>).electron = {
     ipcRenderer: {
       invoke: ipcRenderer.invoke.bind(ipcRenderer),
       send: ipcRenderer.send.bind(ipcRenderer),

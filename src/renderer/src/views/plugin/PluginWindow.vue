@@ -66,7 +66,7 @@ const loadPlugin = async () => {
       // VSCode风格扩展处理
       if (extension.packageJSON) {
         // 检查扩展是否有webview或UI贡献点
-        const contributes = extension.packageJSON.contributes || {}
+        const contributes = (extension.packageJSON as { contributes?: Record<string, unknown> }).contributes || {}
 
         // 如果扩展有webview或自定义UI，尝试激活并获取内容
         if (contributes.views || contributes.webviews || contributes.commands) {

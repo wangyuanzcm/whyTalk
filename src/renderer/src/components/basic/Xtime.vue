@@ -12,14 +12,16 @@ export default defineComponent({
     }
   },
   setup(props) {
-    let timeout = null
+    let timeout: NodeJS.Timeout | null = null
 
     const inTime = new Date(props.time.replace(/-/g, '/')).getTime()
 
     const text = ref('')
 
     const format = () => {
-      clearTimeout(timeout)
+      if (timeout) {
+        clearTimeout(timeout)
+      }
 
       text.value = beautifyTime(props.time)
       if (new Date().getTime() - inTime < 30 * 60 * 1000) {
@@ -30,7 +32,9 @@ export default defineComponent({
     watch(props, format)
 
     onUnmounted(() => {
-      clearTimeout(timeout)
+      if (timeout) {
+        clearTimeout(timeout)
+      }
     })
 
     format()

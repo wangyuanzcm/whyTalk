@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 let second = ref(6)
-let timer: number | null = null
+let timer: NodeJS.Timeout | null = null
 
 function toJump() {
   timer && clearInterval(timer)

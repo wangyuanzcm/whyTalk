@@ -161,13 +161,22 @@ const config = ref({
   checkInterval: 3600000 // 1小时
 })
 
-const status = ref({
+interface UpdateStatus {
+  status: string
+  currentVersion: string
+  availableVersion: string
+  downloadProgress: { percent: number; bytesPerSecond: number; total: number; transferred: number } | null
+  error: string
+  lastChecked: Date | null
+}
+
+const status = ref<UpdateStatus>({
   status: 'idle',
   currentVersion: '',
   availableVersion: '',
-  downloadProgress: null as any,
+  downloadProgress: null,
   error: '',
-  lastChecked: null as Date | null
+  lastChecked: null
 })
 
 const currentVersion = ref('')
@@ -278,9 +287,9 @@ function handleIntervalChange() {
  */
 async function checkForUpdates() {
   try {
-    const result = await window.electronAPI.updater.checkForUpdates()
-    if (!result.success) {
-      message.error('检查更新失败: ' + result.error)
+    const result = await window.electronAPI.updater.checkForUpdates() as any
+    if (!result?.success) {
+      message.error('检查更新失败: ' + (result?.error || ''))
     }
   } catch (error) {
     console.error('Failed to check for updates:', error)
@@ -293,9 +302,9 @@ async function checkForUpdates() {
  */
 async function downloadUpdate() {
   try {
-    const result = await window.electronAPI.updater.downloadUpdate()
-    if (!result.success) {
-      message.error('下载更新失败: ' + result.error)
+    const result = await window.electronAPI.updater.downloadUpdate() as any
+    if (!result?.success) {
+      message.error('下载更新失败: ' + (result?.error || ''))
     }
   } catch (error) {
     console.error('Failed to download update:', error)
@@ -308,9 +317,9 @@ async function downloadUpdate() {
  */
 async function installUpdate() {
   try {
-    const result = await window.electronAPI.updater.quitAndInstall()
-    if (!result.success) {
-      message.error('安装更新失败: ' + result.error)
+    const result = await window.electronAPI.updater.quitAndInstall() as any
+    if (!result?.success) {
+      message.error('安装更新失败: ' + (result?.error || ''))
     }
   } catch (error) {
     console.error('Failed to install update:', error)
@@ -335,7 +344,10 @@ async function loadData() {
     // 加载状态
     const statusData = await window.electronAPI.updater.getStatus()
     if (statusData) {
-      status.value = statusData
+      status.value = {
+        ...status.value,
+        ...statusData
+      }
     }
 
     // 加载版本
@@ -351,9 +363,9 @@ async function loadData() {
  */
 function setupEventListeners() {
   // 监听状态变化
-  window.electronAPI.updater.onUpdateAvailable((info) => {
+  window.electronAPI.updater.onUpdateAvailable((info: any) => {
     status.value.status = 'update-available'
-    status.value.availableVersion = info.version
+    status.value.availableVersion = info.version || ''
     message.info(`发现新版本 ${info.version}`)
   })
 
@@ -362,20 +374,20 @@ function setupEventListeners() {
     message.success('已是最新版本')
   })
 
-  window.electronAPI.updater.onDownloadProgress((progress) => {
+  window.electronAPI.updater.onDownloadProgress((progress: any) => {
     status.value.status = 'downloading'
     status.value.downloadProgress = progress
   })
 
-  window.electronAPI.updater.onUpdateDownloaded((info) => {
+  window.electronAPI.updater.onUpdateDownloaded((info: any) => {
     status.value.status = 'update-downloaded'
-    status.value.availableVersion = info.version
+    status.value.availableVersion = info.version || ''
     message.success(`新版本 ${info.version} 下载完成`)
   })
 
-  window.electronAPI.updater.onError((error) => {
+  window.electronAPI.updater.onError((error: any) => {
     status.value.status = 'error'
-    status.value.error = error.message
+    status.value.error = error.message || ''
     message.error('更新失败: ' + error.message)
   })
 

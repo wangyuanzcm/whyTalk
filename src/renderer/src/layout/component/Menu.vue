@@ -50,7 +50,7 @@ onMounted(async () => {
   // 同步插件到菜单系统
   try {
     const PluginAPI = (await import('@/api/plugin')).default
-    const result = await PluginAPI.listPlugins()
+    const result = await PluginAPI.listPlugins() as { success: boolean; plugins?: Array<{ enabled: boolean; [key: string]: unknown }> }
     if (result.success && result.plugins) {
       const enabledPlugins = result.plugins.filter((plugin) => plugin.enabled)
       menuStore.syncPluginsToMenuItems(enabledPlugins)

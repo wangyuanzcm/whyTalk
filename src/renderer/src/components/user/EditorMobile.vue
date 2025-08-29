@@ -53,12 +53,12 @@ const onSendSms = async () => {
     channel: 'change_account'
   }
 
-  const { code, data } = await ServCommonSendSmsCode(params)
+  const { code, data } = await ServCommonSendSmsCode(params) as { code: number; data: { is_debug?: boolean; sms_code?: string } }
   if (code != 200) return
 
   startCountdown()
-  if (data.is_debug) {
-    state.sms_code = data.sms_code
+  if (data?.is_debug) {
+    state.sms_code = data.sms_code || ''
     message.success('已开启验证码自动填充')
   } else {
     message.success('短信发送成功')

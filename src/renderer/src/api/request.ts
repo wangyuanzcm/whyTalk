@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios'
+import axios, { AxiosError, AxiosResponse } from 'axios'
 import * as auth from '@/utils/auth.ts'
 
 // 创建 axios 实例
@@ -51,9 +51,9 @@ request.interceptors.request.use((config) => {
   return config
 }, errorHandler)
 
-request.interceptors.response.use((response: { data: unknown }) => {
-  const refreshAccessToken = response.headers.get('refresh-access-token')
-  const refreshTokenExpire = response.headers.get('refresh-access-expires-at')
+request.interceptors.response.use((response: AxiosResponse) => {
+  const refreshAccessToken = response.headers['refresh-access-token']
+  const refreshTokenExpire = response.headers['refresh-access-expires-at']
 
   if (refreshAccessToken && refreshTokenExpire) {
     auth.setToken(refreshAccessToken, parseInt(refreshTokenExpire))

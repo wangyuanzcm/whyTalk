@@ -1,6 +1,6 @@
 import { reactive, defineComponent, h } from 'vue'
 import { NDropdown } from 'naive-ui'
-import { IDropdown, IDropdownOption } from './types.ts'
+import { IDropdown, IDropdownOption, IChatItem } from './types.ts'
 
 export function useContextMenu(contextMenuHandle: (key: string) => void) {
   const dropdown: IDropdown = reactive({
@@ -8,15 +8,15 @@ export function useContextMenu(contextMenuHandle: (key: string) => void) {
     show: false,
     x: 0,
     y: 0,
-    item: {} as any
+    item: {} as IChatItem
   })
 
   const close = () => {
     dropdown.show = false
-    dropdown.item = {}
+    dropdown.item = {} as IChatItem
   }
 
-  const show = (e: MouseEvent, options: IDropdownOption[], item: any) => {
+  const show = (e: MouseEvent, options: IDropdownOption[], item: IChatItem) => {
     dropdown.item = item
     dropdown.options = [...options]
     dropdown.x = e.clientX
@@ -45,7 +45,7 @@ export function useContextMenu(contextMenuHandle: (key: string) => void) {
         show: dropdown.show,
         onSelect: handleSelect,
         onClickoutside: handleClickOutside
-      })
+      } as any)
     }
   })
 
