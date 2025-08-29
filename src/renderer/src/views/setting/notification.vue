@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { computed, ref } from 'vue'
 import { useSettingsStore } from '@/store'
 
 const settingsStore = useSettingsStore()

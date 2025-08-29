@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { ref, reactive } from 'vue'
 import { ServUserMobileUpdate } from '@/api/user'
 import { isMobile } from '@/utils/validate'
 import { ServCommonSendSmsCode } from '@/api/common'

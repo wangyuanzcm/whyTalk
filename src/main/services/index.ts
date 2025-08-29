@@ -51,17 +51,17 @@ export class ServiceManager {
       await authService.initialize()
       await userService.initialize()
       await uploadService.initialize()
-      
+
       // 初始化更新服务
       await updaterService.initialize()
       console.log('Updater service initialized')
 
       // 插件服务初始化已移除，VSCode风格插件系统独立管理
-      
+
       // 初始化 LocalSend IPC 处理器
       localSendIPCHandler.initialize()
       console.log('LocalSend IPC handler initialized')
-      
+
       await p2pManager.start()
       console.log('LocalSend P2P Manager started')
 

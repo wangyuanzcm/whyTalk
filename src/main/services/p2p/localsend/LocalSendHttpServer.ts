@@ -349,7 +349,7 @@ export class LocalSendHttpServer extends EventEmitter {
 
     // 获取第一个非回环网络接口的MAC地址
     let macAddress = ''
-    for (const [_name, interfaces] of Object.entries(networkInterfaces)) {
+    for (const interfaces of Object.values(networkInterfaces)) {
       if (interfaces) {
         for (const iface of interfaces) {
           if (!iface.internal && iface.mac && iface.mac !== '00:00:00:00:00:00') {

@@ -31,10 +31,6 @@ const menus = computed(() => {
   })
 })
 
-const onLogout = () => {
-  userStore.logoutLogin()
-}
-
 const onClickMenu = (menu) => {
   if (menu.external) {
     window.open(menu.link)
@@ -50,7 +46,7 @@ const isActive = (menu) => {
 // 初始化菜单配置和插件同步
 onMounted(async () => {
   menuStore.loadMenuConfig()
-  
+
   // 同步插件到菜单系统
   try {
     const PluginAPI = (await import('@/api/plugin')).default
@@ -89,10 +85,10 @@ onMounted(async () => {
 
         <!-- P2P状态圆点已被移除 -->
       </div>
-
+      <!-- 
       <span class="online-status" :class="{ online: userStore.online }">
         {{ userStore.online ? '在线' : '连接中...' }}
-      </span>
+      </span> -->
     </header>
 
     <main class="menu-main">
@@ -121,10 +117,6 @@ onMounted(async () => {
         <span>{{ nav.title }}</span>
       </div>
     </main>
-
-    <footer class="menu-footer">
-      <div class="pointer" @click="onLogout">退出</div>
-    </footer>
   </section>
 </template>
 
@@ -179,18 +171,6 @@ onMounted(async () => {
     flex: auto;
     width: 100%;
     overflow: hidden;
-  }
-
-  .menu-footer {
-    height: 90px;
-    width: 100%;
-
-    div {
-      height: 38px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
   }
 }
 

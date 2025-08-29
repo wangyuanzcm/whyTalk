@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 import { defineComponent, h, ref, onUnmounted, watch } from 'vue'
 import { beautifyTime } from '@/utils/datetime'
 

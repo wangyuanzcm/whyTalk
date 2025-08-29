@@ -14,39 +14,39 @@ import type { ExtensionInstance } from './types'
  */
 export class VSCodeStylePluginManager extends EventEmitter {
   private static instance: VSCodeStylePluginManager
-  
+
   /** 扩展主机 */
   private extensionHost: ExtensionHost
-  
+
   /** 扩展加载器 */
   private extensionLoader: ExtensionLoader
-  
+
   /** 贡献点管理器 */
   private contributionPointManager: ContributionPointManager
-  
+
   /** 激活事件管理器 */
   private activationEventManager: ActivationEventManager
-  
+
   /** API提供者 */
   private apiProvider: APIProvider
-  
+
   /** 是否已初始化 */
   private isInitialized = false
-  
+
   /** 插件目录路径 */
   private builtinExtensionsPath: string
   private userExtensionsPath: string
 
   private constructor() {
     super()
-    
+
     // 获取单例实例
     this.extensionHost = ExtensionHost.getInstance()
     this.extensionLoader = ExtensionLoader.getInstance()
     this.contributionPointManager = ContributionPointManager.getInstance()
     this.activationEventManager = ActivationEventManager.getInstance()
     this.apiProvider = APIProvider.getInstance()
-    
+
     // 设置插件目录路径
     const isDev = !app.isPackaged
     if (isDev) {
@@ -79,19 +79,19 @@ export class VSCodeStylePluginManager extends EventEmitter {
 
     try {
       console.log('[VSCodeStylePluginManager] 初始化插件管理器...')
-      
+
       // ExtensionLoader在构造函数中已经设置了扩展目录路径
       // 无需手动设置
-      
+
       // 设置事件监听器
       this.setupEventListeners()
-      
+
       // 初始化扩展主机
       await this.extensionHost.initialize()
-      
+
       this.isInitialized = true
       console.log('[VSCodeStylePluginManager] 插件管理器初始化完成')
-      
+
       this.emit('initialized')
     } catch (error) {
       console.error('[VSCodeStylePluginManager] 插件管理器初始化失败:', error)
@@ -129,10 +129,13 @@ export class VSCodeStylePluginManager extends EventEmitter {
       this.emit('extensionUnloaded', extension)
     })
 
-    this.extensionHost.on('extensionActivationFailed', (extension: ExtensionInstance, error: any) => {
-      console.error(`[VSCodeStylePluginManager] 扩展激活失败: ${extension.id}`, error)
-      this.emit('extensionActivationFailed', extension, error)
-    })
+    this.extensionHost.on(
+      'extensionActivationFailed',
+      (extension: ExtensionInstance, error: any) => {
+        console.error(`[VSCodeStylePluginManager] 扩展激活失败: ${extension.id}`, error)
+        this.emit('extensionActivationFailed', extension, error)
+      }
+    )
 
     this.extensionHost.on('extensionLoadFailed', (extensionPath: string, error: any) => {
       console.error(`[VSCodeStylePluginManager] 扩展加载失败: ${extensionPath}`, error)
@@ -167,21 +170,25 @@ export class VSCodeStylePluginManager extends EventEmitter {
     // 激活所有设置为启动时激活的扩展
     const extensions = this.getAllExtensions()
     const activationPromises: Promise<void>[] = []
-    
+
     for (const extension of extensions) {
       // 检查是否有启动激活事件
-      if (extension.activationEvents.includes('*') || 
-          extension.activationEvents.includes('onStartupFinished')) {
+      if (
+        extension.activationEvents.includes('*') ||
+        extension.activationEvents.includes('onStartupFinished')
+      ) {
         activationPromises.push(
-          this.activateExtension(extension.id).catch(error => {
+          this.activateExtension(extension.id).catch((error) => {
             console.error(`[VSCodeStylePluginManager] 启动时激活扩展 ${extension.id} 失败:`, error)
           })
         )
       }
     }
-    
+
     await Promise.allSettled(activationPromises)
-    console.log(`[VSCodeStylePluginManager] 启动时激活完成，共处理 ${activationPromises.length} 个扩展`)
+    console.log(
+      `[VSCodeStylePluginManager] 启动时激活完成，共处理 ${activationPromises.length} 个扩展`
+    )
   }
 
   /**
@@ -329,13 +336,13 @@ export class VSCodeStylePluginManager extends EventEmitter {
    */
   public async reloadAllExtensions(): Promise<void> {
     console.log('[VSCodeStylePluginManager] 重新加载所有扩展...')
-    
+
     // 清理当前状态
     await this.extensionHost.clear()
-    
+
     // 重新加载所有扩展
     await this.extensionHost.loadAllExtensions()
-    
+
     console.log('[VSCodeStylePluginManager] 所有扩展重新加载完成')
     this.emit('allExtensionsReloaded')
   }
@@ -353,13 +360,13 @@ export class VSCodeStylePluginManager extends EventEmitter {
   } {
     const extensions = this.getAllExtensions()
     const hostStats = this.extensionHost.getStats()
-    
+
     return {
       total: extensions.length,
       activated: this.getActivatedExtensions().length,
-      builtin: extensions.filter(e => e.isBuiltin).length,
-      user: extensions.filter(e => !e.isBuiltin).length,
-      failed: extensions.filter(e => e.error).length,
+      builtin: extensions.filter((e) => e.isBuiltin).length,
+      user: extensions.filter((e) => !e.isBuiltin).length,
+      failed: extensions.filter((e) => e.error).length,
       host: hostStats
     }
   }
@@ -382,9 +389,9 @@ export class VSCodeStylePluginManager extends EventEmitter {
    */
   public async clear(): Promise<void> {
     console.log('[VSCodeStylePluginManager] 清理所有扩展...')
-    
+
     await this.extensionHost.clear()
-    
+
     this.emit('cleared')
     console.log('[VSCodeStylePluginManager] 所有扩展已清理')
   }
@@ -394,13 +401,13 @@ export class VSCodeStylePluginManager extends EventEmitter {
    */
   public async dispose(): Promise<void> {
     console.log('[VSCodeStylePluginManager] 销毁插件管理器...')
-    
+
     // 清理所有扩展
     await this.clear()
-    
+
     // 移除所有事件监听器
     this.removeAllListeners()
-    
+
     this.isInitialized = false
     console.log('[VSCodeStylePluginManager] 插件管理器已销毁')
   }
@@ -421,9 +428,14 @@ export class VSCodeStylePluginManager extends EventEmitter {
    * @param packageName npm包名
    * @param version 版本号（可选）
    */
-  public async installFromNpm(packageName: string, version?: string): Promise<ExtensionInstance | null> {
+  public async installFromNpm(
+    packageName: string,
+    version?: string
+  ): Promise<ExtensionInstance | null> {
     // TODO: 实现从npm安装扩展的逻辑
-    console.log(`[VSCodeStylePluginManager] 从npm安装扩展: ${packageName}${version ? `@${version}` : ''}`)
+    console.log(
+      `[VSCodeStylePluginManager] 从npm安装扩展: ${packageName}${version ? `@${version}` : ''}`
+    )
     throw new Error('从npm安装扩展功能尚未实现')
   }
 
@@ -434,14 +446,15 @@ export class VSCodeStylePluginManager extends EventEmitter {
   public searchExtensions(query: string): ExtensionInstance[] {
     const extensions = this.getAllExtensions()
     const lowerQuery = query.toLowerCase()
-    
-    return extensions.filter(extension => {
+
+    return extensions.filter((extension) => {
       const manifest = extension.manifest
       return (
         manifest.name.toLowerCase().includes(lowerQuery) ||
         (manifest.displayName && manifest.displayName.toLowerCase().includes(lowerQuery)) ||
         (manifest.description && manifest.description.toLowerCase().includes(lowerQuery)) ||
-        (manifest.keywords && manifest.keywords.some(keyword => keyword.toLowerCase().includes(lowerQuery)))
+        (manifest.keywords &&
+          manifest.keywords.some((keyword) => keyword.toLowerCase().includes(lowerQuery)))
       )
     })
   }
@@ -452,8 +465,8 @@ export class VSCodeStylePluginManager extends EventEmitter {
    */
   public getExtensionsByCategory(category: string): ExtensionInstance[] {
     const extensions = this.getAllExtensions()
-    
-    return extensions.filter(extension => {
+
+    return extensions.filter((extension) => {
       const categories = extension.manifest.categories
       return categories && categories.includes(category)
     })
@@ -468,7 +481,7 @@ export class VSCodeStylePluginManager extends EventEmitter {
     if (!extension) {
       return []
     }
-    
+
     return extension.manifest.extensionDependencies || []
   }
 
@@ -482,13 +495,13 @@ export class VSCodeStylePluginManager extends EventEmitter {
   } {
     const dependencies = this.getExtensionDependencies(extensionId)
     const missing: string[] = []
-    
+
     for (const dep of dependencies) {
       if (!this.getExtension(dep)) {
         missing.push(dep)
       }
     }
-    
+
     return {
       satisfied: missing.length === 0,
       missing

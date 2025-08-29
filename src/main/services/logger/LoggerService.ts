@@ -80,7 +80,7 @@ export class LoggerService {
   private outputToConsole(log: LogEntry): void {
     const timestamp = new Date(log.timestamp).toLocaleString('zh-CN')
     const prefix = `[${timestamp}] [${log.source}] [${log.level.toUpperCase()}]`
-    
+
     switch (log.level.toLowerCase()) {
       case 'error':
         console.error(`${prefix} ${log.message}`)
@@ -137,15 +137,13 @@ export class LoggerService {
 
     // 添加额外信息
     const extraInfo: any = {}
-    Object.keys(log).forEach(key => {
+    Object.keys(log).forEach((key) => {
       if (!['timestamp', 'level', 'source', 'message'].includes(key)) {
         extraInfo[key] = log[key]
       }
     })
 
-    const logData = Object.keys(extraInfo).length > 0 
-      ? { ...baseInfo, extra: extraInfo }
-      : baseInfo
+    const logData = Object.keys(extraInfo).length > 0 ? { ...baseInfo, extra: extraInfo } : baseInfo
 
     return JSON.stringify(logData)
   }
@@ -174,7 +172,7 @@ export class LoggerService {
       for (let i = this.maxFiles - 1; i > 0; i--) {
         const oldFile = path.join(dir, `${baseName}.${i}${ext}`)
         const newFile = path.join(dir, `${baseName}.${i + 1}${ext}`)
-        
+
         if (fs.existsSync(oldFile)) {
           if (i === this.maxFiles - 1) {
             // 删除最旧的文件
@@ -200,7 +198,7 @@ export class LoggerService {
   async getLogFiles(): Promise<string[]> {
     try {
       const files = await fs.promises.readdir(this.logDir)
-      return files.filter(file => file.endsWith('.log'))
+      return files.filter((file) => file.endsWith('.log'))
     } catch (error) {
       console.error('获取日志文件列表失败:', error)
       return []
@@ -221,8 +219,8 @@ export class LoggerService {
       }
 
       const content = await fs.promises.readFile(filePath, 'utf8')
-      const allLines = content.split('\n').filter(line => line.trim())
-      
+      const allLines = content.split('\n').filter((line) => line.trim())
+
       // 返回最后 N 行
       return allLines.slice(-lines)
     } catch (error) {
@@ -238,14 +236,14 @@ export class LoggerService {
   async cleanupOldLogs(daysToKeep: number = 30): Promise<void> {
     try {
       const files = await fs.promises.readdir(this.logDir)
-      const cutoffTime = Date.now() - (daysToKeep * 24 * 60 * 60 * 1000)
+      const cutoffTime = Date.now() - daysToKeep * 24 * 60 * 60 * 1000
 
       for (const file of files) {
         if (!file.endsWith('.log')) continue
 
         const filePath = path.join(this.logDir, file)
         const stats = await fs.promises.stat(filePath)
-        
+
         if (stats.mtime.getTime() < cutoffTime) {
           await fs.promises.unlink(filePath)
           console.log(`已删除旧日志文件: ${file}`)
@@ -338,7 +336,7 @@ export class LoggerService {
 
     // 写入到文件
     if (this.enableFileOutput) {
-      this.writeToFile(logEntry).catch(error => {
+      this.writeToFile(logEntry).catch((error) => {
         console.error('写入日志文件失败:', error)
       })
     }

@@ -1,58 +1,71 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sample Extension - WebView</title>
-    <link rel="stylesheet" href="./style.css">
-</head>
-<body>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
     <div class="container">
-        <div class="header">
-            <h1>Sample Extension WebView</h1>
-            <p>这是一个示例扩展的前端界面</p>
-            <span class="status active">已激活</span>
+      <div class="header">
+        <h1>Sample Extension WebView</h1>
+        <p>这是一个示例扩展的前端界面</p>
+        <span class="status active">已激活</span>
+      </div>
+
+      <div class="content">
+        <div class="section">
+          <h3>扩展信息</h3>
+          <div class="info-box">
+            <div class="info-item"><strong>名称:</strong> Sample Extension</div>
+            <div class="info-item"><strong>版本:</strong> 1.0.0</div>
+            <div class="info-item"><strong>发布者:</strong> whytalk</div>
+            <div class="info-item"><strong>描述:</strong> A sample extension for WhyTalk</div>
+          </div>
         </div>
 
-        <div class="content">
-            <div class="section">
-                <h3>扩展信息</h3>
-                <div class="info-box">
-                    <div class="info-item"><strong>名称:</strong> Sample Extension</div>
-                    <div class="info-item"><strong>版本:</strong> 1.0.0</div>
-                    <div class="info-item"><strong>发布者:</strong> whytalk</div>
-                    <div class="info-item"><strong>描述:</strong> A sample extension for WhyTalk</div>
-                </div>
-            </div>
-
-            <div class="section">
-                <h3>基础操作</h3>
-                <div class="button-group">
-                    <button class="button" onclick="webView.executeCommand('sample.helloWorld')">执行Hello World命令</button>
-                    <button class="button" onclick="webView.getConfiguration()">获取配置</button>
-                    <button class="button" onclick="webView.updateConfiguration('sample', {enabled: true})">更新配置</button>
-                    <button class="button success" onclick="webView.getExtensionInfo()">获取扩展信息</button>
-                </div>
-            </div>
-            
-            <div class="section">
-                <h3>消息通知</h3>
-                <div class="button-group">
-                    <button class="button" onclick="webView.showInformationMessage('这是一条信息消息')">显示信息消息</button>
-                    <button class="button" onclick="webView.showWarningMessage('这是一条警告消息')">显示警告消息</button>
-                    <button class="button" onclick="webView.showErrorMessage('这是一条错误消息')">显示错误消息</button>
-                    <button class="button" onclick="webView.showNotification('本地通知', 'info')">显示本地通知</button>
-                    <button class="button secondary" onclick="clearLog()">清空日志</button>
-                </div>
-            </div>
-
-            <div class="section">
-                <h3>操作日志</h3>
-                <div id="log" class="log">等待操作...
-                </div>
-            </div>
+        <div class="section">
+          <h3>基础操作</h3>
+          <div class="button-group">
+            <button class="button" onclick="webView.executeCommand('sample.helloWorld')">
+              执行Hello World命令
+            </button>
+            <button class="button" onclick="webView.getConfiguration()">获取配置</button>
+            <button class="button" onclick="webView.updateConfiguration('sample', {enabled: true})">
+              更新配置
+            </button>
+            <button class="button success" onclick="webView.getExtensionInfo()">
+              获取扩展信息
+            </button>
+          </div>
         </div>
+
+        <div class="section">
+          <h3>消息通知</h3>
+          <div class="button-group">
+            <button class="button" onclick="webView.showInformationMessage('这是一条信息消息')">
+              显示信息消息
+            </button>
+            <button class="button" onclick="webView.showWarningMessage('这是一条警告消息')">
+              显示警告消息
+            </button>
+            <button class="button" onclick="webView.showErrorMessage('这是一条错误消息')">
+              显示错误消息
+            </button>
+            <button class="button" onclick="webView.showNotification('本地通知', 'info')">
+              显示本地通知
+            </button>
+            <button class="button secondary" onclick="clearLog()">清空日志</button>
+          </div>
+        </div>
+
+        <div class="section">
+          <h3>操作日志</h3>
+          <div id="log" class="log">等待操作...</div>
+        </div>
+      </div>
     </div>
     <script src="./script.js"></script>
-</body>
+  </body>
 </html>

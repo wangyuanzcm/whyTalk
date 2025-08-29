@@ -33,6 +33,7 @@ extensions/
 **文件位置**: `src/extension.ts`
 
 **主要功能**:
+
 - 扩展生命周期管理（激活/停用）
 - 命令注册和处理
 - WebView 面板管理
@@ -40,6 +41,7 @@ extensions/
 - 配置管理
 
 **核心类**:
+
 - `WebViewManager`: 管理 WebView 面板的创建、显示和消息通信
 
 #### 2. 扩展前端 (Extension Frontend)
@@ -47,12 +49,14 @@ extensions/
 **文件位置**: `webview/` 目录
 
 **主要功能**:
+
 - 提供用户界面
 - 与扩展后台通信
 - 处理用户交互
 - 显示扩展状态和数据
 
 **核心文件**:
+
 - `index.html`: 主页面结构
 - `style.css`: 样式定义
 - `script.js`: 交互逻辑和通信处理
@@ -60,17 +64,20 @@ extensions/
 #### 3. 配置文件 (package.json)
 
 **主要配置项**:
+
 ```json
 {
   "contributes": {
-    "commands": [                    // 命令定义
+    "commands": [
+      // 命令定义
       {
         "command": "sample.openWebview",
         "title": "Open WebView",
         "category": "Sample"
       }
     ],
-    "webviews": {                   // WebView 配置
+    "webviews": {
+      // WebView 配置
       "sample.webview": {
         "title": "Sample Extension",
         "enableScripts": true,
@@ -89,17 +96,23 @@ extensions/
 
 ```javascript
 // 执行命令
-window.parent.postMessage({
-  type: 'executeCommand',
-  command: 'sample.helloWorld',
-  args: {}
-}, '*');
+window.parent.postMessage(
+  {
+    type: 'executeCommand',
+    command: 'sample.helloWorld',
+    args: {}
+  },
+  '*'
+)
 
 // 获取配置
-window.parent.postMessage({
-  type: 'getConfiguration',
-  section: 'sample'
-}, '*');
+window.parent.postMessage(
+  {
+    type: 'getConfiguration',
+    section: 'sample'
+  },
+  '*'
+)
 ```
 
 ### 后台到前端通信
@@ -112,36 +125,36 @@ this.panel.webview.postMessage({
   type: 'commandResult',
   command: command,
   data: result
-});
+})
 
 // 发送配置信息
 this.panel.webview.postMessage({
   type: 'configurationResult',
   data: configData
-});
+})
 ```
 
 ## 消息类型定义
 
 ### 前端到后台消息
 
-| 类型 | 描述 | 参数 |
-|------|------|------|
-| `webviewReady` | WebView 准备就绪 | - |
-| `executeCommand` | 执行命令 | `command`, `args` |
-| `getConfiguration` | 获取配置 | `section` |
-| `updateConfiguration` | 更新配置 | `section`, `config` |
-| `getExtensionInfo` | 获取扩展信息 | - |
+| 类型                  | 描述             | 参数                |
+| --------------------- | ---------------- | ------------------- |
+| `webviewReady`        | WebView 准备就绪 | -                   |
+| `executeCommand`      | 执行命令         | `command`, `args`   |
+| `getConfiguration`    | 获取配置         | `section`           |
+| `updateConfiguration` | 更新配置         | `section`, `config` |
+| `getExtensionInfo`    | 获取扩展信息     | -                   |
 
 ### 后台到前端消息
 
-| 类型 | 描述 | 参数 |
-|------|------|------|
-| `commandResult` | 命令执行结果 | `command`, `data`, `error` |
-| `configurationResult` | 配置获取结果 | `data`, `error` |
-| `extensionMessage` | 扩展消息 | `data` |
-| `extensionError` | 扩展错误 | `error` |
-| `statusUpdate` | 状态更新 | `data` |
+| 类型                  | 描述         | 参数                       |
+| --------------------- | ------------ | -------------------------- |
+| `commandResult`       | 命令执行结果 | `command`, `data`, `error` |
+| `configurationResult` | 配置获取结果 | `data`, `error`            |
+| `extensionMessage`    | 扩展消息     | `data`                     |
+| `extensionError`      | 扩展错误     | `error`                    |
+| `statusUpdate`        | 状态更新     | `data`                     |
 
 ## 开发指南
 
@@ -158,11 +171,11 @@ this.panel.webview.postMessage({
 // 注册命令
 const command = api.commands.registerCommand('extension.command', () => {
   // 命令逻辑
-});
+})
 
 // 创建 WebView
-const webViewManager = new WebViewManager(context, api);
-webViewManager.createOrShow();
+const webViewManager = new WebViewManager(context, api)
+webViewManager.createOrShow()
 ```
 
 ### 3. 扩展前端开发
@@ -172,12 +185,12 @@ webViewManager.createOrShow();
 extensionWebView.sendMessage({
   type: 'executeCommand',
   command: 'extension.command'
-});
+})
 
 // 处理后台消息
 extensionWebView.handleMessage = (message) => {
   // 处理逻辑
-};
+}
 ```
 
 ### 4. 构建和部署
@@ -193,21 +206,25 @@ node build.js
 ## 优势
 
 ### 1. 统一的开发体验
+
 - 前端和后台代码在同一个扩展目录中
 - 统一的配置文件管理
 - 一致的开发工具链
 
 ### 2. 更好的代码组织
+
 - 清晰的目录结构
 - 分离的关注点（后台逻辑 vs 前端界面）
 - 模块化的代码组织
 
 ### 3. 增强的功能
+
 - 双向通信机制
 - 丰富的 WebView 功能
 - 灵活的配置选项
 
 ### 4. 易于维护
+
 - 独立的扩展包
 - 版本化管理
 - 热重载支持
@@ -234,21 +251,25 @@ node build.js
 ## 最佳实践
 
 ### 1. 错误处理
+
 - 在后台和前端都实现完善的错误处理
 - 提供用户友好的错误信息
 - 记录详细的调试日志
 
 ### 2. 性能优化
+
 - 使用消息队列处理大量通信
 - 实现 WebView 的懒加载
 - 优化前端资源加载
 
 ### 3. 安全考虑
+
 - 验证来自前端的消息
 - 限制 WebView 的权限
 - 避免执行不安全的代码
 
 ### 4. 用户体验
+
 - 提供加载状态指示
 - 实现优雅的错误恢复
 - 保持界面响应性
@@ -256,6 +277,7 @@ node build.js
 ## 示例扩展
 
 `sample-extension` 提供了一个完整的示例，展示了：
+
 - 基本的扩展结构
 - 命令注册和处理
 - WebView 创建和管理

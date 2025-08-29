@@ -120,7 +120,7 @@ export class ConfigurationManager extends EventEmitter {
    */
   public registerConfigSchema(extensionId: string, schema: PluginConfigSchema): void {
     this.schemas.set(extensionId, schema)
-    
+
     // 如果插件还没有配置，使用默认值初始化
     if (!this.configurations.has(extensionId)) {
       const defaultConfig: any = {}
@@ -142,7 +142,7 @@ export class ConfigurationManager extends EventEmitter {
     if (!schema) {
       return null
     }
-    
+
     return Object.entries(schema).map(([key, item]) => ({
       ...item,
       key
@@ -154,11 +154,11 @@ export class ConfigurationManager extends EventEmitter {
    */
   public getConfiguration(extensionId: string, section?: string): any {
     const config = this.configurations.get(extensionId) || {}
-    
+
     if (!section) {
       return config
     }
-    
+
     // 支持点分隔的配置路径
     const keys = section.split('.')
     let value = config
@@ -169,7 +169,7 @@ export class ConfigurationManager extends EventEmitter {
         return undefined
       }
     }
-    
+
     return value
   }
 
@@ -177,12 +177,12 @@ export class ConfigurationManager extends EventEmitter {
    * 更新配置值
    */
   public updateConfiguration(extensionId: string, section: string, value: any): void {
-    let config = this.configurations.get(extensionId) || {}
-    
+    const config = this.configurations.get(extensionId) || {}
+
     // 支持点分隔的配置路径
     const keys = section.split('.')
     const lastKey = keys.pop()!
-    
+
     let current = config
     for (const key of keys) {
       if (!current[key] || typeof current[key] !== 'object') {
@@ -190,12 +190,12 @@ export class ConfigurationManager extends EventEmitter {
       }
       current = current[key]
     }
-    
+
     current[lastKey] = value
-    
+
     this.configurations.set(extensionId, config)
     this.saveConfiguration(extensionId)
-    
+
     // 触发配置变化事件
     const event = {
       extensionId,
@@ -222,7 +222,7 @@ export class ConfigurationManager extends EventEmitter {
   public deleteConfiguration(extensionId: string): void {
     this.configurations.delete(extensionId)
     this.schemas.delete(extensionId)
-    
+
     const configFile = path.join(this.configDir, `${extensionId}.json`)
     if (fs.existsSync(configFile)) {
       fs.unlinkSync(configFile)
@@ -243,7 +243,7 @@ export class ConfigurationManager extends EventEmitter {
       }
       this.configurations.set(extensionId, defaultConfig)
       this.saveConfiguration(extensionId)
-      
+
       this.emit('configurationChanged', {
         extensionId,
         section: null,
@@ -255,7 +255,9 @@ export class ConfigurationManager extends EventEmitter {
   /**
    * 监听配置变化
    */
-  public onDidChangeConfiguration(listener: (event: { extensionId: string; section: string | null; value: any }) => void): () => void {
+  public onDidChangeConfiguration(
+    listener: (event: { extensionId: string; section: string | null; value: any }) => void
+  ): () => void {
     this.on('configurationChanged', listener)
     return () => this.off('configurationChanged', listener)
   }

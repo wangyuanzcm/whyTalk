@@ -1,10 +1,6 @@
 import { EventEmitter } from 'events'
 import { LocalSendProtocol } from './LocalSendProtocol'
-import {
-  LocalSendPeer,
-  LocalSendMessage,
-  LocalSendDevice
-} from './LocalSendProtocol.d'
+import { LocalSendPeer, LocalSendMessage, LocalSendDevice } from './LocalSendProtocol.d'
 import { LocalSendHttpServer } from './LocalSendHttpServer'
 import { LocalSendDiscovery } from './LocalSendDiscovery'
 import { LocalSendHttpClient } from './LocalSendHttpClient'
@@ -49,10 +45,11 @@ export class LocalSendNetworkService extends EventEmitter {
       await this.httpServer.start()
       console.log('LocalSend HTTP server started')
 
-      // 创建设备发现服务
+      // 创建设备发现服务（禁用广播功能）
       this.discovery = new LocalSendDiscovery(
         this.httpServer.getFingerprint(),
-        this.httpServer.getDeviceInfo()
+        this.httpServer.getDeviceInfo(),
+        false // 禁用广播功能
       )
 
       // 启动设备发现服务
@@ -65,8 +62,8 @@ export class LocalSendNetworkService extends EventEmitter {
         this.httpServer.getDeviceInfo()
       )
 
-      // 创建LocalSend协议实例
-      this.protocol = new LocalSendProtocol(this.deviceAlias, port)
+      // 创建LocalSend协议实例（禁用广播功能）
+      this.protocol = new LocalSendProtocol(this.deviceAlias, port, false)
 
       // 注册事件监听器
       this.setupEventListeners()
@@ -217,7 +214,7 @@ export class LocalSendNetworkService extends EventEmitter {
     if (this.httpServer) {
       return this.httpServer.getFingerprint()
     }
-    
+
     // 使用与LocalSendHttpServer相同的指纹生成逻辑
     const hostname = os.hostname()
     const platform = os.platform()
@@ -226,7 +223,7 @@ export class LocalSendNetworkService extends EventEmitter {
 
     // 获取第一个非回环网络接口的MAC地址
     let macAddress = ''
-    for (const [_name, interfaces] of Object.entries(networkInterfaces)) {
+    for (const interfaces of Object.values(networkInterfaces)) {
       if (interfaces) {
         for (const iface of interfaces) {
           if (!iface.internal && iface.mac && iface.mac !== '00:00:00:00:00:00') {

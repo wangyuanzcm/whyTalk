@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { ref, reactive } from 'vue'
+import { useRouter } from 'vue-router'
 import { ServUserUpdate, ServUserDetail } from '@/api/user.ts'
 import AvatarCropper from '@/components/basic/AvatarCropper.vue'
 import { hidePhone } from '@/utils/string'

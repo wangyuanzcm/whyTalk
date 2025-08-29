@@ -1,0 +1,64 @@
+{
+  "npmPlugins": [
+    {
+      "id": "lodash-utils",
+      "name": "Lodash工具库",
+      "description": "提供丰富的JavaScript实用工具函数，包括数组、对象、字符串处理等功能",
+      "packageName": "lodash",
+      "version": "latest",
+      "author": "Lodash团队",
+      "category": "工具",
+      "tags": ["工具", "实用", "数组", "对象"]
+    },
+    {
+      "id": "moment-datetime",
+      "name": "Moment.js时间处理",
+      "description": "强大的JavaScript日期时间处理库，支持格式化、解析、验证和操作日期",
+      "packageName": "moment",
+      "version": "^2.29.0",
+      "author": "Moment.js团队",
+      "category": "时间",
+      "tags": ["时间", "日期", "格式化"]
+    },
+    {
+      "id": "axios-http",
+      "name": "Axios HTTP客户端",
+      "description": "基于Promise的HTTP客户端，支持浏览器和Node.js环境",
+      "packageName": "axios",
+      "version": "^1.6.0",
+      "author": "Matt Zabriskie",
+      "category": "网络",
+      "tags": ["HTTP", "请求", "Promise"]
+    },
+    {
+      "id": "uuid-generator",
+      "name": "UUID生成器",
+      "description": "生成符合RFC4122标准的UUID，支持多种版本",
+      "packageName": "uuid",
+      "version": "^9.0.0",
+      "author": "Robert Kieffer",
+      "category": "工具",
+      "tags": ["UUID", "生成器", "唯一标识"]
+    },
+    {
+      "id": "crypto-js",
+      "name": "CryptoJS加密库",
+      "description": "JavaScript加密标准库，支持AES、DES、SHA等多种加密算法",
+      "packageName": "crypto-js",
+      "version": "^4.2.0",
+      "author": "Jeff Mott",
+      "category": "安全",
+      "tags": ["加密", "安全", "哈希"]
+    },
+    {
+      "id": "chart-js",
+      "name": "Chart.js图表库",
+      "description": "简单而灵活的JavaScript图表库，支持多种图表类型",
+      "packageName": "chart.js",
+      "version": "^4.4.0",
+      "author": "Chart.js团队",
+      "category": "可视化",
+      "tags": ["图表", "可视化", "数据"]
+    }
+  ]
+}

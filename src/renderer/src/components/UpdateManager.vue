@@ -5,9 +5,9 @@
       <div class="update-dialog">
         <div class="update-header">
           <h3>发现新版本</h3>
-          <button @click="closeDialog" class="close-btn">&times;</button>
+          <button class="close-btn" @click="closeDialog">&times;</button>
         </div>
-        
+
         <div class="update-content">
           <div class="update-info">
             <p><strong>当前版本:</strong> {{ currentVersion }}</p>
@@ -17,63 +17,57 @@
               <div class="notes-content" v-html="updateInfo.releaseNotes"></div>
             </div>
           </div>
-          
+
           <!-- 下载进度 -->
           <div v-if="status === 'downloading'" class="download-progress">
             <div class="progress-bar">
-              <div 
-                class="progress-fill" 
-                :style="{ width: downloadProgress?.percent + '%' }"
-              ></div>
+              <div class="progress-fill" :style="{ width: downloadProgress?.percent + '%' }"></div>
             </div>
             <div class="progress-info">
               <span>{{ Math.round(downloadProgress?.percent || 0) }}%</span>
-              <span>{{ formatBytes(downloadProgress?.transferred || 0) }} / {{ formatBytes(downloadProgress?.total || 0) }}</span>
+              <span
+                >{{ formatBytes(downloadProgress?.transferred || 0) }} /
+                {{ formatBytes(downloadProgress?.total || 0) }}</span
+              >
               <span>{{ formatBytes(downloadProgress?.bytesPerSecond || 0) }}/s</span>
             </div>
           </div>
-          
+
           <!-- 错误信息 -->
           <div v-if="error" class="error-message">
             <p>错误: {{ error }}</p>
           </div>
         </div>
-        
+
         <div class="update-actions">
-          <button 
-            v-if="status === 'available'" 
-            @click="downloadUpdate" 
+          <button
+            v-if="status === 'available'"
             class="btn btn-primary"
             :disabled="isLoading"
+            @click="downloadUpdate"
           >
             下载更新
           </button>
-          
-          <button 
-            v-if="status === 'downloaded'" 
-            @click="installUpdate" 
-            class="btn btn-primary"
-          >
+
+          <button v-if="status === 'downloaded'" class="btn btn-primary" @click="installUpdate">
             安装并重启
           </button>
-          
-          <button 
-            v-if="status !== 'downloading'" 
-            @click="closeDialog" 
-            class="btn btn-secondary"
-          >
+
+          <button v-if="status !== 'downloading'" class="btn btn-secondary" @click="closeDialog">
             稍后
           </button>
         </div>
       </div>
     </div>
-    
+
     <!-- 更新状态指示器 -->
     <div v-if="showStatusIndicator" class="update-indicator" @click="showUpdateDialog = true">
       <div class="indicator-icon" :class="status">
         <span v-if="status === 'checking'">⟳</span>
         <span v-else-if="status === 'available'">↓</span>
-        <span v-else-if="status === 'downloading'">{{ Math.round(downloadProgress?.percent || 0) }}%</span>
+        <span v-else-if="status === 'downloading'"
+          >{{ Math.round(downloadProgress?.percent || 0) }}%</span
+        >
         <span v-else-if="status === 'downloaded'">✓</span>
         <span v-else-if="status === 'error'">!</span>
       </div>
@@ -117,7 +111,7 @@ const checkForUpdates = async () => {
     console.warn('更新功能仅在 Electron 环境中可用')
     return
   }
-  
+
   try {
     isLoading.value = true
     await window.electronAPI.updater.checkForUpdates()
@@ -137,7 +131,7 @@ const downloadUpdate = async () => {
     console.warn('更新功能仅在 Electron 环境中可用')
     return
   }
-  
+
   try {
     isLoading.value = true
     await window.electronAPI.updater.downloadUpdate()
@@ -157,7 +151,7 @@ const installUpdate = async () => {
     console.warn('更新功能仅在 Electron 环境中可用')
     return
   }
-  
+
   try {
     await window.electronAPI.updater.quitAndInstall()
   } catch (err) {
@@ -174,7 +168,7 @@ const getUpdateStatus = async () => {
     console.warn('更新功能仅在 Electron 环境中可用')
     return
   }
-  
+
   try {
     const statusInfo = await window.electronAPI.updater.getStatus()
     status.value = statusInfo.status
@@ -182,12 +176,12 @@ const getUpdateStatus = async () => {
     availableVersion.value = statusInfo.availableVersion || ''
     downloadProgress.value = statusInfo.downloadProgress
     error.value = statusInfo.error || ''
-    
+
     // 显示状态指示器
     if (['checking', 'available', 'downloading', 'downloaded', 'error'].includes(status.value)) {
       showStatusIndicator.value = true
     }
-    
+
     // 自动显示更新对话框
     if (status.value === 'available' && !showUpdateDialog.value) {
       showUpdateDialog.value = true
@@ -217,7 +211,7 @@ onMounted(async () => {
     currentVersion.value = 'Web 版本'
     return
   }
-  
+
   // 获取当前版本
   try {
     const version = await window.electronAPI.updater.getVersion()
@@ -225,7 +219,7 @@ onMounted(async () => {
   } catch (err) {
     console.error('获取版本失败:', err)
   }
-  
+
   // 监听更新事件
   if (window.electronAPI?.updater) {
     const updateAvailableListener = (info: any) => {
@@ -235,35 +229,35 @@ onMounted(async () => {
       showStatusIndicator.value = true
       showUpdateDialog.value = true
     }
-    
+
     const updateNotAvailableListener = () => {
       status.value = 'not-available'
       showStatusIndicator.value = false
     }
-    
+
     const downloadProgressListener = (progress: any) => {
       downloadProgress.value = progress
       status.value = 'downloading'
       showStatusIndicator.value = true
     }
-    
+
     const updateDownloadedListener = () => {
       status.value = 'downloaded'
       showStatusIndicator.value = true
     }
-    
+
     const updateErrorListener = (err: Error) => {
       error.value = err.message
       status.value = 'error'
       showStatusIndicator.value = true
     }
-    
+
     const checkingForUpdateListener = () => {
       status.value = 'checking'
       showStatusIndicator.value = true
       error.value = ''
     }
-    
+
     // 注册事件监听器
     window.electronAPI.updater.onUpdateAvailable(updateAvailableListener)
     window.electronAPI.updater.onUpdateNotAvailable(updateNotAvailableListener)
@@ -271,7 +265,7 @@ onMounted(async () => {
     window.electronAPI.updater.onUpdateDownloaded(updateDownloadedListener)
     window.electronAPI.updater.onError(updateErrorListener)
     window.electronAPI.updater.onCheckingForUpdate(checkingForUpdateListener)
-    
+
     // 保存移除监听器的函数
     removeListeners = [
       () => window.electronAPI.updater.removeUpdateAvailableListener(updateAvailableListener),
@@ -282,17 +276,17 @@ onMounted(async () => {
       () => window.electronAPI.updater.removeCheckingForUpdateListener(checkingForUpdateListener)
     ]
   }
-  
+
   // 获取初始状态
   await getUpdateStatus()
-  
+
   // 自动检查更新（可选）
   // await checkForUpdates()
 })
 
 onUnmounted(() => {
   // 移除所有事件监听器
-  removeListeners.forEach(remove => remove())
+  removeListeners.forEach((remove) => remove())
 })
 
 // 暴露方法给父组件
@@ -516,12 +510,20 @@ defineExpose({
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes bounce {
-  0%, 20%, 50%, 80%, 100% {
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
     transform: translateY(0);
   }
   40% {
@@ -538,37 +540,37 @@ defineExpose({
     background: #2d3748;
     color: #e2e8f0;
   }
-  
+
   .update-header {
     background: #4a5568;
     border-bottom-color: #4a5568;
   }
-  
+
   .update-header h3 {
     color: #e2e8f0;
   }
-  
+
   .close-btn {
     color: #a0aec0;
   }
-  
+
   .close-btn:hover {
     color: #e2e8f0;
   }
-  
+
   .update-info p {
     color: #cbd5e0;
   }
-  
+
   .notes-content {
     background: #4a5568;
     border-left-color: #3182ce;
   }
-  
+
   .progress-bar {
     background: #4a5568;
   }
-  
+
   .update-actions {
     border-top-color: #4a5568;
   }

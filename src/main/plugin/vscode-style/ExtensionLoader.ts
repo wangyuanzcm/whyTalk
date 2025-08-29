@@ -32,34 +32,38 @@ export enum ExtensionState {
  */
 export class ExtensionLoader extends EventEmitter {
   private static instance: ExtensionLoader
-  
+
   /** 已加载的扩展映射 */
   private loadedExtensions = new Map<string, ExtensionInstance>()
-  
+
   /** 扩展状态映射 */
   private extensionStates = new Map<string, ExtensionState>()
-  
+
   /** 扩展搜索路径 */
   // private extensionPaths: string[] = []
-  
+
   /** 内置扩展路径 */
   private builtinExtensionPath: string
-  
+
   /** 用户扩展路径 */
   private userExtensionPath: string
 
   private constructor() {
     super()
-    
+
     // 设置扩展路径
     const isDev = process.env.NODE_ENV === 'development'
     const appPath = isDev ? process.cwd() : process.resourcesPath
-    
+
     this.builtinExtensionPath = path.join(appPath, 'extensions')
-    this.userExtensionPath = path.join(process.env.APPDATA || process.env.HOME || '', '.whytalk', 'extensions')
-    
+    this.userExtensionPath = path.join(
+      process.env.APPDATA || process.env.HOME || '',
+      '.whytalk',
+      'extensions'
+    )
+
     // this.extensionPaths = [this.builtinExtensionPath, this.userExtensionPath]
-    
+
     // 确保用户扩展目录存在
     this.ensureDirectoryExists(this.userExtensionPath)
   }
@@ -79,21 +83,21 @@ export class ExtensionLoader extends EventEmitter {
    */
   public async loadAllExtensions(): Promise<void> {
     console.log('[ExtensionLoader] 开始加载所有扩展...')
-    
+
     const loadPromises: Promise<void>[] = []
-    
+
     // 加载内置扩展
     if (fs.existsSync(this.builtinExtensionPath)) {
       loadPromises.push(this.loadExtensionsFromDirectory(this.builtinExtensionPath, true))
     }
-    
+
     // 加载用户扩展
     if (fs.existsSync(this.userExtensionPath)) {
       loadPromises.push(this.loadExtensionsFromDirectory(this.userExtensionPath, false))
     }
-    
+
     await Promise.allSettled(loadPromises)
-    
+
     console.log(`[ExtensionLoader] 扩展加载完成，共加载 ${this.loadedExtensions.size} 个扩展`)
     this.emit('allExtensionsLoaded', this.loadedExtensions.size)
   }
@@ -106,14 +110,14 @@ export class ExtensionLoader extends EventEmitter {
   private async loadExtensionsFromDirectory(directory: string, isBuiltin: boolean): Promise<void> {
     try {
       const entries = fs.readdirSync(directory, { withFileTypes: true })
-      
+
       const loadPromises = entries
-        .filter(entry => entry.isDirectory())
-        .map(entry => {
+        .filter((entry) => entry.isDirectory())
+        .map((entry) => {
           const extensionPath = path.join(directory, entry.name)
           return this.loadExtension(extensionPath, isBuiltin)
         })
-      
+
       await Promise.allSettled(loadPromises)
     } catch (error) {
       console.error(`[ExtensionLoader] 加载目录 ${directory} 中的扩展失败:`, error)
@@ -125,32 +129,35 @@ export class ExtensionLoader extends EventEmitter {
    * @param extensionPath 扩展路径
    * @param isBuiltin 是否为内置扩展
    */
-  public async loadExtension(extensionPath: string, isBuiltin: boolean = false): Promise<ExtensionInstance | null> {
+  public async loadExtension(
+    extensionPath: string,
+    isBuiltin: boolean = false
+  ): Promise<ExtensionInstance | null> {
     try {
       console.log(`[ExtensionLoader] 加载扩展: ${extensionPath}`)
-      
+
       // 读取package.json
       const manifest = await this.loadManifest(extensionPath)
       if (!manifest) {
         return null
       }
-      
+
       // 验证清单
       const validationResult = this.validateManifest(manifest)
       if (!validationResult.isValid) {
         console.error(`[ExtensionLoader] 扩展清单验证失败: ${validationResult.errors.join(', ')}`)
         return null
       }
-      
+
       // 生成扩展ID
       const extensionId = this.generateExtensionId(manifest)
-      
+
       // 检查是否已加载
       if (this.loadedExtensions.has(extensionId)) {
         console.warn(`[ExtensionLoader] 扩展 ${extensionId} 已经加载`)
         return this.loadedExtensions.get(extensionId)!
       }
-      
+
       // 创建扩展实例
       const extension = await this.createExtensionInstance(
         extensionId,
@@ -158,22 +165,22 @@ export class ExtensionLoader extends EventEmitter {
         extensionPath,
         isBuiltin
       )
-      
+
       // 存储扩展
       this.loadedExtensions.set(extensionId, extension)
       this.extensionStates.set(extensionId, ExtensionState.Loaded)
-      
+
       console.log(`[ExtensionLoader] 扩展 ${extensionId} 加载成功`)
       this.emit('extensionLoaded', extension)
-      
+
       return extension
     } catch (error) {
       console.error(`[ExtensionLoader] 加载扩展 ${extensionPath} 失败:`, error)
-      
+
       // 尝试从路径提取扩展名作为ID
       const extensionName = path.basename(extensionPath)
       this.extensionStates.set(extensionName, ExtensionState.Failed)
-      
+
       this.emit('extensionLoadFailed', extensionPath, error)
       return null
     }
@@ -185,12 +192,12 @@ export class ExtensionLoader extends EventEmitter {
    */
   private async loadManifest(extensionPath: string): Promise<ExtensionManifest | null> {
     const manifestPath = path.join(extensionPath, 'package.json')
-    
+
     if (!fs.existsSync(manifestPath)) {
       console.error(`[ExtensionLoader] 扩展清单文件不存在: ${manifestPath}`)
       return null
     }
-    
+
     try {
       const manifestContent = fs.readFileSync(manifestPath, 'utf-8')
       const manifest = JSON.parse(manifestContent) as ExtensionManifest
@@ -207,36 +214,36 @@ export class ExtensionLoader extends EventEmitter {
    */
   private validateManifest(manifest: ExtensionManifest): { isValid: boolean; errors: string[] } {
     const errors: string[] = []
-    
+
     // 必需字段验证
     if (!manifest.name) {
       errors.push('缺少name字段')
     }
-    
+
     if (!manifest.version) {
       errors.push('缺少version字段')
     }
-    
+
     // 名称格式验证
     if (manifest.name && !/^[a-z0-9][a-z0-9\-]*$/.test(manifest.name)) {
       errors.push('name字段格式无效，只能包含小写字母、数字和连字符，且不能以连字符开头')
     }
-    
+
     // 版本格式验证
     if (manifest.version && !/^\d+\.\d+\.\d+/.test(manifest.version)) {
       errors.push('version字段格式无效，应为语义化版本格式')
     }
-    
+
     // 引擎版本验证
     if (manifest.engines && manifest.engines.whytalk) {
       // TODO: 验证引擎版本兼容性
     }
-    
+
     // 主入口文件验证
     if (manifest.main && !manifest.main.endsWith('.js')) {
       errors.push('main字段必须指向.js文件')
     }
-    
+
     // 激活事件验证
     if (manifest.activationEvents) {
       for (const event of manifest.activationEvents) {
@@ -245,7 +252,7 @@ export class ExtensionLoader extends EventEmitter {
         }
       }
     }
-    
+
     return {
       isValid: errors.length === 0,
       errors
@@ -271,8 +278,8 @@ export class ExtensionLoader extends EventEmitter {
       /^onCustomEditor:.+$/,
       /^workspaceContains:.+$/
     ]
-    
-    return validPatterns.some(pattern => pattern.test(event))
+
+    return validPatterns.some((pattern) => pattern.test(event))
   }
 
   /**
@@ -308,7 +315,7 @@ export class ExtensionLoader extends EventEmitter {
         mainPath = undefined
       }
     }
-    
+
     // 创建扩展实例
     const extension: ExtensionInstance = {
       id: extensionId,
@@ -320,7 +327,7 @@ export class ExtensionLoader extends EventEmitter {
       activationEvents: manifest.activationEvents || [],
       loadTime: Date.now()
     }
-    
+
     return extension
   }
 
@@ -338,19 +345,22 @@ export class ExtensionLoader extends EventEmitter {
       storagePath: path.join(this.userExtensionPath, '.storage', extension.id),
       globalStoragePath: path.join(this.userExtensionPath, '.storage', 'global'),
       logPath: path.join(this.userExtensionPath, '.logs', extension.id),
-      extensionMode: process.env.NODE_ENV === 'development' ? ExtensionMode.Development : ExtensionMode.Production,
+      extensionMode:
+        process.env.NODE_ENV === 'development'
+          ? ExtensionMode.Development
+          : ExtensionMode.Production,
       environmentVariableCollection: this.createEnvironmentVariableCollection(),
       secrets: this.createSecretStorage(extension.id),
       extension: this.createExtensionInfo(extension)
     }
-    
+
     // 确保存储目录存在
     if (context.storagePath) {
       this.ensureDirectoryExists(path.dirname(context.storagePath))
     }
     this.ensureDirectoryExists(context.globalStoragePath)
     this.ensureDirectoryExists(path.dirname(context.logPath))
-    
+
     return context
   }
 
@@ -378,7 +388,7 @@ export class ExtensionLoader extends EventEmitter {
   private createMemento(_namespace: string): any {
     // TODO: 实现持久化存储
     const storage = new Map<string, any>()
-    
+
     return {
       get: <T>(key: string, defaultValue?: T): T | undefined => {
         return storage.get(key) ?? defaultValue
@@ -460,7 +470,7 @@ export class ExtensionLoader extends EventEmitter {
       console.warn(`[ExtensionLoader] 扩展 ${extensionId} 未找到`)
       return
     }
-    
+
     // 清理扩展上下文
     if (extension.context) {
       for (const subscription of extension.context.subscriptions) {
@@ -471,11 +481,11 @@ export class ExtensionLoader extends EventEmitter {
         }
       }
     }
-    
+
     // 移除扩展
     this.loadedExtensions.delete(extensionId)
     this.extensionStates.set(extensionId, ExtensionState.Unloaded)
-    
+
     console.log(`[ExtensionLoader] 扩展 ${extensionId} 已卸载`)
     this.emit('extensionUnloaded', extension)
   }
@@ -523,10 +533,10 @@ export class ExtensionLoader extends EventEmitter {
       console.warn(`[ExtensionLoader] 扩展 ${extensionId} 未找到`)
       return null
     }
-    
+
     // 卸载扩展
     this.unloadExtension(extensionId)
-    
+
     // 重新加载扩展
     return await this.loadExtension(extension.extensionPath, extension.isBuiltin)
   }
@@ -538,10 +548,10 @@ export class ExtensionLoader extends EventEmitter {
     for (const extensionId of this.loadedExtensions.keys()) {
       this.unloadExtension(extensionId)
     }
-    
+
     this.loadedExtensions.clear()
     this.extensionStates.clear()
-    
+
     this.emit('cleared')
     console.log('[ExtensionLoader] 已清理所有扩展')
   }
@@ -559,14 +569,14 @@ export class ExtensionLoader extends EventEmitter {
   } {
     const extensions = Array.from(this.loadedExtensions.values())
     const states = Array.from(this.extensionStates.values())
-    
+
     return {
       total: this.loadedExtensions.size,
-      loaded: states.filter(s => s === ExtensionState.Loaded).length,
-      activated: states.filter(s => s === ExtensionState.Activated).length,
-      failed: states.filter(s => s === ExtensionState.Failed).length,
-      builtin: extensions.filter(e => e.isBuiltin).length,
-      user: extensions.filter(e => !e.isBuiltin).length
+      loaded: states.filter((s) => s === ExtensionState.Loaded).length,
+      activated: states.filter((s) => s === ExtensionState.Activated).length,
+      failed: states.filter((s) => s === ExtensionState.Failed).length,
+      builtin: extensions.filter((e) => e.isBuiltin).length,
+      user: extensions.filter((e) => !e.isBuiltin).length
     }
   }
 }

@@ -51,7 +51,7 @@ export interface UpdateEvents {
   'update-not-available': UpdateInfo
   'update-downloaded': UpdateInfo
   'download-progress': ProgressInfo
-  'error': Error
+  error: Error
   'checking-for-update': void
   'update-cancelled': void
 }

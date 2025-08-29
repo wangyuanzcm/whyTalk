@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { computed } from 'vue'
 import { useSettingsStore } from '@/store'
 
 const settingsStore = useSettingsStore()
@@ -48,7 +49,7 @@ const defaultPages = [
   {
     label: '笔记',
     value: '/note'
-  },
+  }
   // 网络页面已被移除
 ]
 </script>

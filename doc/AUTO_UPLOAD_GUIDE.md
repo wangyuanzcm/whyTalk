@@ -47,19 +47,19 @@ module.exports = {
   server: {
     // 服务器类型: 'minio' 或 'http'
     type: 'minio',
-    
+
     // MinIO 配置 (当 type 为 'minio' 时使用)
     minio: {
       endPoint: '175.178.158.23',
       port: 19000,
       useSSL: false,
-      accessKey: 'your-minio-username',    // 替换为实际的 MinIO 用户名
-      secretKey: 'your-minio-password',    // 替换为实际的 MinIO 密码
-      bucketName: 'electron-updates',      // 存储桶名称
-      pathPrefix: '',                      // 可选：文件路径前缀
-      region: 'us-east-1'                  // 可选：区域
+      accessKey: 'your-minio-username', // 替换为实际的 MinIO 用户名
+      secretKey: 'your-minio-password', // 替换为实际的 MinIO 密码
+      bucketName: 'electron-updates', // 存储桶名称
+      pathPrefix: '', // 可选：文件路径前缀
+      region: 'us-east-1' // 可选：区域
     },
-    
+
     // HTTP 配置 (当 type 为 'http' 时使用)
     http: {
       url: 'http://175.178.158.23:19000/electron-updates',
@@ -70,14 +70,14 @@ module.exports = {
       }
     }
   },
-  
+
   // 文件过滤配置
   files: {
     extensions: ['.exe', '.dmg', '.AppImage', '.deb', '.snap', '.yml'],
     exclude: ['*.blockmap', 'builder-effective-config.yaml', 'builder-debug.yml'],
     includeUpdateFiles: true
   },
-  
+
   // 上传行为配置
   behavior: {
     retry: true,
@@ -86,13 +86,13 @@ module.exports = {
     confirmBeforeUpload: false,
     deleteAfterUpload: false
   },
-  
+
   // 日志配置
   logging: {
     verbose: true,
     showProgress: true
   }
-};
+}
 ```
 
 ### 自定义配置
@@ -101,7 +101,7 @@ module.exports = {
 
 1. **服务器配置**:
    - `type`: 服务器类型，支持 `'minio'` 或 `'http'`
-   
+
    **MinIO 配置** (推荐):
    - `endPoint`: MinIO 服务器地址（不包含协议）
    - `port`: MinIO 服务器端口
@@ -111,7 +111,7 @@ module.exports = {
    - `bucketName`: 存储桶名称
    - `pathPrefix`: 文件路径前缀（可选）
    - `region`: 区域设置（可选）
-   
+
    **HTTP 配置** (备用):
    - `url`: 上传服务器的完整 URL
    - `timeout`: 请求超时时间（毫秒）
@@ -148,11 +148,11 @@ module.exports = {
       accessKey: 'your-minio-username',
       secretKey: 'your-minio-password',
       bucketName: 'electron-updates',
-      pathPrefix: 'releases/v1.0.0'  // 可选：按版本分组
+      pathPrefix: 'releases/v1.0.0' // 可选：按版本分组
     }
   }
   // ... 其他配置
-};
+}
 ```
 
 #### HTTP 服务器配置（带认证）
@@ -164,13 +164,13 @@ module.exports = {
     http: {
       url: 'https://your-server.com/upload',
       headers: {
-        'Authorization': 'Bearer your-access-token',
+        Authorization: 'Bearer your-access-token',
         'X-API-Key': 'your-api-key'
       }
     }
   }
   // ... 其他配置
-};
+}
 ```
 
 #### 自定义文件过滤
@@ -184,7 +184,7 @@ module.exports = {
     exclude: ['*debug*', '*.map', '*.blockmap']
   }
   // ... 其他配置
-};
+}
 ```
 
 #### 启用上传确认
@@ -192,23 +192,23 @@ module.exports = {
 ```javascript
 module.exports = {
   behavior: {
-    confirmBeforeUpload: true,  // 上传前需要用户确认
-    deleteAfterUpload: true     // 上传成功后删除本地文件
+    confirmBeforeUpload: true, // 上传前需要用户确认
+    deleteAfterUpload: true // 上传成功后删除本地文件
   }
   // ... 其他配置
-};
+}
 ```
 
 ## 脚本说明
 
 ### 可用的 npm 脚本
 
-| 脚本命令 | 说明 |
-|---------|------|
-| `build:win:upload` | 构建 Windows 版本并上传 |
-| `build:mac:upload` | 构建 macOS 版本并上传 |
-| `build:linux:upload` | 构建 Linux 版本并上传 |
-| `upload` | 仅上传已有的构建产物 |
+| 脚本命令             | 说明                    |
+| -------------------- | ----------------------- |
+| `build:win:upload`   | 构建 Windows 版本并上传 |
+| `build:mac:upload`   | 构建 macOS 版本并上传   |
+| `build:linux:upload` | 构建 Linux 版本并上传   |
+| `upload`             | 仅上传已有的构建产物    |
 
 ### 上传脚本位置
 
@@ -239,6 +239,7 @@ node scripts/upload-release.js
 ```
 
 **解决方案：**
+
 - 检查网络连接
 - 确认服务器地址是否正确
 - 检查防火墙设置
@@ -250,6 +251,7 @@ node scripts/upload-release.js
 ```
 
 **解决方案：**
+
 - 检查配置文件中的认证信息
 - 确认 API 密钥或令牌是否有效
 
@@ -260,12 +262,14 @@ node scripts/upload-release.js
 ```
 
 **解决方案：**
+
 - 增加服务器的文件大小限制
 - 调整上传超时时间
 
 ### 重试机制
 
 脚本内置了重试机制：
+
 - 默认重试 3 次
 - 每次重试间隔 5 秒
 - 可在配置文件中调整重试参数
@@ -282,7 +286,7 @@ module.exports = {
     verbose: true,
     showProgress: true
   }
-};
+}
 ```
 
 ### 日志输出示例

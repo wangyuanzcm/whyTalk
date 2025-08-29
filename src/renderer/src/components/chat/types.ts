@@ -54,7 +54,7 @@ export interface IMessage {
 export interface IChatItem {
   // 消息ID【唯一性】
   msg_id: string
-  [key: string]: any
+  [key: string]: unknown
 }
 
 export interface ChatProps {
@@ -65,14 +65,14 @@ export interface ChatProps {
   // 聊天记录列表
   items: IChatItem[]
   // 自定义渲染消息
-  customRender: (item: any) => IMessage
+  customRender: (item: IChatItem) => IMessage
   dataSourceMode?: 'custom' | 'pulldown' | 'pullup'
   // 加载更多数据
   onScrollLoadMore?: () => Promise<boolean>
   // 是否开启右键菜单
   contextMenu?: boolean
   // 右键菜单
-  contextMenuOption?: (item: any) => IDropdownOption[]
+  contextMenuOption?: (item: IChatItem) => IDropdownOption[]
   // 右键菜单回调
   contextMenuEvent?: (key: string) => void
   // 消息未读数
@@ -87,15 +87,15 @@ export interface ChatSimpleProps {
   // 聊天记录列表
   items: IChatItem[]
   // 自定义渲染消息
-  customRender: (item: any) => IMessage
+  customRender: (item: IChatItem) => IMessage
 }
 
 export interface IDropdown {
-  options: any[]
+  options: IDropdownOption[]
   show: boolean
   x: number
   y: number
-  item: any
+  item: IChatItem
 }
 
 export interface IDropdownOption {

@@ -13,9 +13,9 @@ declare global {
     // Electron API (新的统一API)
     electron: {
       ipcRenderer: {
-        invoke: (channel: string, ...args: any[]) => Promise<any>
-        send: (channel: string, ...args: any[]) => void
-        on: (channel: string, listener: (...args: any[]) => void) => void
+        invoke: (channel: string, ...args: unknown[]) => Promise<unknown>
+        send: (channel: string, ...args: unknown[]) => void
+        on: (channel: string, listener: (...args: unknown[]) => void) => void
         removeAllListeners: (channel: string) => void
       }
 
@@ -85,40 +85,45 @@ declare global {
           status: string
           currentVersion: string
           availableVersion?: string
-          downloadProgress?: any
+          downloadProgress?: {
+            percent: number
+            bytesPerSecond: number
+            total: number
+            transferred: number
+          }
           error?: string
           lastChecked?: Date
         }>
         
         // 获取更新配置
-        getConfig: () => Promise<any>
+        getConfig: () => Promise<Record<string, unknown>>
         
         // 更新配置
-        updateConfig: (config: any) => Promise<{ success: boolean; error?: string }>
+        updateConfig: (config: Record<string, unknown>) => Promise<{ success: boolean; error?: string }>
         
         // 事件监听器
-        onUpdateAvailable: (callback: (info: any) => void) => any
-        onUpdateNotAvailable: (callback: (info: any) => void) => any
-        onDownloadProgress: (callback: (progress: any) => void) => any
-        onUpdateDownloaded: (callback: (info: any) => void) => any
-        onError: (callback: (error: Error) => void) => any
-        onCheckingForUpdate: (callback: () => void) => any
+        onUpdateAvailable: (callback: (info: Record<string, unknown>) => void) => () => void
+        onUpdateNotAvailable: (callback: (info: Record<string, unknown>) => void) => () => void
+        onDownloadProgress: (callback: (progress: Record<string, unknown>) => void) => () => void
+        onUpdateDownloaded: (callback: (info: Record<string, unknown>) => void) => () => void
+        onError: (callback: (error: Error) => void) => () => void
+        onCheckingForUpdate: (callback: () => void) => () => void
         
         // 移除事件监听器
-        removeUpdateAvailableListener: (listener: any) => void
-        removeUpdateNotAvailableListener: (listener: any) => void
-        removeDownloadProgressListener: (listener: any) => void
-        removeUpdateDownloadedListener: (listener: any) => void
-        removeErrorListener: (listener: any) => void
-        removeCheckingForUpdateListener: (listener: any) => void
+        removeUpdateAvailableListener: (listener: () => void) => void
+        removeUpdateNotAvailableListener: (listener: () => void) => void
+        removeDownloadProgressListener: (listener: () => void) => void
+        removeUpdateDownloadedListener: (listener: () => void) => void
+        removeErrorListener: (listener: () => void) => void
+        removeCheckingForUpdateListener: (listener: () => void) => void
       }
     }
 
     // 旧版 Electron API (保持兼容性)
     electronAPI: {
-      invoke: (channel: string, ...args: any[]) => Promise<any>
-      send: (channel: string, ...args: any[]) => void
-      on: (channel: string, listener: (...args: any[]) => void) => void
+      invoke: (channel: string, ...args: unknown[]) => Promise<unknown>
+      send: (channel: string, ...args: unknown[]) => void
+      on: (channel: string, listener: (...args: unknown[]) => void) => void
       removeAllListeners: (channel: string) => void
 
       // P2P API已被移除

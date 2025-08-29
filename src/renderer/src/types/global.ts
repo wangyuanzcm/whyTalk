@@ -1,7 +1,7 @@
 export interface StateDropdown {
-  options: any[]
+  options: Array<Record<string, unknown>>
   show: boolean
   dropdownX: number
   dropdownY: number
-  item: any
+  item: Record<string, unknown>
 }

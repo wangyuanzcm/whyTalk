@@ -1,0 +1,34 @@
+{
+  "npmPlugins": [
+    {
+      "id": "example-plugin-1",
+      "name": "示例插件1",
+      "description": "这是一个示例插件，用于演示NPM插件安装功能",
+      "packageName": "@example/plugin-1",
+      "version": "latest",
+      "author": "示例作者",
+      "category": "工具",
+      "tags": ["示例", "工具"]
+    },
+    {
+      "id": "example-plugin-2",
+      "name": "示例插件2",
+      "description": "另一个示例插件，展示不同类型的插件",
+      "packageName": "@example/plugin-2",
+      "version": "^1.0.0",
+      "author": "示例作者",
+      "category": "娱乐",
+      "tags": ["示例", "娱乐"]
+    },
+    {
+      "id": "lodash-plugin",
+      "name": "Lodash工具插件",
+      "description": "基于Lodash的实用工具插件",
+      "packageName": "lodash",
+      "version": "latest",
+      "author": "Lodash团队",
+      "category": "工具",
+      "tags": ["工具", "实用"]
+    }
+  ]
+}

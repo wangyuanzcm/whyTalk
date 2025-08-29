@@ -18,83 +18,83 @@ const electronAPI = {
   updater: {
     // 检查更新
     checkForUpdates: () => ipcRenderer.invoke('updater:check-for-updates'),
-    
+
     // 下载更新
     downloadUpdate: () => ipcRenderer.invoke('updater:download-update'),
-    
+
     // 安装更新并重启
     quitAndInstall: () => ipcRenderer.invoke('updater:quit-and-install'),
-    
+
     // 获取当前版本
     getVersion: () => ipcRenderer.invoke('updater:get-version'),
-    
+
     // 获取更新状态
     getStatus: () => ipcRenderer.invoke('updater:get-status'),
-    
+
     // 获取更新配置
     getConfig: () => ipcRenderer.invoke('updater:get-config'),
-    
+
     // 更新配置
     updateConfig: (config: any) => ipcRenderer.invoke('updater:update-config', config),
-    
+
     // 事件监听器
     onUpdateAvailable: (callback: (info: any) => void) => {
       const listener = (_event: any, info: any) => callback(info)
       ipcRenderer.on('updater:update-available', listener)
       return listener
     },
-    
+
     onUpdateNotAvailable: (callback: (info: any) => void) => {
       const listener = (_event: any, info: any) => callback(info)
       ipcRenderer.on('updater:update-not-available', listener)
       return listener
     },
-    
+
     onDownloadProgress: (callback: (progress: any) => void) => {
       const listener = (_event: any, progress: any) => callback(progress)
       ipcRenderer.on('updater:download-progress', listener)
       return listener
     },
-    
+
     onUpdateDownloaded: (callback: (info: any) => void) => {
       const listener = (_event: any, info: any) => callback(info)
       ipcRenderer.on('updater:update-downloaded', listener)
       return listener
     },
-    
+
     onError: (callback: (error: Error) => void) => {
       const listener = (_event: any, error: Error) => callback(error)
       ipcRenderer.on('updater:error', listener)
       return listener
     },
-    
+
     onCheckingForUpdate: (callback: () => void) => {
       const listener = () => callback()
       ipcRenderer.on('updater:checking-for-update', listener)
       return listener
     },
-    
+
     // 移除事件监听器
     removeUpdateAvailableListener: (listener: any) => {
       ipcRenderer.removeListener('updater:update-available', listener)
     },
-    
+
     removeUpdateNotAvailableListener: (listener: any) => {
       ipcRenderer.removeListener('updater:update-not-available', listener)
     },
-    
+
     removeDownloadProgressListener: (listener: any) => {
       ipcRenderer.removeListener('updater:download-progress', listener)
     },
-    
+
     removeUpdateDownloadedListener: (listener: any) => {
       ipcRenderer.removeListener('updater:update-downloaded', listener)
     },
-    
+
     removeErrorListener: (listener: any) => {
       ipcRenderer.removeListener('updater:error', listener)
     },
-    
+
     removeCheckingForUpdateListener: (listener: any) => {
       ipcRenderer.removeListener('updater:checking-for-update', listener)
     }

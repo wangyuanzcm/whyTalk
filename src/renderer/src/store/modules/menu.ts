@@ -40,9 +40,9 @@ export const useMenuStore = defineStore('menu', {
           icon: markRaw(Application),
           title: '工作台',
           core: true
-    },
-    // P2P网络菜单项已被移除
-    /*
+        },
+        // P2P网络菜单项已被移除
+        /*
     {
       id: 'p2p',
       link: '/p2p',
@@ -51,13 +51,13 @@ export const useMenuStore = defineStore('menu', {
       core: true
     },
     */
-    {
-      id: 'settings',
-      link: '/settings',
-      icon: markRaw(SettingTwo),
-      title: '设置',
-      core: true
-    }
+        {
+          id: 'settings',
+          link: '/settings',
+          icon: markRaw(SettingTwo),
+          title: '设置',
+          core: true
+        }
       ] as MenuItem[],
 
       // 插件菜单项
@@ -159,8 +159,9 @@ export const useMenuStore = defineStore('menu', {
     // 动态创建前端插件菜单项
     createPluginMenuItem(pluginId: string, pluginConfig: any): MenuItem {
       // 优先使用shortName，然后是menuTitle，最后是name
-      const displayTitle = pluginConfig?.shortName || pluginConfig?.menuTitle || pluginConfig?.name || pluginId
-      
+      const displayTitle =
+        pluginConfig?.shortName || pluginConfig?.menuTitle || pluginConfig?.name || pluginId
+
       return {
         id: pluginId,
         link: `/plugin/${pluginId}`,
@@ -173,7 +174,7 @@ export const useMenuStore = defineStore('menu', {
     // 同步所有插件到菜单项（支持前端插件和系统插件）
     syncPluginsToMenuItems(plugins: any[]) {
       // 获取所有可以显示在菜单中的插件（前端插件和有UI配置的系统插件）
-      const menuablePlugins = plugins.filter(plugin => {
+      const menuablePlugins = plugins.filter((plugin) => {
         if (plugin.type === 'frontend') {
           return true
         }
@@ -183,20 +184,20 @@ export const useMenuStore = defineStore('menu', {
         }
         return false
       })
-      
+
       // 为每个插件创建菜单项（如果不存在）
-      menuablePlugins.forEach(plugin => {
-        const existingItem = this.pluginMenuItems.find(item => item.pluginId === plugin.id)
+      menuablePlugins.forEach((plugin) => {
+        const existingItem = this.pluginMenuItems.find((item) => item.pluginId === plugin.id)
         if (!existingItem) {
           const menuItem = this.createPluginMenuItem(plugin.id, plugin.config)
           this.addPluginMenuItem(menuItem)
         }
       })
-      
+
       // 移除不存在的插件菜单项
-      const existingPluginIds = menuablePlugins.map(p => p.id)
-      this.pluginMenuItems = this.pluginMenuItems.filter(item => 
-        !item.pluginId || existingPluginIds.includes(item.pluginId)
+      const existingPluginIds = menuablePlugins.map((p) => p.id)
+      this.pluginMenuItems = this.pluginMenuItems.filter(
+        (item) => !item.pluginId || existingPluginIds.includes(item.pluginId)
       )
     },
 

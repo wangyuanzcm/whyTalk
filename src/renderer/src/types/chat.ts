@@ -36,8 +36,20 @@ export interface ITalkRecord {
   avatar: string // 头像
   is_revoked: number // 是否撤回
   send_time: string // 发送时间
-  extra: any // 消息内容
-  quote: any // 消息内容
+  extra:
+    | ITalkRecordExtraText
+    | ITalkRecordExtraCode
+    | ITalkRecordExtraFile
+    | ITalkRecordExtraForward
+    | ITalkRecordExtraGroupNotice
+    | ITalkRecordExtraVideo
+    | ITalkRecordExtraMixed
+    | ITalkRecordExtraAudio
+    | ITalkRecordExtraLogin
+    | ITalkRecordExtraImage
+    | ITalkRecordExtraVote
+    | Record<string, unknown> // 消息内容
+  quote: ITalkRecord | null // 引用消息
   status: number // 消息状态 1发送成功 2发送中 3发送失败
 }
 

@@ -14,9 +14,7 @@
         </n-tag>
       </div>
       <div class="header-right">
-        <n-button @click="returnToWorkspace" quaternary>
-          返回工作台
-        </n-button>
+        <n-button quaternary @click="returnToWorkspace"> 返回工作台 </n-button>
       </div>
     </div>
 
@@ -52,11 +50,7 @@
 
           <!-- 显示设置 -->
           <n-card title="显示设置" class="config-section">
-            <n-form
-              :model="displayConfig"
-              label-placement="left"
-              label-width="120px"
-            >
+            <n-form :model="displayConfig" label-placement="left" label-width="120px">
               <n-form-item label="打开方式">
                 <n-select
                   v-model:value="displayConfig.openMode"
@@ -64,7 +58,7 @@
                   placeholder="请选择插件页面打开方式"
                 />
               </n-form-item>
-              
+
               <div v-if="displayConfig.openMode === 'newWindow'">
                 <n-form-item label="窗口宽度">
                   <n-input-number
@@ -77,7 +71,7 @@
                     <template #suffix>px</template>
                   </n-input-number>
                 </n-form-item>
-                
+
                 <n-form-item label="窗口高度">
                   <n-input-number
                     v-model:value="displayConfig.windowHeight"
@@ -89,7 +83,7 @@
                     <template #suffix>px</template>
                   </n-input-number>
                 </n-form-item>
-                
+
                 <n-form-item label="窗口选项">
                   <n-space vertical>
                     <n-checkbox v-model:checked="displayConfig.resizable">
@@ -131,7 +125,11 @@
                   </n-form-item>
 
                   <!-- 数字类型 -->
-                  <n-form-item v-else-if="item.type === 'number'" :label="item.label" :path="item.key">
+                  <n-form-item
+                    v-else-if="item.type === 'number'"
+                    :label="item.label"
+                    :path="item.key"
+                  >
                     <n-input-number
                       v-model:value="configValues[item.key]"
                       :placeholder="item.placeholder || `请输入${item.label}`"
@@ -143,18 +141,23 @@
                   </n-form-item>
 
                   <!-- 布尔类型 -->
-                  <n-form-item v-else-if="item.type === 'boolean'" :label="item.label" :path="item.key">
-                    <n-switch
-                      v-model:value="configValues[item.key]"
-                      :disabled="item.readonly"
-                    >
+                  <n-form-item
+                    v-else-if="item.type === 'boolean'"
+                    :label="item.label"
+                    :path="item.key"
+                  >
+                    <n-switch v-model:value="configValues[item.key]" :disabled="item.readonly">
                       <template #checked>启用</template>
                       <template #unchecked>禁用</template>
                     </n-switch>
                   </n-form-item>
 
                   <!-- 选择类型 -->
-                  <n-form-item v-else-if="item.type === 'select'" :label="item.label" :path="item.key">
+                  <n-form-item
+                    v-else-if="item.type === 'select'"
+                    :label="item.label"
+                    :path="item.key"
+                  >
                     <n-select
                       v-model:value="configValues[item.key]"
                       :options="item.options || []"
@@ -164,7 +167,11 @@
                   </n-form-item>
 
                   <!-- 文本域类型 -->
-                  <n-form-item v-else-if="item.type === 'textarea'" :label="item.label" :path="item.key">
+                  <n-form-item
+                    v-else-if="item.type === 'textarea'"
+                    :label="item.label"
+                    :path="item.key"
+                  >
                     <n-input
                       v-model:value="configValues[item.key]"
                       type="textarea"
@@ -182,18 +189,12 @@
           <!-- 操作按钮 -->
           <div class="config-actions">
             <n-space>
-              <n-button type="primary" @click="saveConfigAndReturn" :loading="saving">
+              <n-button type="primary" :loading="saving" @click="saveConfigAndReturn">
                 确定
               </n-button>
-              <n-button @click="resetConfig">
-                重置配置
-              </n-button>
-              <n-button @click="reloadPlugin" :loading="reloading">
-                重新加载插件
-              </n-button>
-              <n-button @click="returnToWorkspace">
-                取消
-              </n-button>
+              <n-button @click="resetConfig"> 重置配置 </n-button>
+              <n-button :loading="reloading" @click="reloadPlugin"> 重新加载插件 </n-button>
+              <n-button @click="returnToWorkspace"> 取消 </n-button>
             </n-space>
           </div>
         </div>
@@ -234,9 +235,7 @@ import {
   NCheckbox,
   useMessage
 } from 'naive-ui'
-import {
-  SettingsOutline
-} from '@vicons/ionicons5'
+import { SettingsOutline } from '@vicons/ionicons5'
 
 // 类型定义
 interface Plugin {
@@ -300,18 +299,19 @@ const openModeOptions = [
   { label: '侧边栏', value: 'sidebar' }
 ]
 
-
-
 /**
  * 加载插件信息
  */
 const loadPluginInfo = async () => {
   try {
     loading.value = true
-    
+
     // 获取插件信息
-    const plugin = await (window as any).electron.ipcRenderer.invoke('plugin:getExtension', pluginId.value)
-    
+    const plugin = await (window as any).electron.ipcRenderer.invoke(
+      'plugin:getExtension',
+      pluginId.value
+    )
+
     if (plugin) {
       pluginInfo.value = plugin
       await loadPluginConfig()
@@ -335,12 +335,12 @@ const loadPluginConfig = async () => {
     const configSchemaData = await getPluginConfigSchema()
     if (configSchemaData) {
       configSchema.value = configSchemaData
-      
+
       // 初始化配置值
       for (const item of configSchemaData) {
         const currentValue = await getPluginConfigValue(item.key)
         configValues[item.key] = currentValue !== undefined ? currentValue : item.default
-        
+
         // 设置验证规则
         if (item.required) {
           configRules[item.key] = {
@@ -364,14 +364,17 @@ const loadPluginConfig = async () => {
           type: 'boolean'
         }
       ]
-      
+
       // 加载默认配置值
       configValues.enabled = pluginInfo.value?.isActive || false
       configValues.autoStart = false
     }
-    
+
     // 加载显示配置
-    const displayConfigData = await (window as any).electron.ipcRenderer.invoke('plugin:display-config:get', pluginId.value)
+    const displayConfigData = await (window as any).electron.ipcRenderer.invoke(
+      'plugin:display-config:get',
+      pluginId.value
+    )
     if (displayConfigData) {
       Object.assign(displayConfig, displayConfigData)
     }
@@ -386,10 +389,9 @@ const loadPluginConfig = async () => {
 const getPluginConfigSchema = async (): Promise<ConfigItem[] | null> => {
   try {
     // 从插件获取配置架构
-    const schema = await (window as any).electron.ipcRenderer.invoke(
-      'extension:getConfigSchema',
-      { extensionId: pluginId.value }
-    )
+    const schema = await (window as any).electron.ipcRenderer.invoke('extension:getConfigSchema', {
+      extensionId: pluginId.value
+    })
     return schema || null
   } catch (error) {
     console.error('获取配置架构失败:', error)
@@ -402,10 +404,10 @@ const getPluginConfigSchema = async (): Promise<ConfigItem[] | null> => {
  */
 const getPluginConfigValue = async (key: string): Promise<any> => {
   try {
-    const config = await (window as any).electron.ipcRenderer.invoke(
-      'extension:getConfiguration',
-      { extensionId: pluginId.value, section: key }
-    )
+    const config = await (window as any).electron.ipcRenderer.invoke('extension:getConfiguration', {
+      extensionId: pluginId.value,
+      section: key
+    })
     return config
   } catch (error) {
     console.error(`获取配置值失败: ${key}`, error)
@@ -422,31 +424,25 @@ const saveConfig = async () => {
     if (configFormRef.value) {
       await configFormRef.value.validate()
     }
-    
+
     saving.value = true
-    
+
     // 保存每个配置项
     for (const [key, value] of Object.entries(configValues)) {
-      await (window as any).electron.ipcRenderer.invoke(
-        'extension:updateConfiguration',
-        {
-          extensionId: pluginId.value,
-          section: key,
-          value: value
-        }
-      )
+      await (window as any).electron.ipcRenderer.invoke('extension:updateConfiguration', {
+        extensionId: pluginId.value,
+        section: key,
+        value: value
+      })
     }
-    
+
     // 保存显示配置 - 将reactive对象转换为普通对象
     const plainDisplayConfig = JSON.parse(JSON.stringify(displayConfig))
-    await (window as any).electron.ipcRenderer.invoke(
-      'plugin:display-config:save',
-      {
-        pluginId: pluginId.value,
-        displayConfig: plainDisplayConfig
-      }
-    )
-    
+    await (window as any).electron.ipcRenderer.invoke('plugin:display-config:save', {
+      pluginId: pluginId.value,
+      displayConfig: plainDisplayConfig
+    })
+
     message.success('配置保存成功')
   } catch (error) {
     console.error('保存配置失败:', error)
@@ -462,7 +458,7 @@ const saveConfig = async () => {
 const resetConfig = () => {
   // 重新加载配置
   loadPluginConfig()
-  
+
   // 重置显示配置为默认值
   Object.assign(displayConfig, {
     openMode: 'newWindow',
@@ -473,7 +469,7 @@ const resetConfig = () => {
     maximizable: true,
     alwaysOnTop: false
   })
-  
+
   message.info('配置已重置')
 }
 
@@ -483,12 +479,12 @@ const resetConfig = () => {
 const reloadPlugin = async () => {
   try {
     reloading.value = true
-    
+
     await (window as any).electron.ipcRenderer.invoke('plugin:reloadExtension', pluginId.value)
-    
+
     // 重新加载插件信息
     await loadPluginInfo()
-    
+
     message.success('插件重新加载成功')
   } catch (error) {
     console.error('重新加载插件失败:', error)

@@ -55,28 +55,31 @@ const loadPlugin = async () => {
 
     // 获取VSCode风格扩展信息
     const pluginInfo = await PluginAPI.getPluginInfo(pluginId.value)
-    
+
     if (pluginInfo.success && pluginInfo.data) {
       const extension = pluginInfo.data
-      
+
       // VSCode风格扩展处理
       if (extension.packageJSON) {
         // 检查扩展是否有webview或UI贡献点
         const contributes = extension.packageJSON.contributes || {}
-        
+
         // 如果扩展有webview或自定义UI，尝试激活并获取内容
         if (contributes.views || contributes.webviews || contributes.commands) {
           try {
             // 激活扩展
             await window.electron.ipcRenderer.invoke('plugin:activateExtension', pluginId.value)
-            
+
             // 检查扩展是否有webview目录
             const webviewPath = `${extension.extensionPath}/webview/index.html`
-            
+
             try {
               // 尝试检查webview文件是否存在
-              const webviewExists = await window.electron.ipcRenderer.invoke('fs:exists', webviewPath)
-              
+              const webviewExists = await window.electron.ipcRenderer.invoke(
+                'fs:exists',
+                webviewPath
+              )
+
               if (webviewExists) {
                 // 如果存在webview目录，直接使用webview页面
                 pluginData.value = {
@@ -89,22 +92,32 @@ const loadPlugin = async () => {
                   type: 'vscode-extension-webview',
                   webviewPath: webviewPath
                 }
-                
+
                 try {
-                   // 使用HTTP URL而不是file://协议
-                   const httpUrl = await window.electron.ipcRenderer.invoke('plugin:get-extension-file-url', extension.extensionPath, 'webview/index.html')
-                   pluginUrl.value = httpUrl
-                 } catch (error) {
-                   console.error('Failed to get extension file URL:', error)
-                   // 降级到默认页面
-                   const extensionInfoHTML = await createExtensionInfoPage({ manifest: extension, config: contributes })
-                   const blob = new Blob([extensionInfoHTML], { type: 'text/html' })
-                   pluginUrl.value = URL.createObjectURL(blob)
-                 }
+                  // 使用HTTP URL而不是file://协议
+                  const httpUrl = await window.electron.ipcRenderer.invoke(
+                    'plugin:get-extension-file-url',
+                    extension.extensionPath,
+                    'webview/index.html'
+                  )
+                  pluginUrl.value = httpUrl
+                } catch (error) {
+                  console.error('Failed to get extension file URL:', error)
+                  // 降级到默认页面
+                  const extensionInfoHTML = await createExtensionInfoPage({
+                    manifest: extension,
+                    config: contributes
+                  })
+                  const blob = new Blob([extensionInfoHTML], { type: 'text/html' })
+                  pluginUrl.value = URL.createObjectURL(blob)
+                }
               } else {
                 // 如果没有webview目录，创建默认的扩展信息页面
-                const extensionInfoHTML = await createExtensionInfoPage({ manifest: extension, config: contributes })
-                
+                const extensionInfoHTML = await createExtensionInfoPage({
+                  manifest: extension,
+                  config: contributes
+                })
+
                 pluginData.value = {
                   html: extensionInfoHTML,
                   config: {
@@ -115,7 +128,7 @@ const loadPlugin = async () => {
                   },
                   type: 'vscode-extension'
                 }
-                
+
                 // 创建插件的blob URL
                 const blob = new Blob([extensionInfoHTML], { type: 'text/html' })
                 pluginUrl.value = URL.createObjectURL(blob)
@@ -123,8 +136,11 @@ const loadPlugin = async () => {
             } catch (fsError) {
               console.warn('Failed to check webview directory, falling back to info page:', fsError)
               // 如果文件系统检查失败，创建默认信息页面
-              const extensionInfoHTML = await createExtensionInfoPage({ manifest: extension, config: contributes })
-              
+              const extensionInfoHTML = await createExtensionInfoPage({
+                manifest: extension,
+                config: contributes
+              })
+
               pluginData.value = {
                 html: extensionInfoHTML,
                 config: {
@@ -135,11 +151,10 @@ const loadPlugin = async () => {
                 },
                 type: 'vscode-extension'
               }
-              
+
               const blob = new Blob([extensionInfoHTML], { type: 'text/html' })
-               pluginUrl.value = URL.createObjectURL(blob)
-             }
-            
+              pluginUrl.value = URL.createObjectURL(blob)
+            }
           } catch (activationError) {
             console.error('Extension activation failed:', activationError)
             error.value = `扩展激活失败: ${activationError instanceof Error ? activationError.message : String(activationError)}`
@@ -166,7 +181,7 @@ const onPluginLoad = async () => {
   if (pluginFrame.value && pluginFrame.value.contentWindow) {
     // 注入插件API
     await injectPluginAPI()
-    
+
     // 向插件发送初始化消息，确保数据可序列化
     const initData = {
       type: 'PLUGIN_INIT',
@@ -174,12 +189,12 @@ const onPluginLoad = async () => {
       config: pluginData.value?.config ? JSON.parse(JSON.stringify(pluginData.value.config)) : null,
       extensionType: pluginData.value?.type || 'unknown'
     }
-    
+
     // 对于webview类型的扩展，还需要注入扩展通信API
     if (pluginData.value?.type === 'vscode-extension-webview') {
       await injectExtensionWebViewAPI()
     }
-    
+
     pluginFrame.value.contentWindow.postMessage(initData, '*')
   }
 }
@@ -187,10 +202,10 @@ const onPluginLoad = async () => {
 // 注入插件API到iframe
 const injectPluginAPI = async () => {
   if (!pluginFrame.value?.contentWindow) return
-  
+
   const iframe = pluginFrame.value
   const iframeWindow = iframe.contentWindow
-  
+
   // 创建插件API对象
   const pluginAPI = {
     // 基础信息
@@ -204,7 +219,7 @@ const injectPluginAPI = async () => {
         path: pluginData.value?.basePath || ''
       }
     },
-    
+
     // 权限管理
     async requestPermission(permission) {
       try {
@@ -217,7 +232,7 @@ const injectPluginAPI = async () => {
         return { granted: false, error: error instanceof Error ? error.message : String(error) }
       }
     },
-    
+
     async hasPermission(permission) {
       try {
         return await window.electron.ipcRenderer.invoke('plugin:permission:check', {
@@ -229,7 +244,7 @@ const injectPluginAPI = async () => {
         return false
       }
     },
-    
+
     // 数据存储
     async setData(key, value) {
       try {
@@ -243,7 +258,7 @@ const injectPluginAPI = async () => {
         return { success: false, error: error instanceof Error ? error.message : String(error) }
       }
     },
-    
+
     async getData(key) {
       try {
         return await window.electron.ipcRenderer.invoke('plugin:data:get', {
@@ -255,7 +270,7 @@ const injectPluginAPI = async () => {
         return { success: false, error: error instanceof Error ? error.message : String(error) }
       }
     },
-    
+
     async removeData(key) {
       try {
         return await window.electron.ipcRenderer.invoke('plugin:data:remove', {
@@ -267,7 +282,7 @@ const injectPluginAPI = async () => {
         return { success: false, error: error instanceof Error ? error.message : String(error) }
       }
     },
-    
+
     // 通知功能
     async showNotification(title, options = {}) {
       try {
@@ -281,22 +296,25 @@ const injectPluginAPI = async () => {
         return { success: false, error: error instanceof Error ? error.message : String(error) }
       }
     },
-    
+
     // 消息通信
-    onMessage(_callback: any) {
+    onMessage() {
       // 这里可以实现消息监听
       console.log('Message listener registered')
     },
-    
+
     sendMessage(message) {
       // 向主应用发送消息
-      window.parent.postMessage({
-        type: 'PLUGIN_MESSAGE',
-        pluginId: pluginId.value,
-        data: message
-      }, '*')
+      window.parent.postMessage(
+        {
+          type: 'PLUGIN_MESSAGE',
+          pluginId: pluginId.value,
+          data: message
+        },
+        '*'
+      )
     },
-    
+
     // 插件能力调用
     async invokeCapability(capabilityId, ...args) {
       try {
@@ -309,7 +327,7 @@ const injectPluginAPI = async () => {
         return { success: false, error: error instanceof Error ? error.message : String(error) }
       }
     },
-    
+
     // 获取能力列表
     async listCapabilities() {
       try {
@@ -320,7 +338,7 @@ const injectPluginAPI = async () => {
       }
     }
   }
-  
+
   // 将API注入到iframe的window对象中
   try {
     // 等待iframe的document完全加载
@@ -329,16 +347,16 @@ const injectPluginAPI = async () => {
         iframe.addEventListener('load', resolve, { once: true })
       })
     }
-    
+
     // 注入API
     if (iframeWindow) {
-      (iframeWindow as any).pluginAPI = pluginAPI
-      
+      ;(iframeWindow as any).pluginAPI = pluginAPI
+
       // 触发pluginAPIReady事件
       const readyEvent = new (iframeWindow as any).CustomEvent('pluginAPIReady')
       iframeWindow.dispatchEvent(readyEvent)
     }
-    
+
     console.log(`Plugin API injected for ${pluginId.value}`)
   } catch (error) {
     console.error('Failed to inject plugin API:', error)
@@ -348,33 +366,38 @@ const injectPluginAPI = async () => {
 // 为扩展WebView注入专门的通信API
 const injectExtensionWebViewAPI = async () => {
   if (!pluginFrame.value?.contentWindow) return
-  
+
   const iframe = pluginFrame.value
   const iframeWindow = iframe.contentWindow
-  
+
   // 创建扩展WebView专用API
   const extensionWebViewAPI = {
     // 向扩展后台发送消息
     postMessage(message: any) {
-      window.parent.postMessage({
-        type: 'EXTENSION_WEBVIEW_MESSAGE',
-        pluginId: pluginId.value,
-        data: message
-      }, '*')
+      window.parent.postMessage(
+        {
+          type: 'EXTENSION_WEBVIEW_MESSAGE',
+          pluginId: pluginId.value,
+          data: message
+        },
+        '*'
+      )
     },
-    
+
     // 监听来自扩展后台的消息
     onMessage(callback: (message: any) => void) {
       const messageHandler = (event: MessageEvent) => {
-        if (event.data.type === 'EXTENSION_BACKEND_MESSAGE' && 
-            event.data.pluginId === pluginId.value) {
+        if (
+          event.data.type === 'EXTENSION_BACKEND_MESSAGE' &&
+          event.data.pluginId === pluginId.value
+        ) {
           callback(event.data.data)
         }
       }
       window.addEventListener('message', messageHandler)
       return () => window.removeEventListener('message', messageHandler)
     },
-    
+
     // 获取扩展信息
     async getExtensionInfo() {
       return {
@@ -385,7 +408,7 @@ const injectExtensionWebViewAPI = async () => {
         author: pluginData.value?.config?.author || 'Unknown'
       }
     },
-    
+
     // 执行扩展命令
     async executeCommand(command: string, ...args: any[]) {
       try {
@@ -399,7 +422,7 @@ const injectExtensionWebViewAPI = async () => {
         return { success: false, error: error instanceof Error ? error.message : String(error) }
       }
     },
-    
+
     // 获取扩展配置
     async getConfiguration(section?: string) {
       try {
@@ -412,7 +435,7 @@ const injectExtensionWebViewAPI = async () => {
         return { success: false, error: error instanceof Error ? error.message : String(error) }
       }
     },
-    
+
     // 更新扩展配置
     async updateConfiguration(section: string, value: any) {
       try {
@@ -426,7 +449,7 @@ const injectExtensionWebViewAPI = async () => {
         return { success: false, error: error instanceof Error ? error.message : String(error) }
       }
     },
-    
+
     // 显示信息消息
     async showInformationMessage(message: string, ...items: string[]) {
       try {
@@ -440,7 +463,7 @@ const injectExtensionWebViewAPI = async () => {
         return null
       }
     },
-    
+
     // 显示警告消息
     async showWarningMessage(message: string, ...items: string[]) {
       try {
@@ -454,7 +477,7 @@ const injectExtensionWebViewAPI = async () => {
         return null
       }
     },
-    
+
     // 显示错误消息
     async showErrorMessage(message: string, ...items: string[]) {
       try {
@@ -469,7 +492,7 @@ const injectExtensionWebViewAPI = async () => {
       }
     }
   }
-  
+
   // 将扩展WebView API注入到iframe的window对象中
   try {
     // 等待iframe的document完全加载
@@ -478,16 +501,16 @@ const injectExtensionWebViewAPI = async () => {
         iframe.addEventListener('load', resolve, { once: true })
       })
     }
-    
+
     // 注入API
     if (iframeWindow) {
-      (iframeWindow as any).extensionWebView = extensionWebViewAPI
-      
+      ;(iframeWindow as any).extensionWebView = extensionWebViewAPI
+
       // 触发extensionWebViewReady事件
       const readyEvent = new (iframeWindow as any).CustomEvent('extensionWebViewReady')
       iframeWindow.dispatchEvent(readyEvent)
     }
-    
+
     console.log(`Extension WebView API injected for ${pluginId.value}`)
   } catch (error) {
     console.error('Failed to inject extension WebView API:', error)
@@ -521,12 +544,14 @@ const handlePluginMessage = (event: MessageEvent) => {
       // 处理来自扩展WebView的消息，转发给扩展后台
       console.log(`Extension WebView message from ${pluginId.value}:`, data)
       // 这里可以通过IPC转发给扩展后台
-      window.electron.ipcRenderer.invoke('extension:webviewMessage', {
-        extensionId: pluginId.value,
-        message: data
-      }).catch(err => {
-        console.error('Failed to forward webview message:', err)
-      })
+      window.electron.ipcRenderer
+        .invoke('extension:webviewMessage', {
+          extensionId: pluginId.value,
+          message: data
+        })
+        .catch((err) => {
+          console.error('Failed to forward webview message:', err)
+        })
       break
     default:
       console.log('Unknown plugin message:', type, data)
@@ -534,17 +559,21 @@ const handlePluginMessage = (event: MessageEvent) => {
 }
 
 // 监听pluginId变化，重新加载插件
-watch(pluginId, (newPluginId, oldPluginId) => {
-  if (newPluginId && newPluginId !== oldPluginId) {
-    // 清理旧的blob URL
-    if (pluginUrl.value) {
-      URL.revokeObjectURL(pluginUrl.value)
-      pluginUrl.value = ''
+watch(
+  pluginId,
+  (newPluginId, oldPluginId) => {
+    if (newPluginId && newPluginId !== oldPluginId) {
+      // 清理旧的blob URL
+      if (pluginUrl.value) {
+        URL.revokeObjectURL(pluginUrl.value)
+        pluginUrl.value = ''
+      }
+      // 重新加载新插件
+      loadPlugin()
     }
-    // 重新加载新插件
-    loadPlugin()
-  }
-}, { immediate: false })
+  },
+  { immediate: false }
+)
 
 onMounted(() => {
   loadPlugin()

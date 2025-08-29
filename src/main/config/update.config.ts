@@ -131,11 +131,11 @@ export function saveUpdateConfig(config: UpdateConfig): boolean {
 
     // 更新当前配置
     currentConfig = { ...config }
-    
+
     // TODO: 在实际应用中，这里应该将配置保存到持久化存储
     // 例如：保存到配置文件、数据库或 Electron 的 store
     console.log('Configuration saved:', currentConfig)
-    
+
     return true
   } catch (error) {
     console.error('Failed to save update config:', error)

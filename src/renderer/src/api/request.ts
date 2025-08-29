@@ -51,7 +51,7 @@ request.interceptors.request.use((config) => {
   return config
 }, errorHandler)
 
-request.interceptors.response.use((response: any) => {
+request.interceptors.response.use((response: { data: unknown }) => {
   const refreshAccessToken = response.headers.get('refresh-access-token')
   const refreshTokenExpire = response.headers.get('refresh-access-expires-at')
 
@@ -62,7 +62,7 @@ request.interceptors.response.use((response: any) => {
   return response.data
 }, errorHandler)
 
-export const get = (url: string, data: any = {}) => {
+export const get = (url: string, data: Record<string, unknown> = {}) => {
   return request({
     url,
     params: data,
@@ -70,7 +70,7 @@ export const get = (url: string, data: any = {}) => {
   })
 }
 
-export const post = (url: string, data: any = {}) => {
+export const post = (url: string, data: Record<string, unknown> = {}) => {
   return request({
     url,
     method: 'post',
@@ -78,7 +78,7 @@ export const post = (url: string, data: any = {}) => {
   })
 }
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   status: number // http 状态码非200则处理失败
   code: number // 具体的业务错误码 200 表示成功
   message: string // 错误信息
@@ -98,10 +98,14 @@ export interface ApiOptions {
   successText?: string
   // 重试次数
   retry?: number
-  onSuccess?: Function
+  onSuccess?: () => void
 }
 
-export async function api<T = any>(uri: string, params?: any, options?: ApiOptions): Response<T> {
+export async function api<T = unknown>(
+  uri: string,
+  params?: unknown,
+  options?: ApiOptions
+): Response<T> {
   if (options?.loading) options.loading.value = true
 
   try {
@@ -157,7 +161,7 @@ function error(message: string) {
   window.alert(message)
 }
 
-export const createApi = <R = any, T = any>(url: string) => {
+export const createApi = <R = unknown, T = unknown>(url: string) => {
   return (data?: R, options?: ApiOptions): Response<T> => {
     return api(url, data, options)
   }

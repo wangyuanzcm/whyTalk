@@ -16,13 +16,13 @@ export interface PluginInfo {
     description?: string
     author?: string
     ui?: {
-      settings?: any
+      settings?: Record<string, unknown>
     }
     frontend?: {
-      settings?: any
+      settings?: Record<string, unknown>
     }
     backend?: {
-      functions?: any
+      functions?: Record<string, unknown>
     }
   }
 }
@@ -38,9 +38,9 @@ export interface ExtensionInfo {
   isActive: boolean
   isBuiltin: boolean
   extensionPath: string
-  packageJSON: any
+  packageJSON: Record<string, unknown>
   activationEvents: string[]
-  contributes?: any
+  contributes?: Record<string, unknown>
 }
 
 // 扩展搜索结果接口
@@ -80,13 +80,13 @@ export interface PluginOperationResult {
 
 export interface PluginConfigResult {
   success: boolean
-  config?: any
+  config?: Record<string, unknown>
   error?: string
 }
 
 export class PluginAPI {
   // ========== VSCode风格扩展API ==========
-  
+
   /**
    * 获取所有扩展
    */
@@ -140,7 +140,11 @@ export class PluginAPI {
    */
   static async installExtension(packageName: string, version?: string): Promise<boolean> {
     try {
-      return await window.electron.ipcRenderer.invoke('plugin:installExtension', packageName, version)
+      return await window.electron.ipcRenderer.invoke(
+        'plugin:installExtension',
+        packageName,
+        version
+      )
     } catch (error: any) {
       console.error('Failed to install extension:', error)
       return false
@@ -198,7 +202,7 @@ export class PluginAPI {
   /**
    * 获取扩展贡献点
    */
-  static async getContributions(type?: string): Promise<any> {
+  static async getContributions(type?: string): Promise<Record<string, unknown>> {
     try {
       return await window.electron.ipcRenderer.invoke('plugin:getContributions', type)
     } catch (error: any) {
@@ -210,7 +214,7 @@ export class PluginAPI {
   /**
    * 执行命令
    */
-  static async executeCommand(command: string, ...args: any[]): Promise<any> {
+  static async executeCommand(command: string, ...args: unknown[]): Promise<unknown> {
     try {
       return await window.electron.ipcRenderer.invoke('plugin:executeCommand', command, ...args)
     } catch (error: any) {
@@ -234,7 +238,7 @@ export class PluginAPI {
   /**
    * 触发激活事件
    */
-  static async triggerActivationEvent(event: string, data?: any): Promise<void> {
+  static async triggerActivationEvent(event: string, data?: unknown): Promise<void> {
     try {
       await window.electron.ipcRenderer.invoke('plugin:triggerActivationEvent', event, data)
     } catch (error: any) {
@@ -243,17 +247,19 @@ export class PluginAPI {
   }
 
   // ========== 事件监听器 ==========
-  
+
   /**
    * 监听扩展状态变化
    */
-  static onExtensionStateChanged(callback: (extensionId: string, state: string) => void): () => void {
+  static onExtensionStateChanged(
+    callback: (extensionId: string, state: string) => void
+  ): () => void {
     const handler = (_: any, extensionId: string, state: string) => {
       callback(extensionId, state)
     }
-    
+
     window.electron.ipcRenderer.on('plugin:extensionStateChanged', handler)
-    
+
     return () => {
       window.electron.ipcRenderer.removeListener('plugin:extensionStateChanged', handler)
     }
@@ -262,13 +268,13 @@ export class PluginAPI {
   /**
    * 监听命令执行
    */
-  static onCommandExecuted(callback: (command: string, args: any[]) => void): () => void {
-    const handler = (_: any, command: string, args: any[]) => {
+  static onCommandExecuted(callback: (command: string, args: unknown[]) => void): () => void {
+    const handler = (_: unknown, command: string, args: unknown[]) => {
       callback(command, args)
     }
-    
+
     window.electron.ipcRenderer.on('plugin:commandExecuted', handler)
-    
+
     return () => {
       window.electron.ipcRenderer.removeListener('plugin:commandExecuted', handler)
     }
@@ -281,9 +287,9 @@ export class PluginAPI {
     const handler = (_: any, extensionId: string) => {
       callback(extensionId)
     }
-    
+
     window.electron.ipcRenderer.on('plugin:extensionInstalled', handler)
-    
+
     return () => {
       window.electron.ipcRenderer.removeListener('plugin:extensionInstalled', handler)
     }
@@ -296,9 +302,9 @@ export class PluginAPI {
     const handler = (_: any, extensionId: string) => {
       callback(extensionId)
     }
-    
+
     window.electron.ipcRenderer.on('plugin:extensionUninstalled', handler)
-    
+
     return () => {
       window.electron.ipcRenderer.removeListener('plugin:extensionUninstalled', handler)
     }
@@ -318,7 +324,7 @@ export class PluginAPI {
       console.log(window.electron, 'window.electron')
       // 使用新的VSCode风格插件系统API
       const extensions = await window.electron.ipcRenderer.invoke('plugin:getAllExtensions')
-      
+
       // 转换扩展信息为传统插件格式以保持兼容性
       const plugins: PluginInfo[] = extensions.map((ext: ExtensionInfo) => ({
         id: ext.id,
@@ -336,7 +342,7 @@ export class PluginAPI {
           author: ext.publisher
         }
       }))
-      
+
       return { success: true, plugins }
     } catch (error: any) {
       return { success: false, error: error.message }
@@ -350,10 +356,7 @@ export class PluginAPI {
   static async installLocalPlugin(zipPath: string): Promise<PluginInstallResult> {
     try {
       // 使用新的VSCode风格插件系统API
-      const result = await window.electron.ipcRenderer.invoke(
-        'plugin:installExtension',
-        zipPath
-      )
+      const result = await window.electron.ipcRenderer.invoke('plugin:installExtension', zipPath)
       return { success: true, pluginId: result?.id }
     } catch (error: any) {
       return { success: false, error: error.message }
@@ -388,7 +391,10 @@ export class PluginAPI {
   ): Promise<PluginInstallResult> {
     try {
       // 使用新的VSCode风格插件系统API
-      const result = await window.electron.ipcRenderer.invoke('plugin:installExtension', packageName)
+      const result = await window.electron.ipcRenderer.invoke(
+        'plugin:installExtension',
+        packageName
+      )
       return { success: true, pluginId: result?.id }
     } catch (error: any) {
       return { success: false, error: error.message }
@@ -459,7 +465,10 @@ export class PluginAPI {
    * 设置插件配置
    * 注意：VSCode风格插件系统不支持动态配置修改
    */
-  static async setPluginConfig(_pluginId: string, _config: any): Promise<PluginOperationResult> {
+  static async setPluginConfig(
+    _pluginId: string,
+    _config: Record<string, unknown>
+  ): Promise<PluginOperationResult> {
     try {
       // VSCode风格扩展的配置通常在package.json中定义，不支持运行时修改
       console.warn('VSCode风格插件系统不支持动态配置修改')
@@ -475,7 +484,7 @@ export class PluginAPI {
    */
   static async getPluginInfo(
     pluginId: string
-  ): Promise<{ success: boolean; data?: any; error?: string }> {
+  ): Promise<{ success: boolean; data?: Record<string, unknown>; error?: string }> {
     try {
       // 使用新的VSCode风格插件系统API
       const extension = await window.electron.ipcRenderer.invoke('plugin:getExtension', pluginId)
@@ -499,7 +508,7 @@ export class PluginAPI {
    */
   static async loadFrontendPlugin(
     pluginId: string
-  ): Promise<{ success: boolean; data?: any; error?: string }> {
+  ): Promise<{ success: boolean; data?: Record<string, unknown>; error?: string }> {
     try {
       // VSCode风格扩展通过激活事件自动加载，这里尝试激活扩展
       await window.electron.ipcRenderer.invoke('plugin:activateExtension', pluginId)
@@ -520,7 +529,7 @@ export class PluginAPI {
    */
   static async loadSystemPluginHTML(
     _pluginId: string
-  ): Promise<{ success: boolean; data?: any; error?: string }> {
+  ): Promise<{ success: boolean; data?: Record<string, unknown>; error?: string }> {
     try {
       console.warn('VSCode风格插件系统不支持加载系统插件HTML')
       return {
@@ -542,7 +551,7 @@ export class PluginAPI {
    */
   static async loadCubeModuleHTML(
     _pluginId: string
-  ): Promise<{ success: boolean; data?: any; error?: string }> {
+  ): Promise<{ success: boolean; data?: Record<string, unknown>; error?: string }> {
     try {
       console.warn('VSCode风格插件系统不支持CubeModule格式')
       return {

@@ -3,17 +3,17 @@ import { isElectronMode } from '@/utils/electron'
 </script>
 
 <template>
-  <div v-if="!isElectronMode()" id="logo-name">Lumen IM</div>
+  <div v-if="!isElectronMode()" id="logo-name">why talk</div>
 
   <section class="section">
     <router-view />
   </section>
-
+  <!-- 
   <div class="copyright">
     <span>©2020 - 2025 Lumen IM 在线聊天</span>
     <span><a href="http://beian.miit.gov.cn" target="_blank">黔ICP备20006767号-2</a></span>
     <span>Github源码</span>
-  </div>
+  </div> -->
 
   <div class="fly-box">
     <div class="fly bg-fly-circle1"></div>

@@ -1,9 +1,7 @@
 import { EventEmitter } from 'events'
 import { ipcMain } from 'electron'
 import * as path from 'path'
-import type {
-  ExtensionInstance
-} from './types'
+import type { ExtensionInstance } from './types'
 import { ContributionPointManager } from './ContributionPointManager'
 import { ActivationEventManager } from './ActivationEventManager'
 import { APIProvider } from './APIProvider'
@@ -15,22 +13,22 @@ import { ExtensionLoader, ExtensionState } from './ExtensionLoader'
  */
 export class ExtensionHost extends EventEmitter {
   private static instance: ExtensionHost
-  
+
   /** 已激活的扩展映射 */
   private activatedExtensions = new Map<string, any>()
-  
+
   /** 扩展加载器 */
   private extensionLoader: ExtensionLoader
-  
+
   /** 贡献点管理器 */
   private contributionPointManager: ContributionPointManager
-  
+
   /** 激活事件管理器 */
   private activationEventManager: ActivationEventManager
-  
+
   /** API提供者 */
   private apiProvider: APIProvider
-  
+
   /** 是否已初始化 */
   private isInitialized = false
 
@@ -63,21 +61,21 @@ export class ExtensionHost extends EventEmitter {
 
     try {
       console.log('[ExtensionHost] 初始化扩展主机...')
-      
+
       // 设置IPC处理器
       this.setupIpcHandlers()
-      
+
       // 设置事件监听器
       this.setupEventListeners()
-      
+
       // 加载所有扩展
       await this.loadAllExtensions()
-      
+
       this.isInitialized = true
       console.log('[ExtensionHost] 扩展主机初始化完成')
-      
+
       this.emit('initialized')
-      
+
       // 标记启动完成，触发相关激活事件
       this.markStartupFinished()
     } catch (error) {
@@ -150,14 +148,20 @@ export class ExtensionHost extends EventEmitter {
     })
 
     // 监听激活事件管理器的扩展激活事件
-    this.activationEventManager.on('extensionActivated', (extensionId: string, eventPattern: string) => {
-      console.log(`[ExtensionHost] 扩展 ${extensionId} 因事件 ${eventPattern} 被激活`)
-    })
+    this.activationEventManager.on(
+      'extensionActivated',
+      (extensionId: string, eventPattern: string) => {
+        console.log(`[ExtensionHost] 扩展 ${extensionId} 因事件 ${eventPattern} 被激活`)
+      }
+    )
 
     // 监听激活事件管理器的扩展激活失败事件
-    this.activationEventManager.on('extensionActivationFailed', (extensionId: string, eventPattern: string, error: any) => {
-      console.error(`[ExtensionHost] 扩展 ${extensionId} 因事件 ${eventPattern} 激活失败:`, error)
-    })
+    this.activationEventManager.on(
+      'extensionActivationFailed',
+      (extensionId: string, eventPattern: string, error: any) => {
+        console.error(`[ExtensionHost] 扩展 ${extensionId} 因事件 ${eventPattern} 激活失败:`, error)
+      }
+    )
   }
 
   /**
@@ -177,12 +181,12 @@ export class ExtensionHost extends EventEmitter {
       if (extension.activationEvents.length > 0) {
         this.registerActivationEvents(extension.id, extension.activationEvents)
       }
-      
+
       // 注册贡献点
       if (extension.manifest.contributes) {
         this.registerContributionPoints(extension.id, extension.manifest.contributes)
       }
-      
+
       console.log(`[ExtensionHost] 扩展 ${extension.id} 处理完成`)
       this.emit('extensionLoaded', extension)
     } catch (error) {
@@ -197,17 +201,17 @@ export class ExtensionHost extends EventEmitter {
   private onExtensionUnloaded(extension: ExtensionInstance): void {
     // 停用扩展
     if (this.activatedExtensions.has(extension.id)) {
-      this.deactivateExtension(extension.id).catch(error => {
+      this.deactivateExtension(extension.id).catch((error) => {
         console.error(`[ExtensionHost] 停用扩展 ${extension.id} 失败:`, error)
       })
     }
-    
+
     // 取消注册激活事件
     this.activationEventManager.unregisterActivationEvents(extension.id)
-    
+
     // 取消注册贡献点
     this.contributionPointManager.unregisterContributions(extension.id)
-    
+
     this.emit('extensionUnloaded', extension)
   }
 
@@ -218,12 +222,12 @@ export class ExtensionHost extends EventEmitter {
   public async installExtension(extensionPath: string): Promise<ExtensionInstance | null> {
     // TODO: 实现从npm安装扩展的逻辑
     console.log(`[ExtensionHost] 安装扩展: ${extensionPath}`)
-    
+
     // 如果是本地路径，直接加载
     if (path.isAbsolute(extensionPath)) {
       return await this.extensionLoader.loadExtension(extensionPath, false)
     }
-    
+
     // TODO: 实现从npm下载和安装扩展
     throw new Error('从npm安装扩展功能尚未实现')
   }
@@ -247,9 +251,9 @@ export class ExtensionHost extends EventEmitter {
     if (this.activatedExtensions.has(extensionId)) {
       await this.deactivateExtension(extensionId)
     }
-    
+
     this.extensionLoader.unloadExtension(extensionId)
-    
+
     // TODO: 删除扩展文件
     console.log(`[ExtensionHost] 扩展 ${extensionId} 卸载成功`)
     this.emit('extensionUninstalled', extension)
@@ -273,34 +277,34 @@ export class ExtensionHost extends EventEmitter {
 
     try {
       console.log(`[ExtensionHost] 激活扩展: ${extensionId}`)
-      
+
       // 创建扩展上下文
       const context = this.extensionLoader.createExtensionContext(extension)
       extension.context = context
-      
+
       // 创建扩展API
       const api = this.apiProvider.createExtensionAPI(extensionId, context)
-      
+
       let exports: any = undefined
-      
+
       // 如果有主入口文件，加载并执行
       if (extension.mainPath) {
         const extensionModule = await this.loadExtensionModule(extension.mainPath)
-        
+
         if (extensionModule && typeof extensionModule.activate === 'function') {
           exports = await extensionModule.activate(context, api)
         }
       }
-      
+
       // 标记为已激活
       extension.isActive = true
       extension.activationTime = Date.now()
       this.activatedExtensions.set(extensionId, exports)
       this.extensionLoader.setExtensionState(extensionId, ExtensionState.Activated)
-      
+
       console.log(`[ExtensionHost] 扩展 ${extensionId} 激活成功`)
       this.emit('extensionActivated', extension, exports)
-      
+
       return exports
     } catch (error) {
       console.error(`[ExtensionHost] 激活扩展 ${extensionId} 失败:`, error)
@@ -329,16 +333,16 @@ export class ExtensionHost extends EventEmitter {
 
     try {
       console.log(`[ExtensionHost] 停用扩展: ${extensionId}`)
-      
+
       // 如果有主入口文件，调用deactivate函数
       if (extension.mainPath) {
         const extensionModule = await this.loadExtensionModule(extension.mainPath)
-        
+
         if (extensionModule && typeof extensionModule.deactivate === 'function') {
           await extensionModule.deactivate()
         }
       }
-      
+
       // 清理扩展上下文
       if (extension.context) {
         for (const subscription of extension.context.subscriptions) {
@@ -349,15 +353,15 @@ export class ExtensionHost extends EventEmitter {
           }
         }
       }
-      
+
       // 清理API
       this.apiProvider.cleanupExtensionAPI(extensionId)
-      
+
       // 标记为未激活
       extension.isActive = false
       this.activatedExtensions.delete(extensionId)
       this.extensionLoader.setExtensionState(extensionId, ExtensionState.Deactivated)
-      
+
       console.log(`[ExtensionHost] 扩展 ${extensionId} 停用成功`)
       this.emit('extensionDeactivated', extension)
     } catch (error) {
@@ -380,7 +384,7 @@ export class ExtensionHost extends EventEmitter {
     if (this.activatedExtensions.has(extensionId)) {
       await this.deactivateExtension(extensionId)
     }
-    
+
     // 重新加载扩展
     return await this.extensionLoader.reloadExtension(extensionId)
   }
@@ -391,10 +395,8 @@ export class ExtensionHost extends EventEmitter {
    * @param activationEvents 激活事件列表
    */
   private registerActivationEvents(extensionId: string, activationEvents: string[]): void {
-    this.activationEventManager.registerActivationEvents(
-      extensionId,
-      activationEvents,
-      () => this.activateExtension(extensionId)
+    this.activationEventManager.registerActivationEvents(extensionId, activationEvents, () =>
+      this.activateExtension(extensionId)
     )
   }
 
@@ -415,7 +417,7 @@ export class ExtensionHost extends EventEmitter {
     try {
       // 清除require缓存以支持热重载
       delete require.cache[require.resolve(mainPath)]
-      
+
       // 加载模块
       return require(mainPath)
     } catch (error) {
@@ -480,7 +482,7 @@ export class ExtensionHost extends EventEmitter {
     this.extensionLoader.clear()
     this.contributionPointManager.clear()
     this.activationEventManager.clear()
-    
+
     this.emit('cleared')
     console.log('[ExtensionHost] 已清理所有扩展')
   }

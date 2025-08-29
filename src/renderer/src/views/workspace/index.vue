@@ -47,12 +47,12 @@ const loadPlugins = async () => {
 
     // 使用新的VSCode风格插件系统API
     const extensionList = await window.electron.ipcRenderer.invoke('plugin:getAllExtensions')
-    
+
     // 转换扩展信息为插件格式以保持兼容性
     plugins.value = extensionList.map((ext: any) => {
       // 确保manifest存在并提供默认值
       const manifest = ext.manifest || {}
-      
+
       return {
         id: ext.id,
         type: 'frontend', // VSCode风格扩展主要是前端类型
@@ -108,7 +108,7 @@ const openPlugin = async (plugin: Plugin) => {
           }
         }
       )
-      
+
       if (result?.success) {
         ;(window as any).$message?.success(`${plugin.config.name} 已在新窗口中打开`)
       } else {
@@ -139,18 +139,17 @@ const configurePlugin = async (plugin: Plugin) => {
   try {
     console.log('配置插件:', plugin.id)
     ;(window as any).$message?.info(`正在打开 ${plugin.config.name} 配置页面...`)
-    
+
     // 在主窗口跳转到插件配置页面
     window.location.hash = `/plugin-config/${plugin.id}`
-    
     ;(window as any).$message?.success(`已跳转到 ${plugin.config.name} 配置页面`)
   } catch (error) {
     console.error('配置插件失败:', error)
-    ;(window as any).$message?.error(`配置插件失败: ${error instanceof Error ? error.message : String(error)}`)
+    ;(window as any).$message?.error(
+      `配置插件失败: ${error instanceof Error ? error.message : String(error)}`
+    )
   }
 }
-
-
 
 // 获取插件状态颜色
 const getStatusColor = (enabled: boolean) => {

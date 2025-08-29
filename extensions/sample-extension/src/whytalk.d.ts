@@ -9,34 +9,34 @@ declare module 'whytalk' {
   export interface ExtensionContext {
     /** 订阅列表，用于自动清理资源 */
     subscriptions: Disposable[]
-    
+
     /** 扩展路径 */
     extensionPath: string
-    
+
     /** 扩展URI */
     extensionUri: Uri
-    
+
     /** 全局状态存储 */
     globalState: Memento
-    
+
     /** 工作区状态存储 */
     workspaceState: Memento
-    
+
     /** 全局存储路径 */
     globalStoragePath: string
-    
+
     /** 日志路径 */
     logPath: string
-    
+
     /** 扩展模式 */
     extensionMode: ExtensionMode
-    
+
     /** 环境变量集合 */
     environmentVariableCollection: EnvironmentVariableCollection
-    
+
     /** 秘密存储 */
     secrets: SecretStorage
-    
+
     /** 扩展信息 */
     extension: Extension<any>
   }
@@ -87,7 +87,14 @@ declare module 'whytalk' {
     append(variable: string, value: string): void
     prepend(variable: string, value: string): void
     get(variable: string): EnvironmentVariableMutator | undefined
-    forEach(callback: (variable: string, mutator: EnvironmentVariableMutator, collection: EnvironmentVariableCollection) => any, thisArg?: any): void
+    forEach(
+      callback: (
+        variable: string,
+        mutator: EnvironmentVariableMutator,
+        collection: EnvironmentVariableCollection
+      ) => any,
+      thisArg?: any
+    ): void
     delete(variable: string): void
     clear(): void
   }
@@ -150,8 +157,14 @@ declare module 'whytalk' {
    * Thenable接口
    */
   export interface Thenable<T> {
-    then<TResult>(onfulfilled?: (value: T) => TResult | Thenable<TResult>, onrejected?: (reason: any) => TResult | Thenable<TResult>): Thenable<TResult>
-    then<TResult>(onfulfilled?: (value: T) => TResult | Thenable<TResult>, onrejected?: (reason: any) => void): Thenable<TResult>
+    then<TResult>(
+      onfulfilled?: (value: T) => TResult | Thenable<TResult>,
+      onrejected?: (reason: any) => TResult | Thenable<TResult>
+    ): Thenable<TResult>
+    then<TResult>(
+      onfulfilled?: (value: T) => TResult | Thenable<TResult>,
+      onrejected?: (reason: any) => void
+    ): Thenable<TResult>
   }
 
   /**
@@ -256,14 +269,20 @@ declare module 'whytalk' {
     get<T>(section: string): T | undefined
     get<T>(section: string, defaultValue: T): T
     has(section: string): boolean
-    inspect<T>(section: string): {
-      key: string
-      defaultValue?: T
-      globalValue?: T
-      workspaceValue?: T
-      workspaceFolderValue?: T
-    } | undefined
-    update(section: string, value: any, configurationTarget?: ConfigurationTarget | boolean): Thenable<void>
+    inspect<T>(section: string):
+      | {
+          key: string
+          defaultValue?: T
+          globalValue?: T
+          workspaceValue?: T
+          workspaceFolderValue?: T
+        }
+      | undefined
+    update(
+      section: string,
+      value: any,
+      configurationTarget?: ConfigurationTarget | boolean
+    ): Thenable<void>
   }
 
   /**
@@ -282,47 +301,106 @@ declare module 'whytalk' {
     /**
      * 显示信息消息
      */
-    export function showInformationMessage(message: string, ...items: string[]): Thenable<string | undefined>
-    export function showInformationMessage(message: string, options: MessageOptions, ...items: string[]): Thenable<string | undefined>
-    export function showInformationMessage<T extends MessageItem>(message: string, ...items: T[]): Thenable<T | undefined>
-    export function showInformationMessage<T extends MessageItem>(message: string, options: MessageOptions, ...items: T[]): Thenable<T | undefined>
+    export function showInformationMessage(
+      message: string,
+      ...items: string[]
+    ): Thenable<string | undefined>
+    export function showInformationMessage(
+      message: string,
+      options: MessageOptions,
+      ...items: string[]
+    ): Thenable<string | undefined>
+    export function showInformationMessage<T extends MessageItem>(
+      message: string,
+      ...items: T[]
+    ): Thenable<T | undefined>
+    export function showInformationMessage<T extends MessageItem>(
+      message: string,
+      options: MessageOptions,
+      ...items: T[]
+    ): Thenable<T | undefined>
 
     /**
      * 显示警告消息
      */
-    export function showWarningMessage(message: string, ...items: string[]): Thenable<string | undefined>
-    export function showWarningMessage(message: string, options: MessageOptions, ...items: string[]): Thenable<string | undefined>
-    export function showWarningMessage<T extends MessageItem>(message: string, ...items: T[]): Thenable<T | undefined>
-    export function showWarningMessage<T extends MessageItem>(message: string, options: MessageOptions, ...items: T[]): Thenable<T | undefined>
+    export function showWarningMessage(
+      message: string,
+      ...items: string[]
+    ): Thenable<string | undefined>
+    export function showWarningMessage(
+      message: string,
+      options: MessageOptions,
+      ...items: string[]
+    ): Thenable<string | undefined>
+    export function showWarningMessage<T extends MessageItem>(
+      message: string,
+      ...items: T[]
+    ): Thenable<T | undefined>
+    export function showWarningMessage<T extends MessageItem>(
+      message: string,
+      options: MessageOptions,
+      ...items: T[]
+    ): Thenable<T | undefined>
 
     /**
      * 显示错误消息
      */
-    export function showErrorMessage(message: string, ...items: string[]): Thenable<string | undefined>
-    export function showErrorMessage(message: string, options: MessageOptions, ...items: string[]): Thenable<string | undefined>
-    export function showErrorMessage<T extends MessageItem>(message: string, ...items: T[]): Thenable<T | undefined>
-    export function showErrorMessage<T extends MessageItem>(message: string, options: MessageOptions, ...items: T[]): Thenable<T | undefined>
+    export function showErrorMessage(
+      message: string,
+      ...items: string[]
+    ): Thenable<string | undefined>
+    export function showErrorMessage(
+      message: string,
+      options: MessageOptions,
+      ...items: string[]
+    ): Thenable<string | undefined>
+    export function showErrorMessage<T extends MessageItem>(
+      message: string,
+      ...items: T[]
+    ): Thenable<T | undefined>
+    export function showErrorMessage<T extends MessageItem>(
+      message: string,
+      options: MessageOptions,
+      ...items: T[]
+    ): Thenable<T | undefined>
 
     /**
      * 显示快速选择
      */
-    export function showQuickPick(items: string[] | Thenable<string[]>, options?: QuickPickOptions, token?: CancellationToken): Thenable<string | undefined>
-    export function showQuickPick<T extends QuickPickItem>(items: T[] | Thenable<T[]>, options?: QuickPickOptions, token?: CancellationToken): Thenable<T | undefined>
+    export function showQuickPick(
+      items: string[] | Thenable<string[]>,
+      options?: QuickPickOptions,
+      token?: CancellationToken
+    ): Thenable<string | undefined>
+    export function showQuickPick<T extends QuickPickItem>(
+      items: T[] | Thenable<T[]>,
+      options?: QuickPickOptions,
+      token?: CancellationToken
+    ): Thenable<T | undefined>
 
     /**
      * 显示输入框
      */
-    export function showInputBox(options?: InputBoxOptions, token?: CancellationToken): Thenable<string | undefined>
+    export function showInputBox(
+      options?: InputBoxOptions,
+      token?: CancellationToken
+    ): Thenable<string | undefined>
 
     /**
      * 创建状态栏项
      */
-    export function createStatusBarItem(alignment?: StatusBarAlignment, priority?: number): StatusBarItem
+    export function createStatusBarItem(
+      alignment?: StatusBarAlignment,
+      priority?: number
+    ): StatusBarItem
 
     /**
      * 显示进度
      */
-    export function withProgress<R>(options: ProgressOptions, task: (progress: Progress<ProgressMessage>, token: CancellationToken) => Thenable<R>): Thenable<R>
+    export function withProgress<R>(
+      options: ProgressOptions,
+      task: (progress: Progress<ProgressMessage>, token: CancellationToken) => Thenable<R>
+    ): Thenable<R>
   }
 
   /**
@@ -358,7 +436,11 @@ declare module 'whytalk' {
     /**
      * 注册命令
      */
-    export function registerCommand(command: string, callback: (...args: any[]) => any, thisArg?: any): Disposable
+    export function registerCommand(
+      command: string,
+      callback: (...args: any[]) => any,
+      thisArg?: any
+    ): Disposable
 
     /**
      * 执行命令

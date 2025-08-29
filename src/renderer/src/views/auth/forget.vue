@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { ref, reactive } from 'vue'
+import { useRouter } from 'vue-router'
 import { ServAuthForget } from '@/api/auth'
 import { ServCommonSendSmsCode } from '@/api/common'
 import { isMobile } from '@/utils/validate'

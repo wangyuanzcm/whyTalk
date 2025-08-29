@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ServeUserSetting } from '@/api/user'
 import * as auth from '@/utils/auth.ts'
 import { storage } from '@/utils'
+import router from '@/router'
 
 interface IUserStoreState {
   uid: number
@@ -41,11 +42,15 @@ export const useUserStore = defineStore('user', {
       this.online = status
     },
 
+    /**
+     * 处理用户退出登录
+     */
     logoutLogin() {
       this.$reset()
       storage.remove('user_info')
       auth.deleteToken()
-      location.reload()
+      // 跳转到登录页面而不是刷新页面
+      router.push('/auth/login')
     },
 
     loadSetting() {

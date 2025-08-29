@@ -58,7 +58,7 @@ onMounted(() => {
             <n-layout-content>
               <slot></slot>
             </n-layout-content>
-            
+
             <!-- 更新管理器组件 -->
             <UpdateManager />
           </n-modal-provider>

@@ -303,7 +303,11 @@ export class LocalSendP2PManager extends EventEmitter {
   /**
    * 添加联系人
    */
-  public async addContact(_fingerprint: string, _nickname?: string, _remark?: string): Promise<void> {
+  public async addContact(
+    _fingerprint: string,
+    _nickname?: string,
+    _remark?: string
+  ): Promise<void> {
     try {
       const peers = this.networkService.getDiscoveredPeers()
       const peer = peers.find((p) => p.fingerprint === _fingerprint)
@@ -362,10 +366,7 @@ export class LocalSendP2PManager extends EventEmitter {
   /**
    * 获取聊天历史
    */
-  public async getChatHistory(
-    targetFingerprint: string,
-    limit: number = 20
-  ): Promise<any[]> {
+  public async getChatHistory(targetFingerprint: string, limit: number = 20): Promise<any[]> {
     try {
       const messages = await this.networkService.getMessageHistory(targetFingerprint, limit)
       return messages.map((msg) => ({
@@ -454,10 +455,7 @@ export class LocalSendP2PManager extends EventEmitter {
     console.log('recallMessage not implemented for LocalSend')
   }
 
-  public async getGroupChatHistory(
-    _groupId: string,
-    _limit: number = 20
-  ): Promise<any[]> {
+  public async getGroupChatHistory(_groupId: string, _limit: number = 20): Promise<any[]> {
     return []
   }
 

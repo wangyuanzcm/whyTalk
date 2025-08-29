@@ -85,7 +85,7 @@ export class PluginSystemManager {
     ipcMain.handle('plugin:getAllExtensions', async () => {
       const extensions = this.vscodeStyleManager.getAllExtensions()
       // 序列化扩展数据，只返回可序列化的字段
-      return extensions.map(ext => ({
+      return extensions.map((ext) => ({
         id: ext.id,
         manifest: ext.manifest,
         extensionPath: ext.extensionPath,
@@ -211,16 +211,14 @@ export class PluginSystemManager {
         const window = BrowserWindow.fromWebContents(event.sender)
         const result = await dialog.showOpenDialog(window || undefined, {
           properties: ['openFile'],
-          filters: options?.filters || [
-            { name: 'All Files', extensions: ['*'] }
-          ],
+          filters: options?.filters || [{ name: 'All Files', extensions: ['*'] }],
           defaultPath: options?.defaultPath
         })
-        
+
         if (result.canceled) {
           return { canceled: true, filePaths: [] }
         }
-        
+
         return { canceled: false, filePaths: result.filePaths }
       } catch (error) {
         logger.error('文件选择对话框失败:', error)
@@ -236,11 +234,11 @@ export class PluginSystemManager {
           properties: ['openDirectory'],
           defaultPath: options?.defaultPath
         })
-        
+
         if (result.canceled) {
           return { canceled: true, filePaths: [] }
         }
-        
+
         return { canceled: false, filePaths: result.filePaths }
       } catch (error) {
         logger.error('目录选择对话框失败:', error)
@@ -249,14 +247,17 @@ export class PluginSystemManager {
     })
 
     // 注册获取扩展文件URL处理器
-    ipcMain.handle('plugin:get-extension-file-url', async (_event, extensionPath: string, relativePath: string) => {
-      try {
-        return this.getExtensionFileUrl(extensionPath, relativePath)
-      } catch (error) {
-        logger.error('Failed to get extension file URL:', error)
-        throw error
+    ipcMain.handle(
+      'plugin:get-extension-file-url',
+      async (_event, extensionPath: string, relativePath: string) => {
+        try {
+          return this.getExtensionFileUrl(extensionPath, relativePath)
+        } catch (error) {
+          logger.error('Failed to get extension file URL:', error)
+          throw error
+        }
       }
-    })
+    )
 
     // 注册插件配置窗口相关的IPC处理器
     ipcMain.handle('plugin:window:open-config', async (_event, pluginId: string) => {
@@ -371,7 +372,9 @@ export class PluginSystemManager {
    * @param pluginId 插件ID
    * @returns 窗口创建结果
    */
-  private async openConfigWindow(pluginId: string): Promise<{ success: boolean; windowId?: number; error?: string }> {
+  private async openConfigWindow(
+    pluginId: string
+  ): Promise<{ success: boolean; windowId?: number; error?: string }> {
     try {
       // 检查是否已经有该插件的配置窗口
       if (this.configWindows.has(pluginId)) {
@@ -386,8 +389,8 @@ export class PluginSystemManager {
       }
 
       // 获取主窗口作为父窗口
-      const mainWindow = BrowserWindow.getAllWindows().find(win => !win.isDestroyed())
-      
+      const mainWindow = BrowserWindow.getAllWindows().find((win) => !win.isDestroyed())
+
       // 创建配置窗口
       const configWindow = new BrowserWindow({
         width: 800,
@@ -423,7 +426,9 @@ export class PluginSystemManager {
       // 加载配置页面
       if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
         // 开发环境：加载开发服务器的配置页面
-        await configWindow.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/#/plugin-config/${pluginId}`)
+        await configWindow.loadURL(
+          `${process.env['ELECTRON_RENDERER_URL']}/#/plugin-config/${pluginId}`
+        )
       } else {
         // 生产环境：加载打包后的配置页面
         await configWindow.loadFile(join(__dirname, '../renderer/index.html'), {
@@ -443,9 +448,9 @@ export class PluginSystemManager {
       return { success: true, windowId: configWindow.id }
     } catch (error) {
       logger.error(`创建插件配置窗口失败: ${pluginId}`, error)
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : String(error) 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error)
       }
     }
   }
@@ -462,33 +467,33 @@ export class PluginSystemManager {
             // 解析请求URL
             const url = new URL(req.url || '/', 'http://localhost')
             const pathname = url.pathname
-            
+
             // 安全检查：只允许访问extensions目录下的文件
             if (!pathname.startsWith('/extensions/')) {
               res.writeHead(404, { 'Content-Type': 'text/plain' })
               res.end('Not Found')
               return
             }
-            
+
             // 构建文件路径
             const relativePath = pathname.substring(1) // 移除开头的 '/'
-            
+
             // 在开发环境中使用process.cwd()，在生产环境中使用process.resourcesPath
             const isDev = process.env.NODE_ENV === 'development'
             const appPath = isDev ? process.cwd() : process.resourcesPath
             const filePath = path.join(appPath, relativePath)
-            
+
             // 安全检查：确保文件路径在extensions目录内
             const extensionsDir = path.join(appPath, 'extensions')
             const resolvedPath = path.resolve(filePath)
             const resolvedExtensionsDir = path.resolve(extensionsDir)
-            
+
             if (!resolvedPath.startsWith(resolvedExtensionsDir)) {
               res.writeHead(403, { 'Content-Type': 'text/plain' })
               res.end('Forbidden')
               return
             }
-            
+
             // 检查文件是否存在
             const stats = await stat(resolvedPath)
             if (!stats.isFile()) {
@@ -496,10 +501,10 @@ export class PluginSystemManager {
               res.end('Not Found')
               return
             }
-            
+
             // 读取文件内容
             const content = await readFile(resolvedPath)
-            
+
             // 设置正确的Content-Type
             const ext = path.extname(resolvedPath).toLowerCase()
             let contentType = 'text/plain'
@@ -527,7 +532,7 @@ export class PluginSystemManager {
                 contentType = 'image/svg+xml; charset=utf-8'
                 break
             }
-            
+
             // 设置CORS头部以允许跨域访问
             res.writeHead(200, {
               'Content-Type': contentType,
@@ -536,14 +541,13 @@ export class PluginSystemManager {
               'Access-Control-Allow-Headers': 'Content-Type'
             })
             res.end(content)
-            
           } catch (error) {
             logger.error('Extension server request error:', error)
             res.writeHead(500, { 'Content-Type': 'text/plain' })
             res.end('Internal Server Error')
           }
         })
-        
+
         // 监听随机端口
         this.extensionServer.listen(0, 'localhost', () => {
           const address = this.extensionServer.address()
@@ -551,12 +555,11 @@ export class PluginSystemManager {
           logger.info(`扩展文件服务器已启动，端口: ${this.extensionServerPort}`)
           resolve()
         })
-        
+
         this.extensionServer.on('error', (error: Error) => {
           logger.error('Extension server error:', error)
           reject(error)
         })
-        
       } catch (error) {
         logger.error('Failed to start extension server:', error)
         reject(error)
@@ -571,7 +574,7 @@ export class PluginSystemManager {
     if (this.extensionServerPort === 0) {
       throw new Error('Extension server not started')
     }
-    
+
     // 从扩展路径中提取扩展ID
     const extensionId = path.basename(extensionPath)
     const url = `http://localhost:${this.extensionServerPort}/extensions/${extensionId}/${relativePath}`
@@ -584,7 +587,7 @@ export class PluginSystemManager {
   public async shutdown(): Promise<void> {
     try {
       logger.info('开始关闭插件系统...')
-      
+
       // 关闭扩展文件服务器
       if (this.extensionServer) {
         this.extensionServer.close()
@@ -592,12 +595,12 @@ export class PluginSystemManager {
         this.extensionServerPort = 0
         logger.info('扩展文件服务器已关闭')
       }
-      
+
       // TODO: 实现停用所有扩展的逻辑
       // 目前只有单个扩展停用方法 deactivateExtension(extensionId)
-      
+
       // TODO: 实现清理资源的逻辑
-      
+
       this.isInitialized = false
       logger.info('插件系统关闭完成')
     } catch (error) {
@@ -625,7 +628,7 @@ export class PluginSystemManager {
     }
 
     // 获取主窗口作为父窗口
-    const mainWindow = BrowserWindow.getAllWindows().find(win => !win.isDestroyed())
+    const mainWindow = BrowserWindow.getAllWindows().find((win) => !win.isDestroyed())
 
     // 创建配置窗口
     const configWindow = new BrowserWindow({
@@ -679,10 +682,10 @@ export class PluginSystemManager {
     try {
       const configDir = path.join(app.getPath('userData'), 'plugin-configs')
       await mkdir(configDir, { recursive: true })
-      
+
       const configFile = path.join(configDir, `${pluginId}-display.json`)
       await writeFile(configFile, JSON.stringify(displayConfig, null, 2), 'utf-8')
-      
+
       logger.info(`插件 ${pluginId} 显示配置已保存`)
     } catch (error) {
       logger.error(`保存插件 ${pluginId} 显示配置失败:`, error)
@@ -697,7 +700,7 @@ export class PluginSystemManager {
     try {
       const configDir = path.join(app.getPath('userData'), 'plugin-configs')
       const configFile = path.join(configDir, `${pluginId}-display.json`)
-      
+
       const configData = await readFile(configFile, 'utf-8')
       return JSON.parse(configData)
     } catch (error: any) {
@@ -714,7 +717,7 @@ export class PluginSystemManager {
           alwaysOnTop: false
         }
       }
-      
+
       logger.error(`获取插件 ${pluginId} 显示配置失败:`, error)
       throw error
     }
@@ -723,7 +726,10 @@ export class PluginSystemManager {
   /**
    * 在新窗口中打开插件
    */
-  private async openPluginWindow(pluginId: string, windowOptions: any): Promise<{ success: boolean; windowId?: number; error?: string }> {
+  private async openPluginWindow(
+    pluginId: string,
+    windowOptions: any
+  ): Promise<{ success: boolean; windowId?: number; error?: string }> {
     try {
       // 获取插件信息
       const extension = this.vscodeStyleManager.getExtension(pluginId)
@@ -736,8 +742,8 @@ export class PluginSystemManager {
       const config = { ...displayConfig, ...windowOptions }
 
       // 获取主窗口作为父窗口
-      const mainWindow = BrowserWindow.getAllWindows().find(win => !win.isDestroyed())
-      
+      const mainWindow = BrowserWindow.getAllWindows().find((win) => !win.isDestroyed())
+
       // 创建插件窗口
       const pluginWindow = new BrowserWindow({
         width: config.windowWidth || 800,
@@ -770,7 +776,9 @@ export class PluginSystemManager {
 
       // 加载插件页面（使用独立的插件窗口路由，不包含主布局）
       if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-        await pluginWindow.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/#/plugin-window/${pluginId}`)
+        await pluginWindow.loadURL(
+          `${process.env['ELECTRON_RENDERER_URL']}/#/plugin-window/${pluginId}`
+        )
       } else {
         await pluginWindow.loadFile(join(__dirname, '../renderer/index.html'), {
           hash: `/plugin-window/${pluginId}`
@@ -781,9 +789,9 @@ export class PluginSystemManager {
       return { success: true, windowId: pluginWindow.id }
     } catch (error) {
       logger.error(`创建插件窗口失败: ${pluginId}`, error)
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : String(error) 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error)
       }
     }
   }

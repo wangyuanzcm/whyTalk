@@ -9,7 +9,7 @@
  */
 export const createExtensionInfoPage = (extensionData: any): string => {
   const { manifest } = extensionData
-  
+
   // 获取扩展基本信息
   const name = manifest?.displayName || manifest?.name || '未知扩展'
   const description = manifest?.description || '暂无描述'
@@ -23,7 +23,7 @@ export const createExtensionInfoPage = (extensionData: any): string => {
   const categories = manifest?.categories || []
   const activationEvents = manifest?.activationEvents || []
   const contributes = manifest?.contributes || {}
-  
+
   // 生成HTML内容
   return `
 <!DOCTYPE html>
@@ -285,54 +285,80 @@ export const createExtensionInfoPage = (extensionData: any): string => {
                         <div class="label">版本</div>
                         <div class="value">${version}</div>
                     </div>
-                    ${license ? `
+                    ${
+                      license
+                        ? `
                     <div class="info-item">
                         <div class="label">许可证</div>
                         <div class="value">${license}</div>
                     </div>
-                    ` : ''}
+                    `
+                        : ''
+                    }
                 </div>
                 
-                ${repository || homepage ? `
+                ${
+                  repository || homepage
+                    ? `
                 <div class="links">
                     ${repository ? `<a href="${repository}" class="link" target="_blank">源代码仓库</a>` : ''}
                     ${homepage ? `<a href="${homepage}" class="link" target="_blank">主页</a>` : ''}
                 </div>
-                ` : ''}
+                `
+                    : ''
+                }
             </div>
             
-            ${description ? `
+            ${
+              description
+                ? `
             <div class="section">
                 <h2>描述</h2>
                 <div class="description">
                     ${description}
                 </div>
             </div>
-            ` : ''}
+            `
+                : ''
+            }
             
-            ${categories.length > 0 || keywords.length > 0 ? `
+            ${
+              categories.length > 0 || keywords.length > 0
+                ? `
             <div class="section">
                 <h2>分类和标签</h2>
-                ${categories.length > 0 ? `
+                ${
+                  categories.length > 0
+                    ? `
                 <div>
                     <strong>分类：</strong>
                     <div class="tags">
                         ${categories.map((cat: string) => `<span class="tag category">${cat}</span>`).join('')}
                     </div>
                 </div>
-                ` : ''}
-                ${keywords.length > 0 ? `
+                `
+                    : ''
+                }
+                ${
+                  keywords.length > 0
+                    ? `
                 <div style="margin-top: 15px;">
                     <strong>关键词：</strong>
                     <div class="tags">
                         ${keywords.map((keyword: string) => `<span class="tag">${keyword}</span>`).join('')}
                     </div>
                 </div>
-                ` : ''}
+                `
+                    : ''
+                }
             </div>
-            ` : ''}
+            `
+                : ''
+            }
             
-            ${activationEvents.length > 0 ? `
+            ${
+              activationEvents.length > 0
+                ? `
             <div class="section">
                 <h2>激活事件</h2>
                 <div class="activation-events">
@@ -342,24 +368,34 @@ export const createExtensionInfoPage = (extensionData: any): string => {
                     </ul>
                 </div>
             </div>
-            ` : ''}
+            `
+                : ''
+            }
             
-            ${Object.keys(contributes).length > 0 ? `
+            ${
+              Object.keys(contributes).length > 0
+                ? `
             <div class="section">
                 <h2>功能贡献</h2>
                 <div class="contributes-section">
                     ${generateContributesHTML(contributes)}
                 </div>
             </div>
-            ` : ''}
+            `
+                : ''
+            }
             
-            ${Object.keys(contributes).length === 0 && activationEvents.length === 0 ? `
+            ${
+              Object.keys(contributes).length === 0 && activationEvents.length === 0
+                ? `
             <div class="section">
                 <div class="no-data">
                     此扩展暂未提供详细的功能说明
                 </div>
             </div>
-            ` : ''}
+            `
+                : ''
+            }
         </div>
     </div>
     
@@ -395,7 +431,7 @@ export const createExtensionInfoPage = (extensionData: any): string => {
 </body>
 </html>
 `
-    }
+}
 
 /**
  * 生成贡献功能的HTML
@@ -404,25 +440,29 @@ export const createExtensionInfoPage = (extensionData: any): string => {
  */
 function generateContributesHTML(contributes: any): string {
   const sections: string[] = []
-  
+
   // 命令贡献
   if (contributes.commands && Array.isArray(contributes.commands)) {
     sections.push(`
       <div class="contributes-item">
         <h4>命令 (${contributes.commands.length})</h4>
         <ul class="contributes-list">
-          ${contributes.commands.map((cmd: any) => `
+          ${contributes.commands
+            .map(
+              (cmd: any) => `
             <li>
               <strong>${cmd.title || cmd.command}</strong>
               ${cmd.command ? `<br><code>${cmd.command}</code>` : ''}
               ${cmd.category ? `<br><small>分类: ${cmd.category}</small>` : ''}
             </li>
-          `).join('')}
+          `
+            )
+            .join('')}
         </ul>
       </div>
     `)
   }
-  
+
   // 菜单贡献
   if (contributes.menus && typeof contributes.menus === 'object') {
     const menuTypes = Object.keys(contributes.menus)
@@ -430,97 +470,126 @@ function generateContributesHTML(contributes: any): string {
       <div class="contributes-item">
         <h4>菜单</h4>
         <ul class="contributes-list">
-          ${menuTypes.map(menuType => `
+          ${menuTypes
+            .map(
+              (menuType) => `
             <li>
               <strong>${menuType}</strong> (${contributes.menus[menuType].length} 项)
             </li>
-          `).join('')}
+          `
+            )
+            .join('')}
         </ul>
       </div>
     `)
   }
-  
+
   // 键绑定贡献
   if (contributes.keybindings && Array.isArray(contributes.keybindings)) {
     sections.push(`
       <div class="contributes-item">
         <h4>键绑定 (${contributes.keybindings.length})</h4>
         <ul class="contributes-list">
-          ${contributes.keybindings.map((kb: any) => `
+          ${contributes.keybindings
+            .map(
+              (kb: any) => `
             <li>
               <strong>${kb.key || kb.mac || kb.win || kb.linux}</strong>
               ${kb.command ? ` → ${kb.command}` : ''}
               ${kb.when ? `<br><small>条件: ${kb.when}</small>` : ''}
             </li>
-          `).join('')}
+          `
+            )
+            .join('')}
         </ul>
       </div>
     `)
   }
-  
+
   // 语言贡献
   if (contributes.languages && Array.isArray(contributes.languages)) {
     sections.push(`
       <div class="contributes-item">
         <h4>语言支持 (${contributes.languages.length})</h4>
         <ul class="contributes-list">
-          ${contributes.languages.map((lang: any) => `
+          ${contributes.languages
+            .map(
+              (lang: any) => `
             <li>
               <strong>${lang.aliases ? lang.aliases[0] : lang.id}</strong>
               ${lang.extensions ? `<br><small>文件扩展名: ${lang.extensions.join(', ')}</small>` : ''}
             </li>
-          `).join('')}
+          `
+            )
+            .join('')}
         </ul>
       </div>
     `)
   }
-  
+
   // 配置贡献
-  if (contributes.configuration && (contributes.configuration.properties || contributes.configuration.length)) {
-    const properties = contributes.configuration.properties || 
-                      (Array.isArray(contributes.configuration) ? contributes.configuration[0]?.properties : {})
+  if (
+    contributes.configuration &&
+    (contributes.configuration.properties || contributes.configuration.length)
+  ) {
+    const properties =
+      contributes.configuration.properties ||
+      (Array.isArray(contributes.configuration) ? contributes.configuration[0]?.properties : {})
     const propCount = properties ? Object.keys(properties).length : 0
-    
+
     sections.push(`
       <div class="contributes-item">
         <h4>配置项 (${propCount})</h4>
-        ${propCount > 0 ? `
+        ${
+          propCount > 0
+            ? `
           <ul class="contributes-list">
-            ${Object.entries(properties).slice(0, 5).map(([key, prop]: [string, any]) => `
+            ${Object.entries(properties)
+              .slice(0, 5)
+              .map(
+                ([key, prop]: [string, any]) => `
               <li>
                 <strong>${key}</strong>
                 ${prop.description ? `<br><small>${prop.description}</small>` : ''}
                 ${prop.type ? `<br><small>类型: ${prop.type}</small>` : ''}
               </li>
-            `).join('')}
+            `
+              )
+              .join('')}
             ${propCount > 5 ? `<li><small>... 还有 ${propCount - 5} 个配置项</small></li>` : ''}
           </ul>
-        ` : '<p class="no-data">暂无配置项</p>'}
+        `
+            : '<p class="no-data">暂无配置项</p>'
+        }
       </div>
     `)
   }
-  
+
   // 其他贡献类型
-  const otherContributes = Object.keys(contributes).filter(key => 
-    !['commands', 'menus', 'keybindings', 'languages', 'configuration'].includes(key)
+  const otherContributes = Object.keys(contributes).filter(
+    (key) => !['commands', 'menus', 'keybindings', 'languages', 'configuration'].includes(key)
   )
-  
+
   if (otherContributes.length > 0) {
     sections.push(`
       <div class="contributes-item">
         <h4>其他功能</h4>
         <ul class="contributes-list">
-          ${otherContributes.map(key => `
+          ${otherContributes
+            .map(
+              (key) => `
             <li>
               <strong>${key}</strong>
               ${Array.isArray(contributes[key]) ? ` (${contributes[key].length} 项)` : ''}
             </li>
-          `).join('')}
+          `
+            )
+            .join('')}
         </ul>
       </div>
     `)
   }
-  
+
   return sections.length > 0 ? sections.join('') : '<p class="no-data">暂无功能贡献信息</p>'
 }
 
@@ -533,7 +602,10 @@ export const hasCustomWebview = async (extensionPath: string): Promise<boolean> 
   try {
     // 在渲染器进程中，需要通过 ipcRenderer 与主进程通信
     const { ipcRenderer } = await import('electron')
-    const result = await ipcRenderer.invoke('check-file-exists', extensionPath + '/webview/index.html')
+    const result = await ipcRenderer.invoke(
+      'check-file-exists',
+      extensionPath + '/webview/index.html'
+    )
     return result
   } catch (error) {
     console.warn('检查webview目录时出错:', error)

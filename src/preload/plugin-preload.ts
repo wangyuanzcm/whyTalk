@@ -1,22 +1,126 @@
 import { contextBridge, ipcRenderer } from 'electron'
 
+// 类型定义
+interface PluginInfo {
+  id: string
+  name: string
+  version: string
+  description?: string
+  author?: string
+  permissions?: string[]
+}
+
+interface SystemInfo {
+  platform: string
+  arch: string
+  version: string
+  memory: {
+    total: number
+    free: number
+  }
+  cpu: {
+    model: string
+    cores: number
+  }
+}
+
+interface FileSelectOptions {
+  title?: string
+  defaultPath?: string
+  filters?: Array<{
+    name: string
+    extensions: string[]
+  }>
+  properties?: string[]
+}
+
+interface DirectorySelectOptions {
+  title?: string
+  defaultPath?: string
+  properties?: string[]
+}
+
+interface NetworkRequestOptions {
+  method?: string
+  headers?: Record<string, string>
+  body?: string | FormData | URLSearchParams
+  timeout?: number
+}
+
+interface NetworkResponse {
+  status: number
+  statusText: string
+  headers: Record<string, string>
+  data: unknown
+}
+
+interface ImageData {
+  width: number
+  height: number
+  data: Buffer | Uint8Array
+  format?: string
+}
+
+interface PluginMessage {
+  type: string
+  data: unknown
+  timestamp?: number
+  source?: string
+}
+
+interface PluginExecuteResult {
+  success: boolean
+  result?: unknown
+  error?: string
+}
+
+interface PluginExportsResult {
+  success: boolean
+  exports?: string[]
+  error?: string
+}
+
+interface PluginInfoResult {
+  success: boolean
+  info?: PluginInfo
+  error?: string
+}
+
+interface UIConfig {
+  components?: unknown[]
+  layout?: unknown
+  theme?: Record<string, unknown>
+}
+
+interface UIConfigResult {
+  success: boolean
+  ui?: UIConfig
+  error?: string
+}
+
+interface ActionResult {
+  success: boolean
+  result?: unknown
+  error?: string
+}
+
 // 插件API接口定义
 interface PluginAPI {
   // 基础信息
-  getPluginInfo(): Promise<any>
+  getPluginInfo(): Promise<PluginInfo>
 
   // 权限管理
   requestPermission(permission: string): Promise<boolean>
   checkPermission(permission: string): Promise<boolean>
 
   // 消息通信
-  sendMessage(message: any): Promise<any>
-  onMessage(callback: (message: any) => void): void
+  sendMessage(message: PluginMessage): Promise<PluginMessage>
+  onMessage(callback: (message: PluginMessage) => void): void
 
   // 存储API
   storage: {
-    get(key: string): Promise<any>
-    set(key: string, value: any): Promise<void>
+    get(key: string): Promise<unknown>
+    set(key: string, value: unknown): Promise<void>
     remove(key: string): Promise<void>
     clear(): Promise<void>
   }
@@ -29,7 +133,7 @@ interface PluginAPI {
 
   // 系统API（需要权限）
   system: {
-    getInfo(): Promise<any>
+    getInfo(): Promise<SystemInfo>
     openExternal(url: string): Promise<void>
   }
 
@@ -38,13 +142,13 @@ interface PluginAPI {
     readText(path: string): Promise<string>
     writeText(path: string, content: string): Promise<void>
     exists(path: string): Promise<boolean>
-    selectFile(options?: any): Promise<string[]>
-    selectDirectory(options?: any): Promise<string>
+    selectFile(options?: FileSelectOptions): Promise<string[]>
+    selectDirectory(options?: DirectorySelectOptions): Promise<string>
   }
 
   // 网络API（需要权限）
   network: {
-    fetch(url: string, options?: any): Promise<any>
+    fetch(url: string, options?: NetworkRequestOptions): Promise<NetworkResponse>
     isOnline(): Promise<boolean>
   }
 
@@ -52,8 +156,8 @@ interface PluginAPI {
   clipboard: {
     readText(): Promise<string>
     writeText(text: string): Promise<void>
-    readImage(): Promise<any>
-    writeImage(image: any): Promise<void>
+    readImage(): Promise<ImageData>
+    writeImage(image: ImageData): Promise<void>
   }
 
   // 窗口控制
@@ -68,16 +172,16 @@ interface PluginAPI {
 
   // 系统插件API
   systemPlugins: {
-    execute(pluginId: string, functionName: string, input?: any): Promise<any>
+    execute(pluginId: string, functionName: string, input?: unknown): Promise<unknown>
     getExports(pluginId: string): Promise<string[]>
-    getInfo(pluginId: string): Promise<any>
+    getInfo(pluginId: string): Promise<PluginInfo>
     reload(pluginId: string): Promise<boolean>
   }
 
   // UI配置API
   ui: {
-    getConfig(pluginId: string): Promise<any>
-    executeAction(pluginId: string, actionName: string, params?: any): Promise<any>
+    getConfig(pluginId: string): Promise<UIConfig>
+    executeAction(pluginId: string, actionName: string, params?: unknown): Promise<unknown>
   }
 }
 
@@ -98,11 +202,11 @@ const pluginAPI: PluginAPI = {
   },
 
   // 消息通信
-  async sendMessage(message: any) {
+  async sendMessage(message: PluginMessage) {
     return await ipcRenderer.invoke('plugin:message:send', message)
   },
 
-  onMessage(callback: (message: any) => void) {
+  onMessage(callback: (message: PluginMessage) => void) {
     ipcRenderer.on('plugin:message:receive', (_, message) => {
       callback(message)
     })
@@ -114,7 +218,7 @@ const pluginAPI: PluginAPI = {
       return await ipcRenderer.invoke('plugin:storage:get', key)
     },
 
-    async set(key: string, value: any) {
+    async set(key: string, value: unknown) {
       await ipcRenderer.invoke('plugin:storage:set', key, value)
     },
 
@@ -175,18 +279,18 @@ const pluginAPI: PluginAPI = {
       return await ipcRenderer.invoke('plugin:files:exists', path)
     },
 
-    async selectFile(options?: any) {
+    async selectFile(options?: FileSelectOptions) {
       return await ipcRenderer.invoke('plugin:files:select-file', options)
     },
 
-    async selectDirectory(options?: any) {
+    async selectDirectory(options?: DirectorySelectOptions) {
       return await ipcRenderer.invoke('plugin:files:select-directory', options)
     }
   },
 
   // 网络API
   network: {
-    async fetch(url: string, options?: any) {
+    async fetch(url: string, options?: NetworkRequestOptions) {
       const hasPermission = await ipcRenderer.invoke('plugin:permission:check', 'network:access')
       if (!hasPermission) {
         throw new Error('Permission denied: network:access')
@@ -225,7 +329,7 @@ const pluginAPI: PluginAPI = {
       return await ipcRenderer.invoke('plugin:clipboard:read-image')
     },
 
-    async writeImage(image: any) {
+    async writeImage(image: ImageData) {
       const hasPermission = await ipcRenderer.invoke('plugin:permission:check', 'clipboard')
       if (!hasPermission) {
         throw new Error('Permission denied: clipboard')
@@ -263,7 +367,7 @@ const pluginAPI: PluginAPI = {
 
   // 系统插件API
   systemPlugins: {
-    async execute(pluginId: string, functionName: string, input?: any) {
+    async execute(pluginId: string, functionName: string, input?: unknown) {
       try {
         const result = await ipcRenderer.invoke('plugin:execute', pluginId, functionName, input)
         return result
@@ -276,9 +380,12 @@ const pluginAPI: PluginAPI = {
 
     async getExports(pluginId: string) {
       try {
-        const result = await ipcRenderer.invoke('plugin:system:exports', pluginId)
+        const result: PluginExportsResult = await ipcRenderer.invoke(
+          'plugin:system:exports',
+          pluginId
+        )
         if (result.success) {
-          return result.exports
+          return result.exports || []
         } else {
           throw new Error(result.error)
         }
@@ -291,11 +398,11 @@ const pluginAPI: PluginAPI = {
 
     async getInfo(pluginId: string) {
       try {
-        const result = await ipcRenderer.invoke('plugin:system:info', pluginId)
-        if (result.success) {
+        const result: PluginInfoResult = await ipcRenderer.invoke('plugin:system:info', pluginId)
+        if (result.success && result.info) {
           return result.info
         } else {
-          throw new Error(result.error)
+          throw new Error(result.error || 'Failed to get plugin info')
         }
       } catch (error) {
         throw new Error(
@@ -333,7 +440,7 @@ const pluginAPI: PluginAPI = {
       }
     },
 
-    async executeAction(pluginId: string, actionName: string, params?: any) {
+    async executeAction(pluginId: string, actionName: string, params?: unknown) {
       try {
         const result = await ipcRenderer.invoke(
           'plugin:ui:execute-action',
@@ -356,8 +463,8 @@ const pluginAPI: PluginAPI = {
 }
 
 // 错误处理包装器
-function wrapWithErrorHandling<T extends (...args: any[]) => any>(fn: T): T {
-  return ((...args: any[]) => {
+function wrapWithErrorHandling<T extends (...args: unknown[]) => unknown>(fn: T): T {
+  return ((...args: unknown[]) => {
     try {
       const result = fn(...args)
       if (result instanceof Promise) {
@@ -375,12 +482,12 @@ function wrapWithErrorHandling<T extends (...args: any[]) => any>(fn: T): T {
 }
 
 // 包装所有API方法以添加错误处理
-function wrapAPIWithErrorHandling(api: any): any {
-  const wrapped: any = {}
+function wrapAPIWithErrorHandling(api: Record<string, unknown>): Record<string, unknown> {
+  const wrapped: Record<string, unknown> = {}
 
   for (const [key, value] of Object.entries(api)) {
     if (typeof value === 'function') {
-      wrapped[key] = wrapWithErrorHandling(value as (...args: any[]) => any)
+      wrapped[key] = wrapWithErrorHandling(value as (...args: unknown[]) => unknown)
     } else if (typeof value === 'object' && value !== null) {
       wrapped[key] = wrapAPIWithErrorHandling(value)
     } else {
@@ -412,8 +519,8 @@ if (process.contextIsolated) {
   }
 } else {
   // 非隔离上下文（不推荐，但作为后备）
-  ;(window as any).pluginAPI = wrapAPIWithErrorHandling(pluginAPI)
-  ;(window as any).electron = {
+  ;(window as Record<string, unknown>).pluginAPI = wrapAPIWithErrorHandling(pluginAPI)
+  ;(window as Record<string, unknown>).electron = {
     ipcRenderer: {
       invoke: ipcRenderer.invoke.bind(ipcRenderer),
       send: ipcRenderer.send.bind(ipcRenderer),

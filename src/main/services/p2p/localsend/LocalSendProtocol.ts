@@ -32,12 +32,14 @@ export class LocalSendProtocol extends EventEmitter {
   private peers: Map<string, LocalSendPeer> = new Map()
   private device: LocalSendDevice
   private port: number
+  private enableBroadcast: boolean
   // private _useHttps: boolean = false
   // private _tlsKey: string = ''
   // private _tlsCert: string = ''
 
-  constructor(alias: string = 'WhyTalk', port: number = 0) {
+  constructor(alias: string = 'WhyTalk', port: number = 0, enableBroadcast: boolean = true) {
     super()
+    this.enableBroadcast = enableBroadcast
     this.port = port || this.DEFAULT_PORT
     this.device = {
       alias,
@@ -248,7 +250,6 @@ export class LocalSendProtocol extends EventEmitter {
     //     format: 'pem'
     //   }
     // })
-
     // this._tlsKey = privateKey
     // 简化的证书生成，实际应用中应该使用更完整的证书生成逻辑
     // this._tlsCert = publicKey
@@ -300,8 +301,13 @@ export class LocalSendProtocol extends EventEmitter {
           this.udpSocket?.setMulticastTTL(1)
           this.udpSocket?.setMulticastLoopback(false)
 
-          // 开始定期广播
-          this.startAnnouncement()
+          // 只有在启用广播时才开始定期广播
+          if (this.enableBroadcast) {
+            this.startAnnouncement()
+            console.log('LocalSend protocol broadcast enabled')
+          } else {
+            console.log('LocalSend protocol broadcast disabled')
+          }
 
           console.log(
             `LocalSend discovery listening on ${this.MULTICAST_GROUP}:${this.MULTICAST_PORT}`
@@ -350,7 +356,7 @@ export class LocalSendProtocol extends EventEmitter {
    * 广播设备信息
    */
   private announceDevice(): void {
-    if (!this.udpSocket) return
+    if (!this.udpSocket || !this.enableBroadcast) return
 
     const announcement = {
       alias: this.device.alias,

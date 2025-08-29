@@ -63,4 +63,6 @@ export const ServUserDetail = createIpcApi<EmptyRequest, ServUserDetailResponse>
 )
 
 // 获取用户设置信息服务接口
-export const ServeUserSetting = createIpcApi<EmptyRequest, any>('/api/v1/user/setting')
+export const ServeUserSetting = createIpcApi<EmptyRequest, Record<string, unknown>>(
+  '/api/v1/user/setting'
+)

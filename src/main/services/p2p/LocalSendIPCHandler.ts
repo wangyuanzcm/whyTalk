@@ -195,7 +195,7 @@ export class LocalSendIPCHandler {
       try {
         const contacts = await localSendP2PManager.getDiscoveredPeers()
         // 简单的搜索过滤
-        const filtered = contacts.filter((contact: any) => 
+        const filtered = contacts.filter((contact: any) =>
           contact.alias?.toLowerCase().includes(params.query?.toLowerCase() || '')
         )
         return { success: true, data: filtered }
@@ -311,9 +311,7 @@ export class LocalSendIPCHandler {
       try {
         const messages = await localSendP2PManager.getMessageHistory()
         // 过滤特定联系人的消息
-        const filtered = messages.filter((msg: any) => 
-          msg.peerId === params.peerId
-        )
+        const filtered = messages.filter((msg: any) => msg.peerId === params.peerId)
         return { success: true, data: filtered }
       } catch (error) {
         console.error('Failed to get LocalSend chat history:', error)
@@ -379,7 +377,7 @@ export class LocalSendIPCHandler {
         const activePeers = allPeers.filter((peer: any) => {
           const lastSeen = new Date(peer.lastSeen).getTime()
           const now = Date.now()
-          return (now - lastSeen) < 30000 // 30秒内视为"连接"状态
+          return now - lastSeen < 30000 // 30秒内视为"连接"状态
         })
         return { success: true, data: activePeers }
       } catch (error) {
@@ -459,7 +457,7 @@ export class LocalSendIPCHandler {
     // 移除所有 IPC 处理器
     const handlers = [
       'p2p:start',
-      'p2p:stop', 
+      'p2p:stop',
       'p2p:status',
       'p2p:refresh',
       'p2p:peers',
@@ -473,7 +471,7 @@ export class LocalSendIPCHandler {
       'p2p:save-settings'
     ]
 
-    handlers.forEach(handler => {
+    handlers.forEach((handler) => {
       ipcMain.removeAllListeners(handler)
     })
 

@@ -27,7 +27,7 @@ export class UploadService {
     if (this.isInitialized) {
       return
     }
-    
+
     await this.ensureUploadDir()
     this.isInitialized = true
     console.log('UploadService initialized')
@@ -50,18 +50,18 @@ export class UploadService {
   async uploadFile(fileBuffer: Buffer, fileName: string): Promise<UploadResult> {
     try {
       await this.ensureUploadDir()
-      
+
       // 生成唯一文件名
       const timestamp = Date.now()
       const ext = path.extname(fileName)
       const baseName = path.basename(fileName, ext)
       const uniqueFileName = `${baseName}_${timestamp}${ext}`
-      
+
       const filePath = path.join(this.uploadDir, uniqueFileName)
-      
+
       // 写入文件
       await fs.writeFile(filePath, fileBuffer)
-      
+
       return {
         success: true,
         filePath,
@@ -85,19 +85,19 @@ export class UploadService {
   async uploadFromStream(stream: Readable, fileName: string): Promise<UploadResult> {
     try {
       await this.ensureUploadDir()
-      
+
       // 生成唯一文件名
       const timestamp = Date.now()
       const ext = path.extname(fileName)
       const baseName = path.basename(fileName, ext)
       const uniqueFileName = `${baseName}_${timestamp}${ext}`
-      
+
       const filePath = path.join(this.uploadDir, uniqueFileName)
       const writeStream = createWriteStream(filePath)
-      
+
       // 使用 pipeline 处理流
       await pipeline(stream, writeStream)
-      
+
       return {
         success: true,
         filePath,
@@ -155,7 +155,7 @@ export class UploadService {
     try {
       await this.ensureUploadDir()
       const files = await fs.readdir(this.uploadDir)
-      return files.filter(file => {
+      return files.filter((file) => {
         // 过滤掉隐藏文件和目录
         return !file.startsWith('.')
       })
@@ -182,13 +182,13 @@ export class UploadService {
     try {
       await this.ensureUploadDir()
       const files = await fs.readdir(this.uploadDir)
-      const cutoffTime = Date.now() - (days * 24 * 60 * 60 * 1000)
+      const cutoffTime = Date.now() - days * 24 * 60 * 60 * 1000
       let cleanedCount = 0
 
       for (const file of files) {
         const filePath = path.join(this.uploadDir, file)
         const stats = await fs.stat(filePath)
-        
+
         if (stats.mtime.getTime() < cutoffTime) {
           await fs.unlink(filePath)
           cleanedCount++

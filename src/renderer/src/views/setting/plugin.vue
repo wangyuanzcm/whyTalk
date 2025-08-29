@@ -12,10 +12,14 @@ import {
   NSpace,
   NPopconfirm,
   NSelect,
+  NList,
+  NListItem,
+  NThing,
   useMessage
 } from 'naive-ui'
 import { Download, Delete, Setting } from '@icon-park/vue-next'
 import PluginAPI, { type PluginInfo } from '@/api/plugin'
+import npmPluginsConfig from '@/config/npm-plugins.json'
 
 const message = useMessage()
 
@@ -30,21 +34,34 @@ const installProgress = ref(0)
 const installStep = ref('')
 const installResult = ref<{ success: boolean; message: string } | null>(null)
 
-// 远程下载相关
+// 远程安装相关
 const showRemoteModal = ref(false)
-const showNpmModal = ref(false)
 const remoteForm = reactive({
   url: '',
   name: '',
-  description: '',
-  npmRegistry: 'https://registry.npmjs.org/'
+  description: ''
 })
 
-// npm安装相关
-const npmForm = reactive({
-  packageName: '',
-  npmRegistry: 'https://registry.npmjs.org/'
-})
+// NPM插件列表相关
+interface NpmPluginConfig {
+  id: string
+  name: string
+  description: string
+  packageName: string
+  version: string
+  author: string
+  category: string
+  tags: string[]
+}
+
+const npmPluginsList = ref<NpmPluginConfig[]>(npmPluginsConfig.npmPlugins)
+const selectedNpmRegistry = ref('https://registry.npmjs.org/')
+const installingPluginId = ref<string | null>(null)
+
+// 远程插件配置相关
+const remoteConfigUrl = ref('')
+const loadingRemoteConfig = ref(false)
+const showConfigUrlModal = ref(false)
 
 // npm源预设
 const npmRegistries = [
@@ -200,25 +217,53 @@ const installLocalPlugin = async (filePath: string) => {
   }
 }
 
-// 远程安装插件
-const installFromRemote = async () => {
-  if (!remoteForm.url) {
-    message.error('请输入下载地址')
+/**
+ * 从远程URL加载插件配置
+ */
+const loadRemotePluginConfig = async () => {
+  if (!remoteConfigUrl.value) {
+    message.error('请输入远程配置URL')
     return
   }
 
-  uploadLoading.value = true
+  loadingRemoteConfig.value = true
   try {
-    const result = await PluginAPI.installRemotePlugin(remoteForm.url, remoteForm.npmRegistry)
+    const response = await fetch(remoteConfigUrl.value)
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+    }
+
+    const configData = await response.json()
+    if (configData.npmPlugins && Array.isArray(configData.npmPlugins)) {
+      npmPluginsList.value = configData.npmPlugins
+      message.success(`成功加载 ${configData.npmPlugins.length} 个插件配置`)
+      showConfigUrlModal.value = false
+    } else {
+      message.error('远程配置格式不正确，缺少 npmPlugins 数组')
+    }
+  } catch (error: any) {
+    message.error(`加载远程配置失败: ${error.message}`)
+  } finally {
+    loadingRemoteConfig.value = false
+  }
+}
+
+/**
+ * 重置为本地配置
+ */
+const resetToLocalConfig = () => {
+  npmPluginsList.value = npmPluginsConfig.npmPlugins
+  message.success('已重置为本地配置')
+}
+
+// 从NPM插件列表安装插件
+const installNpmPlugin = async (plugin: NpmPluginConfig) => {
+  installingPluginId.value = plugin.id
+  try {
+    const result = await PluginAPI.installNpmPlugin(plugin.packageName, selectedNpmRegistry.value)
     if (result.success) {
-      message.success('插件安装成功')
+      message.success(`插件 ${plugin.name} 安装成功`)
       showRemoteModal.value = false
-      Object.assign(remoteForm, {
-        url: '',
-        name: '',
-        description: '',
-        npmRegistry: 'https://registry.npmjs.org/'
-      })
       await loadInstalledPlugins()
     } else {
       message.error(result.error || '安装失败')
@@ -226,24 +271,28 @@ const installFromRemote = async () => {
   } catch (error: any) {
     message.error(`安装失败: ${error.message}`)
   } finally {
-    uploadLoading.value = false
+    installingPluginId.value = null
   }
 }
 
-// npm包安装插件
-const installFromNpm = async () => {
-  if (!npmForm.packageName) {
-    message.error('请输入npm包名')
+// 从URL安装插件
+const installFromUrl = async () => {
+  if (!remoteForm.url) {
+    message.error('请输入下载地址')
     return
   }
 
   uploadLoading.value = true
   try {
-    const result = await PluginAPI.installNpmPlugin(npmForm.packageName, npmForm.npmRegistry)
+    const result = await PluginAPI.installRemotePlugin(remoteForm.url, selectedNpmRegistry.value)
     if (result.success) {
       message.success('插件安装成功')
-      showNpmModal.value = false
-      Object.assign(npmForm, { packageName: '', npmRegistry: 'https://registry.npmjs.org/' })
+      showRemoteModal.value = false
+      Object.assign(remoteForm, {
+        url: '',
+        name: '',
+        description: ''
+      })
       await loadInstalledPlugins()
     } else {
       message.error(result.error || '安装失败')
@@ -320,17 +369,11 @@ onMounted(() => {
           </template>
           本地安装
         </n-button>
-        <n-button type="info" @click="showRemoteModal = true">
+        <n-button type="primary" @click="showRemoteModal = true">
           <template #icon>
             <Download />
           </template>
           远程安装
-        </n-button>
-        <n-button type="success" @click="showNpmModal = true">
-          <template #icon>
-            <Download />
-          </template>
-          NPM安装
         </n-button>
         <n-button :loading="loading" @click="loadInstalledPlugins"> 刷新列表 </n-button>
       </n-space>
@@ -450,62 +493,127 @@ onMounted(() => {
     </n-modal>
 
     <!-- 远程安装模态框 -->
-    <n-modal v-model:show="showRemoteModal" preset="dialog" title="远程安装插件">
-      <n-form :model="remoteForm" label-placement="left" label-width="80px">
-        <n-form-item label="下载地址" required>
-          <n-input v-model:value="remoteForm.url" placeholder="请输入插件tgz文件的下载地址" />
-        </n-form-item>
-        <n-form-item label="NPM源">
+    <n-modal v-model:show="showRemoteModal" preset="card" title="远程安装插件" style="width: 800px">
+      <n-space vertical size="large">
+        <!-- 配置管理 -->
+        <div>
+          <h4 style="margin-bottom: 16px">配置管理</h4>
+          <n-space>
+            <n-button type="info" @click="showConfigUrlModal = true"> 配置远程URL </n-button>
+            <n-button @click="resetToLocalConfig"> 重置为本地配置 </n-button>
+            <span style="color: #666; font-size: 12px">
+              当前插件数量: {{ npmPluginsList.length }}
+            </span>
+          </n-space>
+        </div>
+
+        <!-- NPM源选择 -->
+        <n-form-item label="NPM下载源">
           <n-select
-            v-model:value="remoteForm.npmRegistry"
+            v-model:value="selectedNpmRegistry"
             :options="npmRegistries"
             placeholder="选择NPM源"
           />
         </n-form-item>
-        <n-form-item label="插件名称">
-          <n-input v-model:value="remoteForm.name" placeholder="可选，插件显示名称" />
-        </n-form-item>
-        <n-form-item label="插件描述">
-          <n-input
-            v-model:value="remoteForm.description"
-            placeholder="可选，插件描述信息"
-            type="textarea"
-            :rows="3"
-          />
-        </n-form-item>
-      </n-form>
+
+        <!-- 可用NPM插件列表 -->
+        <div>
+          <h4 style="margin-bottom: 16px">可用NPM插件</h4>
+          <n-list bordered>
+            <n-list-item v-for="plugin in npmPluginsList" :key="plugin.id">
+              <n-thing>
+                <template #header>
+                  <n-space align="center">
+                    <span style="font-weight: 600">{{ plugin.name }}</span>
+                    <n-tag size="small" type="info">{{ plugin.category }}</n-tag>
+                    <n-tag v-for="tag in plugin.tags" :key="tag" size="small">{{ tag }}</n-tag>
+                  </n-space>
+                </template>
+                <template #description>
+                  <div style="margin-bottom: 8px">{{ plugin.description }}</div>
+                  <n-space size="small">
+                    <span style="color: #666">包名: {{ plugin.packageName }}</span>
+                    <span style="color: #666">版本: {{ plugin.version }}</span>
+                    <span style="color: #666">作者: {{ plugin.author }}</span>
+                  </n-space>
+                </template>
+                <template #action>
+                  <n-button
+                    type="primary"
+                    size="small"
+                    :loading="installingPluginId === plugin.id"
+                    @click="installNpmPlugin(plugin)"
+                  >
+                    安装
+                  </n-button>
+                </template>
+              </n-thing>
+            </n-list-item>
+          </n-list>
+        </div>
+
+        <!-- 自定义URL安装 -->
+        <div>
+          <h4 style="margin-bottom: 16px">自定义URL安装</h4>
+          <n-form :model="remoteForm" label-placement="left" label-width="auto">
+            <n-form-item label="下载地址" path="url">
+              <n-input v-model:value="remoteForm.url" placeholder="请输入插件下载地址" />
+            </n-form-item>
+            <n-form-item>
+              <n-button type="primary" :loading="uploadLoading" @click="installFromUrl">
+                从URL安装
+              </n-button>
+            </n-form-item>
+          </n-form>
+        </div>
+      </n-space>
+
       <template #action>
-        <n-space>
-          <n-button @click="showRemoteModal = false">取消</n-button>
-          <n-button type="primary" :loading="uploadLoading" @click="installFromRemote">
-            安装
-          </n-button>
-        </n-space>
+        <n-button @click="showRemoteModal = false">关闭</n-button>
       </template>
     </n-modal>
 
-    <!-- NPM安装模态框 -->
-    <n-modal v-model:show="showNpmModal" preset="dialog" title="NPM安装插件">
-      <n-form :model="npmForm" label-placement="left" label-width="80px">
-        <n-form-item label="包名" required>
+    <!-- 远程配置URL模态框 -->
+    <n-modal v-model:show="showConfigUrlModal" preset="dialog" title="配置远程插件列表">
+      <n-space vertical size="medium">
+        <div>
+          <p style="margin-bottom: 12px; color: #666">
+            输入远程JSON配置文件的URL地址，格式应包含 npmPlugins 数组。
+          </p>
           <n-input
-            v-model:value="npmForm.packageName"
-            placeholder="请输入npm包名，如：@scope/package-name"
+            v-model:value="remoteConfigUrl"
+            placeholder="https://example.com/plugins-config.json"
+            type="textarea"
+            :rows="3"
           />
-        </n-form-item>
-        <n-form-item label="NPM源">
-          <n-select
-            v-model:value="npmForm.npmRegistry"
-            :options="npmRegistries"
-            placeholder="选择NPM源"
-          />
-        </n-form-item>
-      </n-form>
+        </div>
+
+        <div style="background: #f5f5f5; padding: 12px; border-radius: 6px; font-size: 12px">
+          <strong>配置文件格式示例：</strong>
+          <pre style="margin: 8px 0; white-space: pre-wrap">
+{
+  "npmPlugins": [
+    {
+      "id": "plugin-1",
+      "name": "插件名称",
+      "description": "插件描述",
+      "packageName": "@scope/package-name",
+      "version": "latest",
+      "author": "作者",
+      "category": "分类",
+      "tags": ["标签1", "标签2"]
+    }
+  ]
+}</pre
+          >
+        </div>
+      </n-space>
+
       <template #action>
         <n-space>
-          <n-button @click="showNpmModal = false">取消</n-button>
-          <n-button type="primary" :loading="uploadLoading" @click="installFromNpm">
-            安装
+          <n-button @click="showConfigUrlModal = false">取消</n-button>
+          <n-button type="primary" :loading="loadingRemoteConfig" @click="loadRemotePluginConfig">
+            加载配置
           </n-button>
         </n-space>
       </template>

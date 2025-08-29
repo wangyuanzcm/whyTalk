@@ -1,6 +1,6 @@
 import * as auth from '@/utils/auth.ts'
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   status: number // http 状态码非200则处理失败
   code: number // 具体的业务错误码 200 表示成功
   message: string // 错误信息
@@ -20,7 +20,7 @@ export interface ApiOptions {
   successText?: string
   // 重试次数
   retry?: number
-  onSuccess?: Function
+  onSuccess?: () => void
 }
 
 let once = false
@@ -28,9 +28,9 @@ let once = false
 /**
  * 通过IPC发送API请求
  */
-export async function ipcApi<T = any>(
+export async function ipcApi<T = unknown>(
   uri: string,
-  params?: any,
+  params?: unknown,
   options?: ApiOptions
 ): Response<T> {
   if (options?.loading) options.loading.value = true
@@ -114,21 +114,21 @@ export async function ipcApi<T = any>(
 /**
  * GET请求（通过IPC）
  */
-export const ipcGet = (url: string, data: any = {}) => {
+export const ipcGet = (url: string, data: Record<string, unknown> = {}) => {
   return ipcApi(url, data)
 }
 
 /**
  * POST请求（通过IPC）
  */
-export const ipcPost = (url: string, data: any = {}) => {
+export const ipcPost = (url: string, data: Record<string, unknown> = {}) => {
   return ipcApi(url, data)
 }
 
 /**
  * 创建IPC API调用函数
  */
-export const createIpcApi = <R = any, T = any>(url: string) => {
+export const createIpcApi = <R = unknown, T = unknown>(url: string) => {
   return (data?: R, options?: ApiOptions): Response<T> => {
     return ipcApi(url, data, options)
   }
@@ -137,7 +137,7 @@ export const createIpcApi = <R = any, T = any>(url: string) => {
 /**
  * 文件上传（通过IPC）
  */
-export async function uploadFile(file: File, options?: ApiOptions): Promise<ApiResponse<any>> {
+export async function uploadFile(file: File, options?: ApiOptions): Promise<ApiResponse<unknown>> {
   if (options?.loading) options.loading.value = true
 
   try {
@@ -196,7 +196,7 @@ export async function uploadAnnex(
   file: File,
   articleId: number,
   options?: ApiOptions
-): Promise<ApiResponse<any>> {
+): Promise<ApiResponse<unknown>> {
   if (options?.loading) options.loading.value = true
 
   try {
@@ -258,7 +258,7 @@ export async function uploadMultipart(
   splitIndex: number,
   splitNum: number,
   options?: ApiOptions
-): Promise<ApiResponse<any>> {
+): Promise<ApiResponse<unknown>> {
   if (options?.loading) options.loading.value = true
 
   try {

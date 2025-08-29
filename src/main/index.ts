@@ -45,7 +45,7 @@ function createWindow(): BrowserWindow {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
-  
+
   return mainWindow
 }
 
@@ -80,24 +80,24 @@ app.whenReady().then(async () => {
   }
 
   const mainWindow = createWindow()
-  
+
   // 设置主窗口到更新服务
-    updaterService.setMainWindow(mainWindow)
-    
-    // 启动时自动检查更新（延迟执行，避免影响启动速度）
-    setTimeout(() => {
-      updaterService.autoCheckForUpdates().catch(error => {
-        console.error('Auto check for updates failed:', error)
-      })
-    }, 10000) // 启动后10秒检查更新
-    
-    // 在 macOS 平台，当应用被重新激活时
-    app.on('activate', function () {
-      if (BrowserWindow.getAllWindows().length === 0) {
-        const newWindow = createWindow()
-        updaterService.setMainWindow(newWindow)
-      }
+  updaterService.setMainWindow(mainWindow)
+
+  // 启动时自动检查更新（延迟执行，避免影响启动速度）
+  setTimeout(() => {
+    updaterService.autoCheckForUpdates().catch((error) => {
+      console.error('Auto check for updates failed:', error)
     })
+  }, 10000) // 启动后10秒检查更新
+
+  // 在 macOS 平台，当应用被重新激活时
+  app.on('activate', function () {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      const newWindow = createWindow()
+      updaterService.setMainWindow(newWindow)
+    }
+  })
 
   // 初始化插件系统
   try {
@@ -123,11 +123,11 @@ app.on('before-quit', async () => {
   try {
     // 导入插件系统
     const { pluginSystem } = await import('./plugin')
-    
+
     // 清理插件系统
     await pluginSystem.cleanup()
     console.log('Plugin system shut down successfully')
-    
+
     // 清理服务
     await serviceManager.shutdown()
     console.log('Services shut down successfully')

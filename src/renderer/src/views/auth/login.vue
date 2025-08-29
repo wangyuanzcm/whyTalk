@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { ref, reactive } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { ServAuthLogin } from '@/api/auth'
 import { setToken } from '@/utils/auth.ts'
 
@@ -154,7 +156,7 @@ const onClickAccount = (type: number) => {
       </div>
     </main>
 
-    <footer class="el-footer" style="height: 140px">
+    <footer class="el-footer" style="height: 80px">
       <n-divider style="height: 30px; margin: 0">
         <span style="color: #ccc; font-weight: 300"> 测试账号</span>
       </n-divider>
@@ -165,7 +167,7 @@ const onClickAccount = (type: number) => {
         <p style="color: #67c23a; font-weight: bold" @click="onClickAccount(1)">
           ✓ Alice: 138****8001 / 密码: 123456 (可用)
         </p>
-        <p style="color: #67c23a; font-weight: bold" @click="onClickAccount(2)">
+        <!-- <p style="color: #67c23a; font-weight: bold" @click="onClickAccount(2)">
           ✓ Bob: 138****8002 / 密码: 123456 (可用)
         </p>
         <p style="color: #67c23a; font-weight: bold" @click="onClickAccount(3)">
@@ -173,7 +175,7 @@ const onClickAccount = (type: number) => {
         </p>
         <p style="color: #67c23a; font-weight: bold" @click="onClickAccount(4)">
           ✓ Diana: 138****8004 / 密码: 123456 (可用)
-        </p>
+        </p> -->
       </div>
     </footer>
   </section>

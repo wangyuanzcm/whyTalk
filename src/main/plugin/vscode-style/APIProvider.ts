@@ -35,25 +35,25 @@ interface CommandRegistration {
  */
 export class APIProvider extends EventEmitter {
   private static instance: APIProvider
-  
+
   /** 命令注册表 */
   private commands = new Map<string, CommandRegistration>()
-  
+
   /** 扩展上下文映射 */
   private extensionContexts = new Map<string, ExtensionContext>()
-  
+
   /** Webview面板映射 */
   private webviewPanels = new Map<string, WebviewPanel>()
-  
+
   /** Webview视图映射 */
   private webviewViews = new Map<string, WebviewView>()
-  
+
   /** 贡献点管理器 */
   // private contributionPointManager: ContributionPointManager
-  
+
   /** 激活事件管理器 */
   private activationEventManager: ActivationEventManager
-  
+
   /** 配置管理器 */
   private configurationManager: ConfigurationManager
 
@@ -80,31 +80,50 @@ export class APIProvider extends EventEmitter {
    */
   private setupIpcHandlers(): void {
     // 命令执行
-    ipcMain.handle('extension:executeCommand', async (_event, params: { extensionId: string, command: string, args: any[] }) => {
-      return this.executeCommand(params.command, ...params.args)
-    })
+    ipcMain.handle(
+      'extension:executeCommand',
+      async (_event, params: { extensionId: string; command: string; args: any[] }) => {
+        return this.executeCommand(params.command, ...params.args)
+      }
+    )
 
     // 获取配置
-    ipcMain.handle('extension:getConfiguration', async (_event, params: { extensionId: string, section?: string }) => {
-      return this.configurationManager.getConfiguration(params.extensionId, params.section)
-    })
+    ipcMain.handle(
+      'extension:getConfiguration',
+      async (_event, params: { extensionId: string; section?: string }) => {
+        return this.configurationManager.getConfiguration(params.extensionId, params.section)
+      }
+    )
 
     // 更新配置
-    ipcMain.handle('extension:updateConfiguration', async (_event, params: { extensionId: string, section: string, value: any, configurationTarget?: any }) => {
-      this.configurationManager.updateConfiguration(params.extensionId, params.section, params.value)
-      
-      // 返回一个简单的成功状态，不包含函数
-      return {
-        success: true,
-        section: params.section
+    ipcMain.handle(
+      'extension:updateConfiguration',
+      async (
+        _event,
+        params: { extensionId: string; section: string; value: any; configurationTarget?: any }
+      ) => {
+        this.configurationManager.updateConfiguration(
+          params.extensionId,
+          params.section,
+          params.value
+        )
+
+        // 返回一个简单的成功状态，不包含函数
+        return {
+          success: true,
+          section: params.section
+        }
       }
-    })
+    )
 
     // 注册配置架构
-    ipcMain.handle('extension:registerConfigSchema', async (_event, params: { extensionId: string, schema: any }) => {
-      this.configurationManager.registerConfigSchema(params.extensionId, params.schema)
-      return Promise.resolve()
-    })
+    ipcMain.handle(
+      'extension:registerConfigSchema',
+      async (_event, params: { extensionId: string; schema: any }) => {
+        this.configurationManager.registerConfigSchema(params.extensionId, params.schema)
+        return Promise.resolve()
+      }
+    )
 
     // 获取配置架构
     ipcMain.handle('extension:getConfigSchema', async (_event, params: { extensionId: string }) => {
@@ -112,19 +131,28 @@ export class APIProvider extends EventEmitter {
     })
 
     // 显示信息消息
-    ipcMain.handle('extension:showInformationMessage', async (_event, message: string, ...items: string[]) => {
-      return this.showInformationMessage(message, ...items)
-    })
+    ipcMain.handle(
+      'extension:showInformationMessage',
+      async (_event, message: string, ...items: string[]) => {
+        return this.showInformationMessage(message, ...items)
+      }
+    )
 
     // 显示警告消息
-    ipcMain.handle('extension:showWarningMessage', async (_event, message: string, ...items: string[]) => {
-      return this.showWarningMessage(message, ...items)
-    })
+    ipcMain.handle(
+      'extension:showWarningMessage',
+      async (_event, message: string, ...items: string[]) => {
+        return this.showWarningMessage(message, ...items)
+      }
+    )
 
     // 显示错误消息
-    ipcMain.handle('extension:showErrorMessage', async (_event, message: string, ...items: string[]) => {
-      return this.showErrorMessage(message, ...items)
-    })
+    ipcMain.handle(
+      'extension:showErrorMessage',
+      async (_event, message: string, ...items: string[]) => {
+        return this.showErrorMessage(message, ...items)
+      }
+    )
   }
 
   /**
@@ -143,7 +171,11 @@ export class APIProvider extends EventEmitter {
         /**
          * 注册命令
          */
-        registerCommand: (command: string, callback: (...args: any[]) => any, thisArg?: any): Disposable => {
+        registerCommand: (
+          command: string,
+          callback: (...args: any[]) => any,
+          thisArg?: any
+        ): Disposable => {
           return this.registerCommand(extensionId, command, callback, thisArg)
         },
 
@@ -167,7 +199,10 @@ export class APIProvider extends EventEmitter {
         /**
          * 显示信息消息
          */
-        showInformationMessage: (message: string, ...items: string[]): Thenable<string | undefined> => {
+        showInformationMessage: (
+          message: string,
+          ...items: string[]
+        ): Thenable<string | undefined> => {
           return this.showInformationMessage(message, ...items)
         },
 
@@ -188,7 +223,10 @@ export class APIProvider extends EventEmitter {
         /**
          * 显示快速选择
          */
-        showQuickPick: (items: string[] | Thenable<string[]>, options?: any): Thenable<string | undefined> => {
+        showQuickPick: (
+          items: string[] | Thenable<string[]>,
+          options?: any
+        ): Thenable<string | undefined> => {
           return this.showQuickPick(items, options)
         },
 
@@ -227,7 +265,10 @@ export class APIProvider extends EventEmitter {
          */
         withProgress: <R>(
           _options: ProgressOptions,
-          task: (progress: Progress<{ message?: string; increment?: number }>, token: CancellationToken) => Thenable<R>
+          task: (
+            progress: Progress<{ message?: string; increment?: number }>,
+            token: CancellationToken
+          ) => Thenable<R>
         ): Thenable<R> => {
           return this.withProgress(_options, task)
         },
@@ -365,7 +406,9 @@ export class APIProvider extends EventEmitter {
     // 如果命令已存在，先清理旧的注册
     if (this.commands.has(command)) {
       const existingRegistration = this.commands.get(command)
-      console.warn(`[APIProvider] 命令 '${command}' 已存在（来自扩展 ${existingRegistration?.extensionId}），将被扩展 ${extensionId} 覆盖`)
+      console.warn(
+        `[APIProvider] 命令 '${command}' 已存在（来自扩展 ${existingRegistration?.extensionId}），将被扩展 ${extensionId} 覆盖`
+      )
       this.commands.delete(command)
     }
 
@@ -414,7 +457,10 @@ export class APIProvider extends EventEmitter {
   /**
    * 显示信息消息
    */
-  private async showInformationMessage(_message: string, ..._items: string[]): Promise<string | undefined> {
+  private async showInformationMessage(
+    _message: string,
+    ..._items: string[]
+  ): Promise<string | undefined> {
     // TODO: 实现消息显示
     console.log(`[INFO] ${_message}`)
     return undefined
@@ -423,7 +469,10 @@ export class APIProvider extends EventEmitter {
   /**
    * 显示警告消息
    */
-  private async showWarningMessage(_message: string, ..._items: string[]): Promise<string | undefined> {
+  private async showWarningMessage(
+    _message: string,
+    ..._items: string[]
+  ): Promise<string | undefined> {
     // TODO: 实现消息显示
     console.warn(`[WARNING] ${_message}`)
     return undefined
@@ -432,7 +481,10 @@ export class APIProvider extends EventEmitter {
   /**
    * 显示错误消息
    */
-  private async showErrorMessage(_message: string, ..._items: string[]): Promise<string | undefined> {
+  private async showErrorMessage(
+    _message: string,
+    ..._items: string[]
+  ): Promise<string | undefined> {
     // TODO: 实现消息显示
     console.error(`[ERROR] ${_message}`)
     return undefined
@@ -441,7 +493,10 @@ export class APIProvider extends EventEmitter {
   /**
    * 显示快速选择
    */
-  private async showQuickPick(_items: string[] | Thenable<string[]>, _options?: any): Promise<string | undefined> {
+  private async showQuickPick(
+    _items: string[] | Thenable<string[]>,
+    _options?: any
+  ): Promise<string | undefined> {
     // TODO: 实现快速选择
     const resolvedItems = await Promise.resolve(_items)
     return resolvedItems[0]
@@ -489,7 +544,10 @@ export class APIProvider extends EventEmitter {
    */
   private async withProgress<R>(
     _options: ProgressOptions,
-    task: (progress: Progress<{ message?: string; increment?: number }>, token: CancellationToken) => Thenable<R>
+    task: (
+      progress: Progress<{ message?: string; increment?: number }>,
+      token: CancellationToken
+    ) => Thenable<R>
   ): Promise<R> {
     // TODO: 实现进度显示
     const progress: Progress<{ message?: string; increment?: number }> = {
@@ -510,8 +568,10 @@ export class APIProvider extends EventEmitter {
    * 创建状态栏项
    */
   private createStatusBarItem(extensionId: string, alignment?: number, priority?: number): any {
-    console.log(`[APIProvider] 扩展 ${extensionId} 创建状态栏项，对齐方式: ${alignment}, 优先级: ${priority}`)
-    
+    console.log(
+      `[APIProvider] 扩展 ${extensionId} 创建状态栏项，对齐方式: ${alignment}, 优先级: ${priority}`
+    )
+
     // 创建一个简单的状态栏项对象
     const statusBarItem = {
       text: '',
@@ -519,23 +579,23 @@ export class APIProvider extends EventEmitter {
       command: '',
       alignment: alignment || 2, // 默认右对齐
       priority: priority || 100,
-      
+
       show: () => {
         console.log(`[StatusBarItem] 显示状态栏项: ${statusBarItem.text}`)
         // TODO: 实现实际的状态栏显示逻辑
       },
-      
+
       hide: () => {
         console.log(`[StatusBarItem] 隐藏状态栏项: ${statusBarItem.text}`)
         // TODO: 实现实际的状态栏隐藏逻辑
       },
-      
+
       dispose: () => {
         console.log(`[StatusBarItem] 销毁状态栏项: ${statusBarItem.text}`)
         // TODO: 实现实际的状态栏项清理逻辑
       }
     }
-    
+
     return statusBarItem
   }
 

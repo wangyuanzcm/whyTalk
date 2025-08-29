@@ -17,7 +17,7 @@ const coreMenuItems = [
   { id: 'login', name: '登录', icon: 'User', path: '/auth/login', core: true },
   { id: 'register', name: '注册', icon: 'UserAdd', path: '/auth/register', core: true },
   { id: 'workspace', name: '工作台', icon: 'Application', path: '/workspace', core: true },
-  { id: 'settings', name: '设置', icon: 'SettingTwo', path: '/settings', core: true },
+  { id: 'settings', name: '设置', icon: 'SettingTwo', path: '/settings', core: true }
   // P2P网络菜单项已被移除
 ]
 
@@ -163,7 +163,15 @@ onMounted(() => {
               </div>
               <p class="plugin-description">{{ plugin.config?.description || '无描述' }}</p>
               <p class="plugin-version">版本: {{ plugin.config?.version || '未知' }}</p>
-              <p class="plugin-menu-name">菜单显示: {{ (plugin.config as any)?.shortName || (plugin.config as any)?.menuTitle || plugin.config?.name || plugin.id }}</p>
+              <p class="plugin-menu-name">
+                菜单显示:
+                {{
+                  (plugin.config as any)?.shortName ||
+                  (plugin.config as any)?.menuTitle ||
+                  plugin.config?.name ||
+                  plugin.id
+                }}
+              </p>
             </div>
 
             <div class="plugin-controls">

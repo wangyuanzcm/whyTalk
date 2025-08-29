@@ -2,6 +2,13 @@
 import { useUserStore } from '@/store'
 import { Male, Female } from '@icon-park/vue-next'
 const store = useUserStore()
+
+/**
+ * 处理用户退出登录
+ */
+const onLogout = () => {
+  store.logoutLogin()
+}
 </script>
 
 <template>
@@ -25,6 +32,11 @@ const store = useUserStore()
         <span>
           {{ store.motto || ' 编辑个签，展示我的独特态度。' }}
         </span>
+      </div>
+      
+      <!-- 退出按钮 -->
+      <div class="logout-btn" @click="onLogout">
+        <span>退出登录</span>
       </div>
     </div>
   </section>
@@ -113,6 +125,26 @@ const store = useUserStore()
     margin-bottom: 3px;
     position: relative;
   }
+
+  .logout-btn {
+    margin-top: 10px;
+    padding: 8px 16px;
+    background: #ff4d4f;
+    color: #ffffff;
+    border-radius: 5px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+      background: #ff7875;
+    }
+
+    &:active {
+      background: #d9363e;
+    }
+  }
 }
 
 html[theme-mode='dark'] {
@@ -122,6 +154,18 @@ html[theme-mode='dark'] {
 
   .account-card .card-main .usersign {
     background-color: #2c2c32;
+  }
+
+  .account-card .card-main .logout-btn {
+    background: #ff4d4f;
+    
+    &:hover {
+      background: #ff7875;
+    }
+
+    &:active {
+      background: #d9363e;
+    }
   }
 }
 </style>

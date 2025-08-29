@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { nextTick, onMounted, useId, ref } from 'vue'
+import { nextTick, onMounted, useId, ref, watch } from 'vue'
 import { ChatProps, AlignEnum } from './types.ts'
 import ChatItem from './ChatItem.vue'
 import FooterLoadToolbar from './FooterToolbar.vue'

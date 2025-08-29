@@ -6,7 +6,12 @@
 import { app, BrowserWindow, dialog, ipcMain } from 'electron'
 import { autoUpdater, UpdateInfo } from 'electron-updater'
 import { loggerService } from '../logger/LoggerService'
-import { getUpdateConfig, validateUpdateConfig, saveUpdateConfig, getSavedUpdateConfig } from '../../config/update.config'
+import {
+  getUpdateConfig,
+  validateUpdateConfig,
+  saveUpdateConfig,
+  getSavedUpdateConfig
+} from '../../config/update.config'
 
 export interface UpdateStatus {
   checking: boolean
@@ -192,20 +197,20 @@ class UpdaterService {
     ipcMain.handle('updater:check-for-updates', async () => {
       const config = getUpdateConfig()
       if (!config.enabled) {
-        return { 
-          success: false, 
-          error: 'Auto-updater is disabled' 
+        return {
+          success: false,
+          error: 'Auto-updater is disabled'
         }
       }
-      
+
       try {
         await this.checkForUpdates()
         return { success: true }
       } catch (error) {
         loggerService.error('Failed to check for updates:', error)
-        return { 
-          success: false, 
-          error: error instanceof Error ? error.message : String(error) 
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : String(error)
         }
       }
     })
@@ -214,20 +219,20 @@ class UpdaterService {
     ipcMain.handle('updater:download-update', async () => {
       const config = getUpdateConfig()
       if (!config.enabled) {
-        return { 
-          success: false, 
-          error: 'Auto-updater is disabled' 
+        return {
+          success: false,
+          error: 'Auto-updater is disabled'
         }
       }
-      
+
       try {
         await this.downloadUpdate()
         return { success: true }
       } catch (error) {
         loggerService.error('Failed to download update:', error)
-        return { 
-          success: false, 
-          error: error instanceof Error ? error.message : String(error) 
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : String(error)
         }
       }
     })
@@ -236,20 +241,20 @@ class UpdaterService {
     ipcMain.handle('updater:install-update', async () => {
       const config = getUpdateConfig()
       if (!config.enabled) {
-        return { 
-          success: false, 
-          error: 'Auto-updater is disabled' 
+        return {
+          success: false,
+          error: 'Auto-updater is disabled'
         }
       }
-      
+
       try {
         this.installUpdate()
         return { success: true }
       } catch (error) {
         loggerService.error('Failed to install update:', error)
-        return { 
-          success: false, 
-          error: error instanceof Error ? error.message : String(error) 
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : String(error)
         }
       }
     })
@@ -277,17 +282,17 @@ class UpdaterService {
         if (!saved) {
           return { success: false, error: 'Failed to save configuration' }
         }
-        
+
         // 重新配置自动更新器以应用新配置
         this.configureAutoUpdater()
-        
+
         loggerService.info('Update configuration saved successfully')
         return { success: true }
       } catch (error) {
         loggerService.error('Failed to update config:', error)
-        return { 
-          success: false, 
-          error: error instanceof Error ? error.message : String(error) 
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : String(error)
         }
       }
     })

@@ -17,11 +17,13 @@ export class LocalSendDiscovery extends EventEmitter {
   private cleanupInterval: NodeJS.Timeout | null = null
   private localFingerprint: string
   private deviceInfo: any
+  private enableBroadcast: boolean
 
-  constructor(fingerprint: string, deviceInfo: any) {
+  constructor(fingerprint: string, deviceInfo: any, enableBroadcast: boolean = true) {
     super()
     this.localFingerprint = fingerprint
     this.deviceInfo = deviceInfo
+    this.enableBroadcast = enableBroadcast
   }
 
   /**
@@ -55,8 +57,13 @@ export class LocalSendDiscovery extends EventEmitter {
 
               console.log(`LocalSend discovery listening on ${this.multicastAddress}:${this.port}`)
 
-              // 开始定期广播
-              this.startAnnouncing()
+              // 只有在启用广播时才开始定期广播
+              if (this.enableBroadcast) {
+                this.startAnnouncing()
+                console.log('LocalSend broadcast enabled')
+              } else {
+                console.log('LocalSend broadcast disabled')
+              }
 
               // 开始清理过期设备
               this.startCleanup()
@@ -129,7 +136,7 @@ export class LocalSendDiscovery extends EventEmitter {
    * 手动发送广播
    */
   public announce(): void {
-    if (!this.socket || !this.isRunning) {
+    if (!this.socket || !this.isRunning || !this.enableBroadcast) {
       return
     }
 
@@ -164,7 +171,9 @@ export class LocalSendDiscovery extends EventEmitter {
         return
       }
 
-      console.log(`Processing discovery message from ${data.alias} (${data.fingerprint}) at ${rinfo.address}`)
+      console.log(
+        `Processing discovery message from ${data.alias} (${data.fingerprint}) at ${rinfo.address}`
+      )
 
       const peer: LocalSendPeer = {
         fingerprint: data.fingerprint,

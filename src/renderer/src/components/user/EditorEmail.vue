@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { ref, reactive } from 'vue'
 import { ServUserEmailUpdate } from '@/api/user.ts'
 import { ServCommonSendEmailCode } from '@/api/common'
 import { rsaEncrypt } from '@/utils/rsa'

@@ -48,7 +48,10 @@ export class PluginSystem {
   /**
    * 安装扩展
    */
-  public async installExtension(packageName: string, _version?: string): Promise<{ success: boolean; error?: string }> {
+  public async installExtension(
+    packageName: string,
+    _version?: string
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       await pluginSystemManager.getVSCodeStyleManager().installExtension(packageName)
       return { success: true }
@@ -61,7 +64,9 @@ export class PluginSystem {
   /**
    * 卸载扩展
    */
-  public async uninstallExtension(extensionId: string): Promise<{ success: boolean; error?: string }> {
+  public async uninstallExtension(
+    extensionId: string
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       await pluginSystemManager.getVSCodeStyleManager().uninstallExtension(extensionId)
       return { success: true }

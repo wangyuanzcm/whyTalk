@@ -135,11 +135,11 @@ export interface ConfigurationProperty {
   /** 类型 */
   type?: 'string' | 'number' | 'boolean' | 'array' | 'object'
   /** 默认值 */
-  default?: any
+  default?: unknown
   /** 描述 */
   description?: string
   /** 枚举值 */
-  enum?: any[]
+  enum?: unknown[]
   /** 枚举描述 */
   enumDescriptions?: string[]
   /** 最小值 */
@@ -198,7 +198,7 @@ export interface KeybindingContribution {
   /** 条件 */
   when?: string
   /** 参数 */
-  args?: any
+  args?: Record<string, unknown>
 }
 
 /** 语言贡献 */
@@ -258,11 +258,11 @@ export interface DebuggerContribution {
   /** 运行时 */
   runtime?: string
   /** 配置属性 */
-  configurationAttributes?: Record<string, any>
+  configurationAttributes?: Record<string, unknown>
   /** 初始配置 */
-  initialConfigurations?: any[]
+  initialConfigurations?: Record<string, unknown>[]
   /** 配置片段 */
-  configurationSnippets?: any[]
+  configurationSnippets?: Record<string, unknown>[]
   /** 变量 */
   variables?: Record<string, string>
   /** 语言 */
@@ -276,7 +276,7 @@ export interface TaskDefinitionContribution {
   /** 必需属性 */
   required?: string[]
   /** 属性 */
-  properties?: Record<string, any>
+  properties?: Record<string, unknown>
 }
 
 /** 问题匹配器贡献 */
@@ -290,11 +290,11 @@ export interface ProblemMatcherContribution {
   /** 文件位置 */
   fileLocation?: string | string[]
   /** 模式 */
-  pattern: any
+  pattern: string | Record<string, unknown>
   /** 严重性 */
   severity?: string
-  /** 监视 */
-  watching?: any
+  /** 监视配置 */
+  watching?: Record<string, unknown>
 }
 
 /** 颜色贡献 */
@@ -380,14 +380,14 @@ export interface Uri {
   fragment: string
   fsPath: string
   toString(): string
-  toJSON(): any
+  toJSON(): Record<string, unknown>
 }
 
 /** 内存存储接口 */
 export interface Memento {
   get<T>(key: string): T | undefined
   get<T>(key: string, defaultValue: T): T
-  update(key: string, value: any): Thenable<void>
+  update(key: string, value: unknown): Thenable<void>
   keys(): readonly string[]
 }
 
@@ -405,7 +405,14 @@ export interface EnvironmentVariableCollection {
   append(variable: string, value: string): void
   prepend(variable: string, value: string): void
   get(variable: string): EnvironmentVariableMutator | undefined
-  forEach(callback: (variable: string, mutator: EnvironmentVariableMutator, collection: EnvironmentVariableCollection) => any, thisArg?: any): void
+  forEach(
+    callback: (
+      variable: string,
+      mutator: EnvironmentVariableMutator,
+      collection: EnvironmentVariableCollection
+    ) => void,
+    thisArg?: unknown
+  ): void
   delete(variable: string): void
   clear(): void
 }
@@ -442,10 +449,10 @@ export interface Extension {
   readonly extensionUri: Uri
   readonly extensionPath: string
   readonly isActive: boolean
-  readonly packageJSON: any
+  readonly packageJSON: Record<string, unknown>
   readonly extensionKind: ExtensionKind
-  activate(): Thenable<any>
-  exports: any
+  activate(): Thenable<unknown>
+  exports: unknown
 }
 
 /** 扩展类型 */
@@ -456,21 +463,21 @@ export enum ExtensionKind {
 
 /** 事件接口 */
 export interface Event<T> {
-  (listener: (e: T) => any, thisArg?: any, disposables?: Disposable[]): Disposable
+  (listener: (e: T) => void, thisArg?: unknown, disposables?: Disposable[]): Disposable
 }
 
 /** Promise类型 */
 export interface Thenable<T> {
   then<TResult1 = T, TResult2 = never>(
     onfulfilled?: ((value: T) => TResult1 | Thenable<TResult1>) | undefined | null,
-    onrejected?: ((reason: any) => TResult2 | Thenable<TResult2>) | undefined | null
+    onrejected?: ((reason: unknown) => TResult2 | Thenable<TResult2>) | undefined | null
   ): Thenable<TResult1 | TResult2>
 }
 
 /** 取消令牌 */
 export interface CancellationToken {
   readonly isCancellationRequested: boolean
-  readonly onCancellationRequested: Event<any>
+  readonly onCancellationRequested: Event<void>
 }
 
 /** 进度接口 */
@@ -496,8 +503,8 @@ export enum ProgressLocation {
 export interface Webview {
   readonly options: WebviewOptions
   readonly html: string
-  readonly onDidReceiveMessage: Event<any>
-  postMessage(message: any): Thenable<boolean>
+  readonly onDidReceiveMessage: Event<unknown>
+  postMessage(message: unknown): Thenable<boolean>
   asWebviewUri(localResource: Uri): Uri
   readonly cspSource: string
 }

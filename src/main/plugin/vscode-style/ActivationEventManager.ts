@@ -54,16 +54,16 @@ interface ActivationEventListener {
  */
 export class ActivationEventManager extends EventEmitter {
   private static instance: ActivationEventManager
-  
+
   /** 激活事件监听器映射 */
   private eventListeners = new Map<string, ActivationEventListener[]>()
-  
+
   /** 已触发的事件 */
   private firedEvents = new Set<string>()
-  
+
   /** 扩展激活事件映射 */
   private extensionEvents = new Map<string, string[]>()
-  
+
   /** 是否已启动完成 */
   private isStartupFinished = false
 
@@ -99,32 +99,36 @@ export class ActivationEventManager extends EventEmitter {
       // 为每个激活事件注册监听器
       for (const eventPattern of activationEvents) {
         const eventType = this.parseEventType(eventPattern)
-        
+
         if (!this.eventListeners.has(eventType)) {
           this.eventListeners.set(eventType, [])
         }
-        
+
         const listener: ActivationEventListener = {
           extensionId,
           eventPattern,
           callback: activationCallback
         }
-        
+
         this.eventListeners.get(eventType)!.push(listener)
-        
+
         // 如果是启动事件且已经启动完成，立即激活
-        if (eventType === ActivationEventType.STAR || 
-            (eventType === ActivationEventType.ON_START_UP && this.isStartupFinished)) {
+        if (
+          eventType === ActivationEventType.STAR ||
+          (eventType === ActivationEventType.ON_START_UP && this.isStartupFinished)
+        ) {
           setImmediate(() => this.fireEvent(eventPattern))
         }
-        
+
         // 如果事件已经触发过，立即激活
         if (this.firedEvents.has(eventPattern)) {
           setImmediate(() => activationCallback())
         }
       }
 
-      console.log(`[ActivationEventManager] 已注册扩展 ${extensionId} 的 ${activationEvents.length} 个激活事件`)
+      console.log(
+        `[ActivationEventManager] 已注册扩展 ${extensionId} 的 ${activationEvents.length} 个激活事件`
+      )
 
       // 返回清理函数
       return {
@@ -143,7 +147,7 @@ export class ActivationEventManager extends EventEmitter {
   public unregisterActivationEvents(extensionId: string): void {
     // 清理事件监听器
     for (const [eventType, listeners] of this.eventListeners.entries()) {
-      const filteredListeners = listeners.filter(l => l.extensionId !== extensionId)
+      const filteredListeners = listeners.filter((l) => l.extensionId !== extensionId)
       if (filteredListeners.length === 0) {
         this.eventListeners.delete(eventType)
       } else {
@@ -166,20 +170,22 @@ export class ActivationEventManager extends EventEmitter {
     try {
       // 记录已触发的事件
       this.firedEvents.add(eventPattern)
-      
+
       const eventType = this.parseEventType(eventPattern)
       const listeners = this.eventListeners.get(eventType) || []
-      
+
       // 过滤匹配的监听器
-      const matchingListeners = listeners.filter(listener => 
+      const matchingListeners = listeners.filter((listener) =>
         this.matchesEventPattern(listener.eventPattern, eventPattern)
       )
 
       if (matchingListeners.length > 0) {
-        console.log(`[ActivationEventManager] 触发事件 ${eventPattern}，激活 ${matchingListeners.length} 个扩展`)
-        
+        console.log(
+          `[ActivationEventManager] 触发事件 ${eventPattern}，激活 ${matchingListeners.length} 个扩展`
+        )
+
         // 并行激活所有匹配的扩展
-        const activationPromises = matchingListeners.map(async listener => {
+        const activationPromises = matchingListeners.map(async (listener) => {
           try {
             await listener.callback()
             this.emit('extensionActivated', listener.extensionId, eventPattern)
@@ -188,10 +194,10 @@ export class ActivationEventManager extends EventEmitter {
             this.emit('extensionActivationFailed', listener.extensionId, eventPattern, error)
           }
         })
-        
+
         await Promise.allSettled(activationPromises)
       }
-      
+
       this.emit('eventFired', eventPattern, data)
     } catch (error) {
       console.error(`[ActivationEventManager] 触发事件 ${eventPattern} 失败:`, error)
@@ -263,12 +269,12 @@ export class ActivationEventManager extends EventEmitter {
     if (eventPattern === '*') {
       return ActivationEventType.STAR
     }
-    
+
     const colonIndex = eventPattern.indexOf(':')
     if (colonIndex === -1) {
       return eventPattern
     }
-    
+
     return eventPattern.substring(0, colonIndex)
   }
 
@@ -282,27 +288,27 @@ export class ActivationEventManager extends EventEmitter {
     if (listenerPattern === '*') {
       return true
     }
-    
+
     // 精确匹配
     if (listenerPattern === firedPattern) {
       return true
     }
-    
+
     // 前缀匹配（用于 workspaceContains 等）
     const listenerType = this.parseEventType(listenerPattern)
     const firedType = this.parseEventType(firedPattern)
-    
+
     if (listenerType !== firedType) {
       return false
     }
-    
+
     // 对于某些事件类型，支持模式匹配
     if (listenerType === 'workspaceContains') {
       const listenerGlob = listenerPattern.substring(listenerType.length + 1)
       const firedGlob = firedPattern.substring(firedType.length + 1)
       return this.matchesGlob(listenerGlob, firedGlob)
     }
-    
+
     return false
   }
 
@@ -317,7 +323,7 @@ export class ActivationEventManager extends EventEmitter {
       .replace(/[.+^${}()|[\]\\]/g, '\\$&') // 转义特殊字符
       .replace(/\*/g, '.*') // * 匹配任意字符
       .replace(/\?/g, '.') // ? 匹配单个字符
-    
+
     const regex = new RegExp(`^${regexPattern}$`)
     return regex.test(text)
   }
@@ -353,7 +359,7 @@ export class ActivationEventManager extends EventEmitter {
     this.firedEvents.clear()
     this.extensionEvents.clear()
     this.isStartupFinished = false
-    
+
     this.emit('cleared')
     console.log('[ActivationEventManager] 已清理所有激活事件')
   }
@@ -371,7 +377,7 @@ export class ActivationEventManager extends EventEmitter {
     for (const listeners of this.eventListeners.values()) {
       totalListeners += listeners.length
     }
-    
+
     return {
       eventTypes: this.eventListeners.size,
       totalListeners,

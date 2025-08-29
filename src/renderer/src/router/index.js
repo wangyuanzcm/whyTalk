@@ -15,12 +15,6 @@ const routes = [
     component: MainLayout,
     redirect: '/workspace',
     children: [
-      // 消息和笔记功能已迁移到插件中
-      {
-        path: '/example',
-        name: 'example',
-        component: () => import('@/views/example/index.vue')
-      },
       {
         path: '/workspace',
         name: 'workspace',
@@ -40,8 +34,6 @@ const routes = [
         component: () => import('@/views/plugin-config/index.vue')
       },
       SettingRouter
-      // P2P路由已被移除
-      // ContactRouter 已迁移到插件中
     ]
   },
   // 独立的插件窗口路由（不包含主布局）
