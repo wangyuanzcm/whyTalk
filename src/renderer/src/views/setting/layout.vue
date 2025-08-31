@@ -44,3 +44,71 @@ const menus = [
 <template>
   <SubViewLayout title="我的设置" :menus="menus" />
 </template>
+
+<style lang="less" scoped>
+@import '@/styles/theme/index.less';
+
+.setting-layout {
+  height: 100%;
+  width: 100%;
+  background: var(--color-bg-main);
+  .flex-row();
+  overflow: hidden;
+  
+  // 响应式设计
+  .mobile-only() {
+    .flex-column();
+    
+    :deep(.sub-view-layout) {
+      .flex-column();
+      
+      .sub-view-sidebar {
+        width: 100%;
+        height: auto;
+        max-height: 120px;
+        border-right: none;
+        border-bottom: 1px solid var(--color-border-light);
+        overflow-x: auto;
+        overflow-y: hidden;
+        
+        .sub-view-menu {
+          .flex-start();
+          flex-direction: row;
+          padding: var(--spacing-sm);
+          gap: var(--spacing-sm);
+          
+          .menu-item {
+            flex-shrink: 0;
+            min-width: 80px;
+            text-align: center;
+            white-space: nowrap;
+          }
+        }
+      }
+      
+      .sub-view-content {
+        flex: 1;
+        min-height: 0;
+        padding: var(--spacing-md);
+      }
+    }
+  }
+  
+  .tablet-only() {
+    :deep(.sub-view-layout) {
+      .sub-view-sidebar {
+        width: 200px;
+      }
+    }
+  }
+  
+  // 超小屏幕优化
+  .desktop-down(@breakpoint-xs) {
+    :deep(.sub-view-layout) {
+      .sub-view-content {
+        padding: var(--spacing-sm);
+      }
+    }
+  }
+}
+</style>

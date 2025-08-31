@@ -1,0 +1,584 @@
+// 通用混合宏 - 参考lx-music设计
+
+// 响应式断点变量
+@breakpoint-xs: 480px;
+@breakpoint-sm: 640px;
+@breakpoint-md: 768px;
+@breakpoint-lg: 1024px;
+@breakpoint-xl: 1280px;
+@breakpoint-2xl: 1536px;
+
+// 移动端优先的断点
+@mobile-first-sm: ~"(min-width: @{breakpoint-sm})";
+@mobile-first-md: ~"(min-width: @{breakpoint-md})";
+@mobile-first-lg: ~"(min-width: @{breakpoint-lg})";
+@mobile-first-xl: ~"(min-width: @{breakpoint-xl})";
+@mobile-first-2xl: ~"(min-width: @{breakpoint-2xl})";
+
+// 桌面端优先的断点
+@desktop-first-xs: ~"(max-width: @{breakpoint-xs - 1})";
+@desktop-first-sm: ~"(max-width: @{breakpoint-sm - 1})";
+@desktop-first-md: ~"(max-width: @{breakpoint-md - 1})";
+@desktop-first-lg: ~"(max-width: @{breakpoint-lg - 1})";
+@desktop-first-xl: ~"(max-width: @{breakpoint-xl - 1})";
+
+// 文本溢出处理
+.text-ellipsis() {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.text-ellipsis-multiline(@lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: @lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// Flex布局快捷方式
+.flex-center() {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between() {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flex-start() {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.flex-end() {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.flex-column() {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-column-center() {
+  .flex-column();
+  align-items: center;
+  justify-content: center;
+}
+
+// 绝对定位快捷方式
+.absolute-center() {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.absolute-full() {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+// 清除浮动
+.clearfix() {
+  &::after {
+    content: '';
+    display: table;
+    clear: both;
+  }
+}
+
+// 隐藏滚动条
+.hide-scrollbar() {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+// 自定义滚动条
+.custom-scrollbar(@width: var(--scrollbar-width), @track-color: var(--scrollbar-track-color), @thumb-color: var(--scrollbar-thumb-color)) {
+  &::-webkit-scrollbar {
+    width: @width;
+    height: @width;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: @track-color;
+    border-radius: calc(@width / 2);
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: @thumb-color;
+    border-radius: calc(@width / 2);
+    transition: background-color var(--transition-duration-fast) ease;
+    
+    &:hover {
+      background: var(--scrollbar-thumb-hover-color);
+    }
+  }
+}
+
+// 响应式断点混合宏
+.responsive(@breakpoint) when (@breakpoint = xs) {
+  @media (max-width: @breakpoint-xs - 1) {
+    @content();
+  }
+}
+
+.responsive(@breakpoint) when (@breakpoint = sm) {
+  @media (min-width: @breakpoint-sm) {
+    @content();
+  }
+}
+
+.responsive(@breakpoint) when (@breakpoint = md) {
+  @media (min-width: @breakpoint-md) {
+    @content();
+  }
+}
+
+.responsive(@breakpoint) when (@breakpoint = lg) {
+  @media (min-width: @breakpoint-lg) {
+    @content();
+  }
+}
+
+.responsive(@breakpoint) when (@breakpoint = xl) {
+  @media (min-width: @breakpoint-xl) {
+    @content();
+  }
+}
+
+.responsive(@breakpoint) when (@breakpoint = 2xl) {
+  @media (min-width: @breakpoint-2xl) {
+    @content();
+  }
+}
+
+// 移动端优先响应式混合宏
+.mobile-up(@breakpoint) {
+  @media (min-width: @breakpoint) {
+    @content();
+  }
+}
+
+// 桌面端优先响应式混合宏
+.desktop-down(@breakpoint) {
+  @media (max-width: @breakpoint - 1) {
+    @content();
+  }
+}
+
+// 范围响应式混合宏
+.between(@min-width, @max-width) {
+  @media (min-width: @min-width) and (max-width: @max-width - 1) {
+    @content();
+  }
+}
+
+// 常用响应式组合
+.mobile-only() {
+  @media (max-width: @breakpoint-md - 1) {
+    @content();
+  }
+}
+
+.tablet-only() {
+  @media (min-width: @breakpoint-md) and (max-width: @breakpoint-lg - 1) {
+    @content();
+  }
+}
+
+.desktop-only() {
+  @media (min-width: @breakpoint-lg) {
+    @content();
+  }
+}
+
+// 高分辨率屏幕
+.retina() {
+  @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    @content();
+  }
+}
+
+// 悬停效果
+.hover-lift(@distance: 4px) {
+  transition: var(--transition-transform);
+  
+  &:hover {
+    transform: translateY(-@distance);
+  }
+}
+
+.hover-scale(@scale: 1.05) {
+  transition: var(--transition-transform);
+  
+  &:hover {
+    transform: scale(@scale);
+  }
+}
+
+// 按钮样式
+.button-base() {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--border-radius-button);
+  font-family: var(--font-family-primary);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+  cursor: pointer;
+  transition: var(--transition-colors);
+  user-select: none;
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--color-primary-light);
+  }
+  
+  &:disabled {
+    opacity: var(--opacity-disabled);
+    cursor: not-allowed;
+  }
+}
+
+.button-size(@size) when (@size = sm) {
+  height: var(--button-height-sm);
+  padding: 0 var(--button-padding-x-sm);
+  font-size: var(--font-size-sm);
+}
+
+.button-size(@size) when (@size = md) {
+  height: var(--button-height-md);
+  padding: 0 var(--button-padding-x-md);
+  font-size: var(--font-size-md);
+}
+
+.button-size(@size) when (@size = lg) {
+  height: var(--button-height-lg);
+  padding: 0 var(--button-padding-x-lg);
+  font-size: var(--font-size-lg);
+}
+
+.button-variant(@bg-color, @text-color, @hover-bg-color) {
+  background-color: @bg-color;
+  color: @text-color;
+  
+  &:hover:not(:disabled) {
+    background-color: @hover-bg-color;
+  }
+}
+
+// 卡片样式
+.card-base() {
+  background-color: var(--color-card-bg);
+  border: var(--border-width-thin) solid var(--color-card-border);
+  border-radius: var(--border-radius-card);
+  box-shadow: var(--shadow-card);
+  transition: var(--transition-all);
+}
+
+.card-hover() {
+  &:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+  }
+}
+
+// 卡片阴影混合宏
+.card-shadow() {
+  box-shadow: var(--shadow-card);
+  transition: var(--transition-all);
+}
+
+.card-shadow-hover() {
+  &:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+  }
+}
+
+.card-shadow-modal() {
+  box-shadow: var(--shadow-modal);
+}
+
+// 输入框样式
+.input-base() {
+  width: 100%;
+  border: var(--border-width-thin) solid var(--color-border-primary);
+  border-radius: var(--border-radius-input);
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-md);
+  padding: 0 var(--input-padding-x);
+  transition: var(--transition-colors);
+  
+  &:focus {
+    outline: none;
+    border-color: var(--color-border-focus);
+    box-shadow: 0 0 0 2px var(--color-primary-light);
+  }
+  
+  &:disabled {
+    opacity: var(--opacity-disabled);
+    cursor: not-allowed;
+  }
+  
+  &::placeholder {
+    color: var(--color-text-tertiary);
+  }
+}
+
+.input-size(@size) when (@size = sm) {
+  height: var(--input-height-sm);
+  font-size: var(--font-size-sm);
+}
+
+.input-size(@size) when (@size = md) {
+  height: var(--input-height-md);
+  font-size: var(--font-size-md);
+}
+
+.input-size(@size) when (@size = lg) {
+  height: var(--input-height-lg);
+  font-size: var(--font-size-lg);
+}
+
+// 模态框样式
+.modal-overlay() {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--color-bg-overlay);
+  z-index: var(--z-index-modal-backdrop);
+  .flex-center();
+}
+
+.modal-content() {
+  background-color: var(--color-bg-modal);
+  border-radius: var(--border-radius-modal);
+  box-shadow: var(--shadow-modal);
+  max-height: 90vh;
+  overflow-y: auto;
+  z-index: var(--z-index-modal);
+}
+
+// 加载动画
+.loading-spinner(@size: 20px, @color: var(--color-primary)) {
+  width: @size;
+  height: @size;
+  border: 2px solid transparent;
+  border-top: 2px solid @color;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+// 响应式容器
+.container() {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--spacing-md);
+  padding-right: var(--spacing-md);
+  
+  .mobile-up(@breakpoint-sm) {
+    max-width: var(--container-max-width-sm);
+  }
+  
+  .mobile-up(@breakpoint-md) {
+    max-width: var(--container-max-width-md);
+  }
+  
+  .mobile-up(@breakpoint-lg) {
+    max-width: var(--container-max-width-lg);
+  }
+  
+  .mobile-up(@breakpoint-xl) {
+    max-width: var(--container-max-width-xl);
+  }
+  
+  .mobile-up(@breakpoint-2xl) {
+    max-width: var(--container-max-width-2xl);
+  }
+}
+
+// 响应式网格
+.grid-responsive(@columns: 12, @gap: var(--spacing-md)) {
+  display: grid;
+  gap: @gap;
+  grid-template-columns: repeat(@columns, 1fr);
+  
+  .mobile-only() {
+    grid-template-columns: 1fr;
+  }
+  
+  .tablet-only() {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+// 响应式字体大小
+.font-responsive(@mobile-size, @desktop-size) {
+  font-size: @mobile-size;
+  
+  .mobile-up(@breakpoint-md) {
+    font-size: @desktop-size;
+  }
+}
+
+// 响应式间距
+.spacing-responsive(@mobile-spacing, @desktop-spacing) {
+  padding: @mobile-spacing;
+  
+  .mobile-up(@breakpoint-md) {
+    padding: @desktop-spacing;
+  }
+}
+
+// 响应式侧边栏
+.sidebar-responsive() {
+  width: var(--sidebar-width);
+  
+  .mobile-only() {
+    width: var(--sidebar-width-mobile, 100%);
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: var(--z-index-modal);
+    transform: translateX(-100%);
+    transition: transform var(--transition-duration-normal) var(--transition-timing-ease-in-out);
+    
+    &.open {
+      transform: translateX(0);
+    }
+  }
+}
+
+// 响应式卡片布局
+.card-responsive() {
+  .mobile-only() {
+    margin: var(--spacing-sm);
+    border-radius: var(--border-radius-md);
+  }
+  
+  .desktop-only() {
+    margin: var(--spacing-lg);
+    border-radius: var(--border-radius-lg);
+  }
+}
+
+// 响应式表格
+.table-responsive() {
+  .mobile-only() {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    
+    table {
+      min-width: 600px;
+    }
+  }
+}
+
+// 淡入淡出动画
+.fade-in(@duration: var(--transition-duration-normal)) {
+  animation: fadeIn @duration ease-in-out;
+}
+
+.fade-out(@duration: var(--transition-duration-normal)) {
+  animation: fadeOut @duration ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+// 滑入滑出动画
+.slide-in-from-top(@distance: 20px, @duration: var(--transition-duration-normal)) {
+  animation: slideInFromTop @duration ease-out;
+  
+  @keyframes slideInFromTop {
+    from {
+      opacity: 0;
+      transform: translateY(-@distance);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+.slide-in-from-left(@distance: 20px, @duration: var(--transition-duration-normal)) {
+  animation: slideInFromLeft @duration ease-out;
+  
+  @keyframes slideInFromLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-@distance);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+}
+
+// 工具类生成器
+.generate-spacing-classes() {
+  .m-0 { margin: 0 !important; }
+  .m-1 { margin: var(--spacing-xs) !important; }
+  .m-2 { margin: var(--spacing-sm) !important; }
+  .m-3 { margin: var(--spacing-md) !important; }
+  .m-4 { margin: var(--spacing-lg) !important; }
+  .m-5 { margin: var(--spacing-xl) !important; }
+  
+  .p-0 { padding: 0 !important; }
+  .p-1 { padding: var(--spacing-xs) !important; }
+  .p-2 { padding: var(--spacing-sm) !important; }
+  .p-3 { padding: var(--spacing-md) !important; }
+  .p-4 { padding: var(--spacing-lg) !important; }
+  .p-5 { padding: var(--spacing-xl) !important; }
+}

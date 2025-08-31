@@ -1,0 +1,216 @@
+// 主题色彩系统 - 参考lx-music设计
+// 主色调定义
+:root {
+  // 主色调 - 蓝色系
+  --color-primary: #3498db;
+  --color-primary-hover: #2980b9;
+  --color-primary-active: #2471a3;
+  --color-primary-light: #85c1e9;
+  --color-primary-lighter: #d6eaf8;
+  --color-primary-dark: #1f4e79;
+  
+  // 辅助色调
+  --color-secondary: #2ecc71;
+  --color-secondary-hover: #27ae60;
+  --color-secondary-light: #a9dfbf;
+  
+  --color-accent: #e74c3c;
+  --color-accent-hover: #c0392b;
+  --color-accent-light: #f1948a;
+  
+  --color-warning: #f39c12;
+  --color-warning-hover: #e67e22;
+  --color-warning-light: #f8c471;
+  
+  --color-info: #17a2b8;
+  --color-info-hover: #138496;
+  --color-info-light: #85d3e0;
+  
+  // 中性色调 - 灰度系统
+  --color-white: #ffffff;
+  --color-gray-50: #f8f9fa;
+  --color-gray-100: #f1f3f4;
+  --color-gray-200: #e9ecef;
+  --color-gray-300: #dee2e6;
+  --color-gray-400: #ced4da;
+  --color-gray-500: #adb5bd;
+  --color-gray-600: #6c757d;
+  --color-gray-700: #495057;
+  --color-gray-800: #343a40;
+  --color-gray-900: #212529;
+  --color-black: #000000;
+  
+  // 背景色系统
+  --color-bg-primary: var(--color-white);
+  --color-bg-secondary: var(--color-gray-50);
+  --color-bg-tertiary: var(--color-gray-100);
+  --color-bg-overlay: rgba(0, 0, 0, 0.5);
+  --color-bg-modal: rgba(255, 255, 255, 0.95);
+  
+  // 应用布局背景色
+  --color-bg-app: var(--color-gray-50);
+  --color-bg-main: var(--color-white);
+  --color-bg-sidebar: var(--color-white);
+  --color-bg-sidebar-hover: var(--color-gray-50);
+  --color-bg-sidebar-secondary: var(--color-gray-50);
+  --color-bg-header: var(--color-white);
+  --color-bg-content: var(--color-white);
+  --color-bg-hover: var(--color-gray-100);
+  
+  // 文本色系统
+  --color-text-primary: var(--color-gray-900);
+  --color-text-secondary: var(--color-gray-700);
+  --color-text-tertiary: var(--color-gray-500);
+  --color-text-disabled: var(--color-gray-400);
+  --color-text-inverse: var(--color-white);
+  
+  // 边框色系统
+  --color-border-primary: var(--color-gray-300);
+  --color-border-secondary: var(--color-gray-200);
+  --color-border-light: var(--color-gray-300);
+  --color-border-dark: var(--color-gray-400);
+  --color-border-focus: var(--color-primary);
+  --color-border-error: var(--color-accent);
+  --color-border-light: var(--color-gray-200);
+  --color-border-dark: var(--color-gray-300);
+  
+  // 阴影色系统
+  --color-shadow-light: rgba(0, 0, 0, 0.1);
+  --color-shadow-medium: rgba(0, 0, 0, 0.15);
+  --color-shadow-heavy: rgba(0, 0, 0, 0.25);
+  
+  // 状态色系统
+  --color-success: var(--color-secondary);
+  --color-error: var(--color-accent);
+  --color-warning: var(--color-warning);
+  --color-info: var(--color-info);
+  
+  // 导航相关色彩
+  --color-nav-bg: var(--color-white);
+  --color-nav-item: var(--color-gray-600);
+  
+  // 卡片相关色彩
+  --color-bg-card: var(--color-white);
+  --color-bg-card-footer: var(--color-gray-50);
+  --color-bg-disabled: var(--color-gray-100);
+  --color-nav-item-hover: var(--color-primary);
+  --color-nav-item-active: var(--color-primary);
+  --color-nav-border: var(--color-gray-200);
+  
+  // 卡片相关色彩
+  --color-card-bg: var(--color-white);
+  --color-card-border: var(--color-gray-200);
+  --color-card-shadow: var(--color-shadow-light);
+  
+  // 按钮相关色彩
+  --color-btn-primary-bg: var(--color-primary);
+  --color-btn-primary-text: var(--color-white);
+  --color-btn-primary-hover: var(--color-primary-hover);
+  --color-btn-secondary-bg: var(--color-gray-100);
+  --color-btn-secondary-text: var(--color-gray-700);
+  --color-btn-secondary-hover: var(--color-gray-200);
+}
+
+// 暗色主题
+[data-theme="dark"] {
+  // 主色调保持不变，但调整透明度和对比度
+  --color-primary: #5dade2;
+  --color-primary-hover: #85c1e9;
+  --color-primary-active: #3498db;
+  --color-primary-light: #2980b9;
+  --color-primary-lighter: #1f4e79;
+  --color-primary-dark: #85c1e9;
+  
+  // 辅助色调
+  --color-secondary: #58d68d;
+  --color-accent: #ec7063;
+  --color-warning: #f7dc6f;
+  --color-info: #5dade2;
+  
+  // 中性色调 - 反转灰度系统
+  --color-white: #1a1a1a;
+  --color-gray-50: #2d2d2d;
+  --color-gray-100: #3a3a3a;
+  --color-gray-200: #4a4a4a;
+  --color-gray-300: #5a5a5a;
+  --color-gray-400: #6a6a6a;
+  --color-gray-500: #7a7a7a;
+  --color-gray-600: #9a9a9a;
+  --color-gray-700: #b5b5b5;
+  --color-gray-800: #d0d0d0;
+  --color-gray-900: #e5e5e5;
+  --color-black: #ffffff;
+  
+  // 背景色系统
+  --color-bg-primary: #1a1a1a;
+  --color-bg-secondary: #2d2d2d;
+  --color-bg-tertiary: #3a3a3a;
+  --color-bg-overlay: rgba(0, 0, 0, 0.7);
+  --color-bg-modal: rgba(26, 26, 26, 0.95);
+  
+  // 应用布局背景色 - 暗色主题
+  --color-bg-app: #1a1a1a;
+  --color-bg-main: #2d2d2d;
+  --color-bg-sidebar: #1a1a1a;
+  --color-bg-sidebar-hover: #2d2d2d;
+  --color-bg-sidebar-secondary: #2d2d2d;
+  --color-bg-header: #1a1a1a;
+  --color-bg-content: #2d2d2d;
+  --color-bg-hover: #3a3a3a;
+  
+  // 暗色主题专用变量
+  --color-bg-app-dark: #1a1a1a;
+  --color-bg-main-dark: #2d2d2d;
+  --color-bg-sidebar-dark: #1a1a1a;
+  --color-bg-sidebar-hover-dark: #2d2d2d;
+  --color-text-primary-dark: #e5e5e5;
+  
+  // 文本色系统
+  --color-text-primary: var(--color-gray-900);
+  --color-text-secondary: var(--color-gray-700);
+  --color-text-tertiary: var(--color-gray-500);
+  --color-text-disabled: var(--color-gray-400);
+  --color-text-inverse: var(--color-gray-900);
+  
+  // 边框色系统
+  --color-border-primary: var(--color-gray-300);
+  --color-border-secondary: var(--color-gray-200);
+  
+  // 阴影色系统
+  --color-shadow-light: rgba(0, 0, 0, 0.3);
+  --color-shadow-medium: rgba(0, 0, 0, 0.4);
+  --color-shadow-heavy: rgba(0, 0, 0, 0.6);
+  
+  // 导航相关色彩
+  --color-nav-bg: var(--color-bg-primary);
+  --color-nav-border: var(--color-gray-200);
+  
+  // 卡片相关色彩
+  --color-card-bg: var(--color-bg-secondary);
+  --color-card-border: var(--color-gray-200);
+  --color-card-shadow: var(--color-shadow-medium);
+  --color-bg-card: #2d2d2d;
+  --color-bg-card-footer: #3a3a3a;
+  --color-bg-disabled: #404040;
+  
+  // 按钮相关色彩
+  --color-btn-secondary-bg: var(--color-gray-200);
+  --color-btn-secondary-text: var(--color-gray-800);
+  --color-btn-secondary-hover: var(--color-gray-300);
+}
+
+// 透明度变量
+:root {
+  --opacity-disabled: 0.6;
+  --opacity-hover: 0.8;
+  --opacity-active: 0.9;
+  --opacity-overlay: 0.5;
+}
+
+// 渐变色系统
+:root {
+  --gradient-primary: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+  --gradient-secondary: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-secondary-hover) 100%);
+  --gradient-accent: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
+  --gradient-overlay: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.3) 100%);
+}

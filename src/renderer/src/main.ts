@@ -1,4 +1,4 @@
-import '@/assets/css/define/theme.less'
+import '@/styles/theme/index.less'
 import '@/assets/css/define/global.less'
 import '@/assets/css/dropsize.less'
 import { createApp } from 'vue'
