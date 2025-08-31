@@ -1,8 +1,15 @@
 <script lang="ts" setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useSettingsStore } from '@/store'
+import { useThemeStore } from '@/store/modules/theme'
+import ThemeSelector from '../../../../components/theme/ThemeSelector.vue'
+import { NButton, NRadioGroup, NRadio, NSpace, NSelect, NDivider } from 'naive-ui'
 
 const settingsStore = useSettingsStore()
+const themeStore = useThemeStore()
+
+// 显示主题选择器的状态
+const showThemeSelector = ref(false)
 
 const themeMode = computed({
   get: () => settingsStore.themeMode,
@@ -77,6 +84,18 @@ const defaultPages = [
 
       <div class="view-list">
         <div class="content">
+          <div class="name">自定义主题</div>
+          <div class="desc">管理和自定义应用主题样式，当前主题：{{ themeStore.currentTheme?.name || '默认主题' }}</div>
+        </div>
+        <div class="tools">
+          <n-button type="primary" @click="showThemeSelector = true">
+            主题管理
+          </n-button>
+        </div>
+      </div>
+
+      <div class="view-list">
+        <div class="content">
           <div class="name">我的名片</div>
           <div class="desc">当前未设置名片背景</div>
         </div>
@@ -105,6 +124,9 @@ const defaultPages = [
         </div>
       </div>
     </div>
+
+    <!-- 主题选择器模态框 -->
+    <ThemeSelector v-model:show="showThemeSelector" />
   </section>
 </template>
 

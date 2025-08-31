@@ -1,0 +1,218 @@
+/* 主题变量定义 */
+:root {
+  /* 默认主题颜色 */
+  --theme-primary: #1890ff;
+  --theme-primary-light: #40a9ff;
+  --theme-primary-dark: #096dd9;
+  --theme-primary-hover: #40a9ff;
+  
+  /* 字体颜色 */
+  --theme-font-primary: #333333;
+  --theme-font-secondary: #666666;
+  --theme-font-tertiary: #999999;
+  --theme-font-light: #ffffff;
+  
+  /* 背景颜色 */
+  --theme-bg-primary: #ffffff;
+  --theme-bg-secondary: #f5f5f5;
+  --theme-bg-tertiary: #fafafa;
+  --theme-bg-dark: #1f1f1f;
+  
+  /* 表面颜色 */
+  --theme-surface-primary: #ffffff;
+  --theme-surface-secondary: #f8f9fa;
+  --theme-surface-elevated: #ffffff;
+  
+  /* 边框颜色 */
+  --theme-border-primary: #d9d9d9;
+  --theme-border-secondary: #f0f0f0;
+  --theme-border-light: #e8e8e8;
+  
+  /* 状态颜色 */
+  --theme-success: #52c41a;
+  --theme-warning: #faad14;
+  --theme-error: #ff4d4f;
+  --theme-info: #1890ff;
+  
+  /* 阴影 */
+  --theme-shadow-light: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --theme-shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.15);
+  --theme-shadow-heavy: 0 8px 32px rgba(0, 0, 0, 0.2);
+  
+  /* 透明度变量 */
+  --theme-alpha-10: 0.1;
+  --theme-alpha-20: 0.2;
+  --theme-alpha-30: 0.3;
+  --theme-alpha-50: 0.5;
+  --theme-alpha-70: 0.7;
+  --theme-alpha-90: 0.9;
+}
+
+/* 深色主题 */
+[data-theme='dark'] {
+  --theme-primary: #177ddc;
+  --theme-primary-light: #3291e6;
+  --theme-primary-dark: #0958d9;
+  --theme-primary-hover: #3291e6;
+  
+  --theme-font-primary: #ffffff;
+  --theme-font-secondary: #d9d9d9;
+  --theme-font-tertiary: #8c8c8c;
+  --theme-font-light: #ffffff;
+  
+  --theme-bg-primary: #141414;
+  --theme-bg-secondary: #1f1f1f;
+  --theme-bg-tertiary: #262626;
+  --theme-bg-dark: #000000;
+  
+  --theme-surface-primary: #1f1f1f;
+  --theme-surface-secondary: #262626;
+  --theme-surface-elevated: #2d2d2d;
+  
+  --theme-border-primary: #434343;
+  --theme-border-secondary: #303030;
+  --theme-border-light: #3a3a3a;
+  
+  --theme-success: #73d13d;
+  --theme-warning: #ffc53d;
+  --theme-error: #ff7875;
+  --theme-info: #177ddc;
+  
+  --theme-shadow-light: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --theme-shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --theme-shadow-heavy: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+/* 主题过渡动画 */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* 主题应用类 */
+.theme-primary {
+  color: var(--theme-primary) !important;
+}
+
+.theme-bg-primary {
+  background-color: var(--theme-bg-primary) !important;
+}
+
+.theme-border-primary {
+  border-color: var(--theme-border-primary) !important;
+}
+
+/* 主题背景图片支持 */
+.theme-background {
+  background-image: var(--theme-bg-image, none);
+  background-size: var(--theme-bg-size, cover);
+  background-position: var(--theme-bg-position, center);
+  background-repeat: var(--theme-bg-repeat, no-repeat);
+  background-attachment: var(--theme-bg-attachment, fixed);
+}
+
+/* 主题渐变支持 */
+.theme-gradient {
+  background: linear-gradient(
+    var(--theme-gradient-direction, 135deg),
+    var(--theme-primary) 0%,
+    var(--theme-primary-light) 100%
+  );
+}
+
+/* 主题卡片样式 */
+.theme-card {
+  background-color: var(--theme-surface-primary);
+  border: 1px solid var(--theme-border-secondary);
+  box-shadow: var(--theme-shadow-light);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.theme-card:hover {
+  box-shadow: var(--theme-shadow-medium);
+  transform: translateY(-2px);
+}
+
+/* 主题按钮样式 */
+.theme-button {
+  background-color: var(--theme-primary);
+  color: var(--theme-font-light);
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.theme-button:hover {
+  background-color: var(--theme-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--theme-shadow-light);
+}
+
+.theme-button:active {
+  transform: translateY(0);
+}
+
+/* 主题输入框样式 */
+.theme-input {
+  background-color: var(--theme-surface-primary);
+  color: var(--theme-font-primary);
+  border: 1px solid var(--theme-border-primary);
+  border-radius: 6px;
+  padding: 8px 12px;
+  transition: all 0.3s ease;
+}
+
+.theme-input:focus {
+  border-color: var(--theme-primary);
+  box-shadow: 0 0 0 2px rgba(var(--theme-primary), var(--theme-alpha-20));
+  outline: none;
+}
+
+/* 主题文本样式 */
+.theme-text-primary {
+  color: var(--theme-font-primary);
+}
+
+.theme-text-secondary {
+  color: var(--theme-font-secondary);
+}
+
+.theme-text-tertiary {
+  color: var(--theme-font-tertiary);
+}
+
+/* 主题状态颜色 */
+.theme-success {
+  color: var(--theme-success);
+}
+
+.theme-warning {
+  color: var(--theme-warning);
+}
+
+.theme-error {
+  color: var(--theme-error);
+}
+
+.theme-info {
+  color: var(--theme-info);
+}
+
+/* 主题背景状态颜色 */
+.theme-bg-success {
+  background-color: var(--theme-success);
+}
+
+.theme-bg-warning {
+  background-color: var(--theme-warning);
+}
+
+.theme-bg-error {
+  background-color: var(--theme-error);
+}
+
+.theme-bg-info {
+  background-color: var(--theme-info);
+}

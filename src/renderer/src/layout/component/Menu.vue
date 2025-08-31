@@ -126,37 +126,59 @@ onMounted(async () => {
 .menu {
   height: 100%;
   width: 100%;
-  background-color: var(--color-nav-bg);
+  background: linear-gradient(180deg, var(--color-nav-bg) 0%, var(--color-nav-bg-secondary) 100%);
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  transition: background-color var(--transition-base);
+  transition: all var(--transition-base);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
 
   .menu-header {
-    height: 80px;
+    height: 88px;
     width: 100%;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
-    padding: 12px 8px;
+    padding: 16px 12px;
     box-sizing: border-box;
     cursor: pointer;
     border-bottom: 1px solid var(--color-border-light);
+    background: var(--color-nav-header-bg);
+    position: relative;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--color-primary-alpha-300), transparent);
+    }
 
     .avatar-container {
       position: relative;
-      transition: var(--transition-transform);
+      transition: all var(--transition-base);
+      padding: 4px;
 
       .logo {
         cursor: pointer;
-        border: 2px solid transparent;
+        border: 3px solid transparent;
         transition: all var(--transition-base);
+        border-radius: 50%;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         
         &:hover {
           border-color: var(--color-primary);
-          transform: scale(1.05);
+          transform: scale(1.08);
+          box-shadow: 0 4px 16px rgba(24, 144, 255, 0.3);
+        }
+        
+        &:active {
+          transform: scale(1.02);
         }
       }
 
@@ -216,36 +238,63 @@ onMounted(async () => {
   flex-direction: column;
   user-select: none;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 12px;
   font-size: 11px;
-  width: 64px;
-  height: 64px;
-  margin: 4px auto;
+  width: 68px;
+  height: 68px;
+  margin: 6px auto;
   transition: all var(--transition-base);
   color: var(--color-text-secondary);
+  background: transparent;
+  
+  // 添加微妙的边框
+  border: 1px solid transparent;
 
   &:hover {
-    background-color: var(--color-bg-hover);
+    background: var(--color-bg-hover);
     color: var(--color-text-primary);
-    transform: scale(1.02);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-color: var(--color-primary-alpha-200);
   }
 
   &.active {
-    background-color: var(--color-primary);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
     color: white;
-    font-weight: 500;
+    font-weight: 600;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(24, 144, 255, 0.4);
     
     &::before {
       content: '';
       position: absolute;
-      left: -8px;
+      left: -12px;
       top: 50%;
       transform: translateY(-50%);
-      width: 3px;
-      height: 32px;
-      background-color: var(--color-primary);
-      border-radius: 0 2px 2px 0;
+      width: 4px;
+      height: 40px;
+      background: linear-gradient(180deg, var(--color-primary), var(--color-primary-dark));
+      border-radius: 0 4px 4px 0;
+      box-shadow: 2px 0 4px rgba(24, 144, 255, 0.3);
     }
+    
+    &:hover {
+      transform: translateY(-2px) scale(1.02);
+    }
+  }
+  
+  // 图标容器优化
+  p {
+    margin: 0;
+    margin-bottom: 4px;
+    transition: all var(--transition-base);
+  }
+  
+  // 文字标签优化
+  span {
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    transition: all var(--transition-base);
   }
 
   .hotspot {
@@ -293,125 +342,194 @@ onMounted(async () => {
 // 暗色主题适配
 [data-theme="dark"] {
   .menu {
-    background-color: var(--color-nav-bg);
-    border-right-color: var(--color-nav-border);
+    background: linear-gradient(180deg, #1a1a1a, #0f0f0f);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.5);
   }
   
   .menu-header {
-    border-bottom-color: var(--color-nav-border);
+    background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+    
+    &::after {
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    }
+    
+    .avatar-container .logo {
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      
+      &:hover {
+        border-color: rgba(255, 255, 255, 0.4);
+        box-shadow: 0 4px 16px rgba(255, 255, 255, 0.1), 0 0 0 2px rgba(255, 255, 255, 0.1);
+      }
+    }
   }
   
   .menu-items {
-    color: var(--color-nav-item);
+    color: rgba(255, 255, 255, 0.7);
     
     &:hover {
-      background-color: var(--color-primary-alpha-200);
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.9);
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
     
     &.active {
-      background-color: var(--color-primary-alpha-300);
-      color: var(--color-primary);
+      background: linear-gradient(135deg, rgba(24, 144, 255, 0.2), rgba(24, 144, 255, 0.1));
+      color: #69c0ff;
+      border-color: rgba(24, 144, 255, 0.4);
+      box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+      
+      &::before {
+        background: linear-gradient(180deg, #69c0ff, #1890ff);
+        box-shadow: 2px 0 8px rgba(24, 144, 255, 0.4);
+      }
+      
+      &:hover {
+        background: linear-gradient(135deg, rgba(24, 144, 255, 0.3), rgba(24, 144, 255, 0.2));
+        box-shadow: 0 6px 16px rgba(24, 144, 255, 0.4);
+      }
     }
   }
 }
 
 // 响应式设计
-.mobile-only() {
+// 平板适配 (768px - 1024px)
+@media (max-width: 1024px) and (min-width: 769px) {
   .menu {
-    width: 100%;
-    height: auto;
-    border-right: none;
-    border-bottom: var(--border-width-thin) solid var(--color-nav-border);
-  }
-  
-  .menu-header {
-    height: 80px;
-    padding: var(--spacing-sm) var(--spacing-md);
-    flex-direction: row;
-    justify-content: flex-start;
-    background: var(--gradient-primary);
+    width: 70px;
     
-    .avatar-container {
-      margin-left: 0;
-      margin-right: var(--spacing-md);
+    .menu-header {
+      padding: var(--spacing-lg) var(--spacing-md);
       
-      .logo {
-        width: var(--avatar-size-sm);
-        height: var(--avatar-size-sm);
+      .avatar-container .logo {
+        width: 36px;
+        height: 36px;
       }
     }
     
-    .online-status {
-      margin-top: 0;
-      margin-left: var(--spacing-xs);
-    }
-  }
-  
-  .menu-main {
-    flex-direction: row;
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding: var(--spacing-sm) var(--spacing-md);
-    gap: var(--spacing-sm);
-    .custom-scrollbar();
-  }
-  
-  .menu-items {
-    width: 60px;
-    height: 60px;
-    margin: 0;
-    flex-shrink: 0;
-    font-size: var(--font-size-xs);
-    
-    span {
-      font-size: var(--font-size-xs);
-      margin-top: var(--spacing-xs);
-      .text-ellipsis();
-      max-width: 50px;
+    .menu-items {
+      width: 50px;
+      height: 50px;
+      margin: var(--spacing-sm) var(--spacing-md);
+      
+      p {
+        font-size: 20px;
+      }
+      
+      span {
+        display: none;
+      }
     }
   }
 }
 
-.tablet-only() {
+// 平板适配 (481px - 768px)
+@media (max-width: 768px) and (min-width: 481px) {
   .menu {
-    width: var(--sidebar-width-tablet);
-  }
-  
-  .menu-header {
-    height: 100px;
-    padding-top: var(--spacing-md);
+    width: 60px;
     
-    .avatar-container .logo {
-      width: var(--avatar-size-md);
-      height: var(--avatar-size-md);
+    .menu-header {
+      padding: var(--spacing-md) var(--spacing-sm);
+      
+      .avatar-container .logo {
+        width: 32px;
+        height: 32px;
+        border-width: 2px;
+      }
     }
-  }
-  
-  .menu-items {
-    width: 50px;
-    height: 50px;
-    font-size: var(--font-size-xs);
+    
+    .menu-items {
+      width: 44px;
+      height: 44px;
+      margin: var(--spacing-sm) var(--spacing-sm);
+      
+      p {
+        font-size: 18px;
+      }
+      
+      span {
+        display: none;
+      }
+      
+      &.active::before {
+        width: 3px;
+        height: 60%;
+      }
+    }
   }
 }
 
-// 超小屏幕优化
-.desktop-down(@breakpoint-xs) {
-  .menu-header {
-    height: 60px;
-    padding: var(--spacing-xs) var(--spacing-sm);
+// 移动端适配 (361px - 480px)
+@media (max-width: 480px) and (min-width: 361px) {
+  .menu {
+    width: 50px;
     
-    .avatar-container .logo {
-      width: var(--avatar-size-xs);
-      height: var(--avatar-size-xs);
+    .menu-header {
+      padding: var(--spacing-sm);
+      
+      .avatar-container .logo {
+        width: 28px;
+        height: 28px;
+        border-width: 1px;
+      }
+    }
+    
+    .menu-items {
+      width: 38px;
+      height: 38px;
+      margin: var(--spacing-sm) var(--spacing-xs);
+      
+      p {
+        font-size: 16px;
+      }
+      
+      span {
+        display: none;
+      }
+      
+      &.active::before {
+        width: 2px;
+        height: 50%;
+      }
     }
   }
-  
-  .menu-items {
-    width: 50px;
-    height: 50px;
+}
+
+// 超小屏幕适配 (≤360px)
+@media (max-width: 360px) {
+  .menu {
+    width: 45px;
     
-    span {
-      font-size: 10px;
+    .menu-header {
+      padding: var(--spacing-xs);
+      
+      .avatar-container .logo {
+        width: 24px;
+        height: 24px;
+        border-width: 1px;
+      }
+    }
+    
+    .menu-items {
+      width: 34px;
+      height: 34px;
+      margin: var(--spacing-xs) var(--spacing-xs);
+      
+      p {
+        font-size: 14px;
+      }
+      
+      span {
+        display: none;
+      }
+      
+      &.active::before {
+        width: 2px;
+        height: 40%;
+      }
     }
   }
 }

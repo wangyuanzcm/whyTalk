@@ -5,6 +5,7 @@ import { createApp } from 'vue'
 import router from './router'
 import App from './App.vue'
 import * as plugins from './plugins'
+import { useThemeStore } from '@/store/modules/theme'
 // P2P初始化器已被移除
 
 async function bootstrap() {
@@ -19,6 +20,10 @@ async function bootstrap() {
   plugins.setupDirective(app)
 
   app.mount('#app')
+
+  // 初始化主题系统
+  const themeStore = useThemeStore()
+  await themeStore.initTheme()
 
   // P2P服务初始化代码已被移除
 }

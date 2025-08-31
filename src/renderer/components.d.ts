@@ -52,6 +52,7 @@ declare module 'vue' {
     QuillEditor: typeof import('./src/components/quill-editor/QuillEditor.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    ScreenshotCapture: typeof import('./src/components/Screenshot/ScreenshotCapture.vue')['default']
     SkipBottomButton: typeof import('./src/components/chat/SkipBottomButton.vue')['default']
     TreeMenu: typeof import('./src/components/basic/tree-menu/TreeMenu.vue')['default']
     UpdateManager: typeof import('./src/components/UpdateManager.vue')['default']
