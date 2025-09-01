@@ -1,0 +1,134 @@
+{
+  "name": "requirement-management",
+  "displayName": "需求管理辅助工具",
+  "description": "一个功能强大的需求管理插件，支持需求填写、工时估算、发版管理和测试场景生成",
+  "version": "1.0.0",
+  "publisher": "whytalk",
+  "engines": {
+    "whytalk": "^1.0.0"
+  },
+  "categories": [
+    "Project Management",
+    "Testing",
+    "Productivity"
+  ],
+  "keywords": [
+    "requirement",
+    "management",
+    "testing",
+    "automation",
+    "project",
+    "planning"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:requirement.openDashboard",
+    "onCommand:requirement.createNew",
+    "onCommand:requirement.exportData"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "requirement.openDashboard",
+        "title": "打开需求管理面板",
+        "category": "需求管理"
+      },
+      {
+        "command": "requirement.createNew",
+        "title": "创建新需求",
+        "category": "需求管理"
+      },
+      {
+        "command": "requirement.exportData",
+        "title": "导出需求数据",
+        "category": "需求管理"
+      },
+      {
+        "command": "requirement.generateTests",
+        "title": "生成测试场景",
+        "category": "需求管理"
+      },
+      {
+        "command": "requirement.generateScripts",
+        "title": "生成自动化脚本",
+        "category": "需求管理"
+      }
+    ],
+    "webviews": {
+      "requirement.dashboard": {
+        "title": "需求管理面板",
+        "when": "true",
+        "retainContextWhenHidden": true,
+        "enableScripts": true,
+        "localResourceRoots": [
+          "./webview"
+        ]
+      }
+    },
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "requirement.openDashboard",
+          "when": "true"
+        },
+        {
+          "command": "requirement.createNew",
+          "when": "true"
+        },
+        {
+          "command": "requirement.exportData",
+          "when": "true"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "需求管理设置",
+      "properties": {
+        "requirement.defaultEstimateUnit": {
+          "type": "string",
+          "enum": ["小时", "天", "周"],
+          "default": "小时",
+          "description": "默认工时估算单位"
+        },
+        "requirement.testFramework": {
+          "type": "string",
+          "enum": ["Jest", "Cypress", "Selenium", "Playwright"],
+          "default": "Jest",
+          "description": "默认测试框架"
+        },
+        "requirement.autoSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "自动保存需求数据"
+        },
+        "requirement.exportFormat": {
+          "type": "string",
+          "enum": ["Excel", "JSON", "CSV"],
+          "default": "Excel",
+          "description": "默认导出格式"
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "command": "requirement.openDashboard",
+        "key": "ctrl+shift+r",
+        "when": "true"
+      },
+      {
+        "command": "requirement.createNew",
+        "key": "ctrl+shift+n",
+        "when": "true"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "typescript": "^5.0.0"
+  }
+}

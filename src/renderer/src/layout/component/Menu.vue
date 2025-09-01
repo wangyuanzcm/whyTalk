@@ -10,9 +10,9 @@ const settingsStore = useSettingsStore()
 // talkStore 已迁移到插件中
 
 const color = computed(() => {
-  return settingsStore.currentThemeMode == 'dark' ? '#ffffff' : '#333'
+  return settingsStore.currentThemeMode == 'dark' ? '#ffffff' : '#333333'
 })
-
+console.log(settingsStore.currentThemeMode, color, 'color')
 // 动态菜单项，从菜单store获取
 const menus = computed(() => {
   // 为核心菜单项添加hotspot逻辑
@@ -45,12 +45,16 @@ const isActive = (menu) => {
 
 // 初始化菜单配置和插件同步
 onMounted(async () => {
+  // 初始化菜单配置
   menuStore.loadMenuConfig()
 
   // 同步插件到菜单系统
   try {
     const PluginAPI = (await import('@/api/plugin')).default
-    const result = await PluginAPI.listPlugins() as { success: boolean; plugins?: Array<{ enabled: boolean; [key: string]: unknown }> }
+    const result = (await PluginAPI.listPlugins()) as {
+      success: boolean
+      plugins?: Array<{ enabled: boolean; [key: string]: unknown }>
+    }
     if (result.success && result.plugins) {
       const enabledPlugins = result.plugins.filter((plugin) => plugin.enabled)
       menuStore.syncPluginsToMenuItems(enabledPlugins)
@@ -82,13 +86,7 @@ onMounted(async () => {
           </template>
           <AccountCard />
         </n-popover>
-
-        <!-- P2P状态圆点已被移除 -->
       </div>
-      <!-- 
-      <span class="online-status" :class="{ online: userStore.online }">
-        {{ userStore.online ? '在线' : '连接中...' }}
-      </span> -->
     </header>
 
     <main class="menu-main">
@@ -101,19 +99,15 @@ onMounted(async () => {
         }"
         @click="onClickMenu(nav)"
       >
-        <!-- 消息提示 -->
-        <div v-if="nav.hotspot" class="hotspot" />
-
         <p>
           <component
             :is="nav.icon"
             :theme="isActive(nav) ? 'filled' : 'outline'"
-            :fill="isActive(nav) ? '#1890ff' : color"
+            :fill="isActive(nav) ? '#1890ff' : color.value"
             :stroke-width="2"
             :size="22"
           />
         </p>
-
         <span>{{ nav.title }}</span>
       </div>
     </main>
@@ -147,7 +141,7 @@ onMounted(async () => {
     border-bottom: 1px solid var(--color-border-light);
     background: var(--color-nav-header-bg);
     position: relative;
-    
+
     &::after {
       content: '';
       position: absolute;
@@ -170,13 +164,13 @@ onMounted(async () => {
         transition: all var(--transition-base);
         border-radius: 50%;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        
+
         &:hover {
           border-color: var(--color-primary);
           transform: scale(1.08);
           box-shadow: 0 4px 16px rgba(24, 144, 255, 0.3);
         }
-        
+
         &:active {
           transform: scale(1.02);
         }
@@ -209,20 +203,20 @@ onMounted(async () => {
     width: 100%;
     overflow-y: auto;
     padding: 8px 0;
-    
+
     // 自定义滚动条
     &::-webkit-scrollbar {
       width: 4px;
     }
-    
+
     &::-webkit-scrollbar-track {
       background: transparent;
     }
-    
+
     &::-webkit-scrollbar-thumb {
       background: var(--color-gray-300);
       border-radius: 2px;
-      
+
       &:hover {
         background: var(--color-gray-400);
       }
@@ -246,7 +240,6 @@ onMounted(async () => {
   transition: all var(--transition-base);
   color: var(--color-text-secondary);
   background: transparent;
-  
   // 添加微妙的边框
   border: 1px solid transparent;
 
@@ -264,7 +257,7 @@ onMounted(async () => {
     font-weight: 600;
     transform: translateY(-1px);
     box-shadow: 0 6px 16px rgba(24, 144, 255, 0.4);
-    
+
     &::before {
       content: '';
       position: absolute;
@@ -277,19 +270,19 @@ onMounted(async () => {
       border-radius: 0 4px 4px 0;
       box-shadow: 2px 0 4px rgba(24, 144, 255, 0.3);
     }
-    
+
     &:hover {
       transform: translateY(-2px) scale(1.02);
     }
   }
-  
+
   // 图标容器优化
   p {
     margin: 0;
     margin-bottom: 4px;
     transition: all var(--transition-base);
   }
-  
+
   // 文字标签优化
   span {
     font-weight: 500;
@@ -340,53 +333,55 @@ onMounted(async () => {
 }
 
 // 暗色主题适配
-[data-theme="dark"] {
+[data-theme='dark'] {
   .menu {
     background: linear-gradient(180deg, #1a1a1a, #0f0f0f);
     border-color: rgba(255, 255, 255, 0.1);
     box-shadow: 2px 0 12px rgba(0, 0, 0, 0.5);
   }
-  
+
   .menu-header {
     background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
     border-bottom-color: rgba(255, 255, 255, 0.1);
-    
+
     &::after {
       background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
     }
-    
+
     .avatar-container .logo {
       border-color: rgba(255, 255, 255, 0.2);
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-      
+
       &:hover {
         border-color: rgba(255, 255, 255, 0.4);
-        box-shadow: 0 4px 16px rgba(255, 255, 255, 0.1), 0 0 0 2px rgba(255, 255, 255, 0.1);
+        box-shadow:
+          0 4px 16px rgba(255, 255, 255, 0.1),
+          0 0 0 2px rgba(255, 255, 255, 0.1);
       }
     }
   }
-  
+
   .menu-items {
-    color: rgba(255, 255, 255, 0.7);
-    
+    color: rgba(0, 0, 0, 0.7);
+
     &:hover {
       background: rgba(255, 255, 255, 0.08);
       color: rgba(255, 255, 255, 0.9);
       border-color: rgba(255, 255, 255, 0.2);
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
-    
+
     &.active {
       background: linear-gradient(135deg, rgba(24, 144, 255, 0.2), rgba(24, 144, 255, 0.1));
       color: #69c0ff;
       border-color: rgba(24, 144, 255, 0.4);
       box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
-      
+
       &::before {
         background: linear-gradient(180deg, #69c0ff, #1890ff);
         box-shadow: 2px 0 8px rgba(24, 144, 255, 0.4);
       }
-      
+
       &:hover {
         background: linear-gradient(135deg, rgba(24, 144, 255, 0.3), rgba(24, 144, 255, 0.2));
         box-shadow: 0 6px 16px rgba(24, 144, 255, 0.4);
@@ -395,155 +390,28 @@ onMounted(async () => {
   }
 }
 
-// 响应式设计
-// 平板适配 (768px - 1024px)
-@media (max-width: 1024px) and (min-width: 769px) {
-  .menu {
-    width: 70px;
-    
-    .menu-header {
-      padding: var(--spacing-lg) var(--spacing-md);
-      
-      .avatar-container .logo {
-        width: 36px;
-        height: 36px;
-      }
-    }
-    
-    .menu-items {
-      width: 50px;
-      height: 50px;
-      margin: var(--spacing-sm) var(--spacing-md);
-      
-      p {
-        font-size: 20px;
-      }
-      
-      span {
-        display: none;
-      }
-    }
-  }
-}
-
-// 平板适配 (481px - 768px)
-@media (max-width: 768px) and (min-width: 481px) {
-  .menu {
-    width: 60px;
-    
-    .menu-header {
-      padding: var(--spacing-md) var(--spacing-sm);
-      
-      .avatar-container .logo {
-        width: 32px;
-        height: 32px;
-        border-width: 2px;
-      }
-    }
-    
-    .menu-items {
-      width: 44px;
-      height: 44px;
-      margin: var(--spacing-sm) var(--spacing-sm);
-      
-      p {
-        font-size: 18px;
-      }
-      
-      span {
-        display: none;
-      }
-      
-      &.active::before {
-        width: 3px;
-        height: 60%;
-      }
-    }
-  }
-}
-
-// 移动端适配 (361px - 480px)
-@media (max-width: 480px) and (min-width: 361px) {
-  .menu {
-    width: 50px;
-    
-    .menu-header {
-      padding: var(--spacing-sm);
-      
-      .avatar-container .logo {
-        width: 28px;
-        height: 28px;
-        border-width: 1px;
-      }
-    }
-    
-    .menu-items {
-      width: 38px;
-      height: 38px;
-      margin: var(--spacing-sm) var(--spacing-xs);
-      
-      p {
-        font-size: 16px;
-      }
-      
-      span {
-        display: none;
-      }
-      
-      &.active::before {
-        width: 2px;
-        height: 50%;
-      }
-    }
-  }
-}
-
-// 超小屏幕适配 (≤360px)
-@media (max-width: 360px) {
-  .menu {
-    width: 45px;
-    
-    .menu-header {
-      padding: var(--spacing-xs);
-      
-      .avatar-container .logo {
-        width: 24px;
-        height: 24px;
-        border-width: 1px;
-      }
-    }
-    
-    .menu-items {
-      width: 34px;
-      height: 34px;
-      margin: var(--spacing-xs) var(--spacing-xs);
-      
-      p {
-        font-size: 14px;
-      }
-      
-      span {
-        display: none;
-      }
-      
-      &.active::before {
-        width: 2px;
-        height: 40%;
-      }
-    }
-  }
-}
-
 // 动画增强
 .menu-items {
   .slide-in-from-left(10px, var(--transition-duration-fast));
-  
-  &:nth-child(1) { animation-delay: 0ms; }
-  &:nth-child(2) { animation-delay: 50ms; }
-  &:nth-child(3) { animation-delay: 100ms; }
-  &:nth-child(4) { animation-delay: 150ms; }
-  &:nth-child(5) { animation-delay: 200ms; }
-  &:nth-child(6) { animation-delay: 250ms; }
+
+  &:nth-child(1) {
+    animation-delay: 0ms;
+  }
+  &:nth-child(2) {
+    animation-delay: 50ms;
+  }
+  &:nth-child(3) {
+    animation-delay: 100ms;
+  }
+  &:nth-child(4) {
+    animation-delay: 150ms;
+  }
+  &:nth-child(5) {
+    animation-delay: 200ms;
+  }
+  &:nth-child(6) {
+    animation-delay: 250ms;
+  }
 }
 
 .menu-header {

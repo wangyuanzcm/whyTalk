@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>需求管理辅助工具</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 头部导航 -->
+        <header class="header">
+            <h1>需求管理辅助工具</h1>
+            <div class="header-actions">
+                <button id="newRequirementBtn" class="btn btn-primary">
+                    <span class="icon">+</span>
+                    新建需求
+                </button>
+                <button id="importBtn" class="btn btn-secondary">
+                    <span class="icon">📁</span>
+                    导入
+                </button>
+                <button id="exportBtn" class="btn btn-secondary">
+                    <span class="icon">💾</span>
+                    导出
+                </button>
+            </div>
+        </header>
+
+        <!-- 工具栏 -->
+        <div class="toolbar">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="搜索需求..." class="search-input">
+                <button id="searchBtn" class="search-btn">🔍</button>
+            </div>
+            <div class="filter-box">
+                <select id="statusFilter" class="filter-select">
+                    <option value="">所有状态</option>
+                    <option value="draft">草稿</option>
+                    <option value="review">评审中</option>
+                    <option value="approved">已批准</option>
+                    <option value="development">开发中</option>
+                    <option value="testing">测试中</option>
+                    <option value="completed">已完成</option>
+                    <option value="cancelled">已取消</option>
+                </select>
+                <select id="priorityFilter" class="filter-select">
+                    <option value="">所有优先级</option>
+                    <option value="high">高</option>
+                    <option value="medium">中</option>
+                    <option value="low">低</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 主要内容区域 -->
+        <main class="main-content">
+            <!-- 需求列表 -->
+            <div class="requirements-panel">
+                <div class="panel-header">
+                    <h2>需求列表</h2>
+                    <div class="panel-actions">
+                        <button id="refreshBtn" class="btn btn-small">刷新</button>
+                        <button id="generateTestsBtn" class="btn btn-small btn-success">生成测试</button>
+                        <button id="generateScriptsBtn" class="btn btn-small btn-warning">生成脚本</button>
+                    </div>
+                </div>
+                <div class="requirements-list" id="requirementsList">
+                    <!-- 需求项将通过JavaScript动态生成 -->
+                </div>
+            </div>
+
+            <!-- 需求详情/编辑面板 -->
+            <div class="details-panel" id="detailsPanel">
+                <div class="panel-header">
+                    <h2 id="detailsTitle">需求详情</h2>
+                    <div class="panel-actions">
+                        <button id="editBtn" class="btn btn-small btn-primary">编辑</button>
+                        <button id="saveBtn" class="btn btn-small btn-success" style="display: none;">保存</button>
+                        <button id="cancelBtn" class="btn btn-small btn-secondary" style="display: none;">取消</button>
+                        <button id="deleteBtn" class="btn btn-small btn-danger">删除</button>
+                    </div>
+                </div>
+                <div class="details-content" id="detailsContent">
+                    <div class="empty-state">
+                        <p>请选择一个需求查看详情</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 需求表单模态框 -->
+        <div id="requirementModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="modalTitle">新建需求</h3>
+                    <button class="modal-close" id="modalClose">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="requirementForm">
+                        <!-- 基本信息 -->
+                        <div class="form-section">
+                            <h4>基本信息</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="title">需求标题 *</label>
+                                    <input type="text" id="title" name="title" required class="form-input">
+                                </div>
+                                <div class="form-group">
+                                    <label for="priority">优先级 *</label>
+                                    <select id="priority" name="priority" required class="form-select">
+                                        <option value="high">高</option>
+                                        <option value="medium" selected>中</option>
+                                        <option value="low">低</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="description">需求描述 *</label>
+                                <textarea id="description" name="description" required class="form-textarea" rows="4"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- 工时信息 -->
+                        <div class="form-section">
+                            <h4>工时估算</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="estimatedHours">预估工时（小时）</label>
+                                    <input type="number" id="estimatedHours" name="estimatedHours" min="0" step="0.5" class="form-input">
+                                </div>
+                                <div class="form-group">
+                                    <label for="actualHours">实际工时（小时）</label>
+                                    <input type="number" id="actualHours" name="actualHours" min="0" step="0.5" class="form-input">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 发版信息 -->
+                        <div class="form-section">
+                            <h4>发版信息</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="targetVersion">目标版本</label>
+                                    <input type="text" id="targetVersion" name="targetVersion" class="form-input" placeholder="如：v1.2.0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="releaseDate">计划发版日期</label>
+                                    <input type="date" id="releaseDate" name="releaseDate" class="form-input">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="releaseNotes">发版说明</label>
+                                <textarea id="releaseNotes" name="releaseNotes" class="form-textarea" rows="3" placeholder="描述此需求在发版中的变更内容"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- 状态和分配 -->
+                        <div class="form-section">
+                            <h4>状态管理</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="status">状态</label>
+                                    <select id="status" name="status" class="form-select">
+                                        <option value="draft" selected>草稿</option>
+                                        <option value="review">评审中</option>
+                                        <option value="approved">已批准</option>
+                                        <option value="development">开发中</option>
+                                        <option value="testing">测试中</option>
+                                        <option value="completed">已完成</option>
+                                        <option value="cancelled">已取消</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="assignee">负责人</label>
+                                    <input type="text" id="assignee" name="assignee" class="form-input" placeholder="输入负责人姓名">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 标签 -->
+                        <div class="form-section">
+                            <h4>标签</h4>
+                            <div class="form-group">
+                                <label for="tags">标签</label>
+                                <input type="text" id="tags" name="tags" class="form-input" placeholder="用逗号分隔多个标签">
+                                <small class="form-help">例如：前端,API,数据库</small>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="modalCancelBtn">取消</button>
+                    <button type="submit" form="requirementForm" class="btn btn-primary" id="modalSaveBtn">保存</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 测试场景生成模态框 -->
+        <div id="testScenariosModal" class="modal">
+            <div class="modal-content modal-large">
+                <div class="modal-header">
+                    <h3>测试场景</h3>
+                    <button class="modal-close" id="testScenariosModalClose">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="test-scenarios-content" id="testScenariosContent">
+                        <!-- 测试场景内容将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="testScenariosCloseBtn">关闭</button>
+                    <button type="button" class="btn btn-primary" id="exportTestScenariosBtn">导出测试场景</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 自动化脚本模态框 -->
+        <div id="automationScriptsModal" class="modal">
+            <div class="modal-content modal-large">
+                <div class="modal-header">
+                    <h3>自动化脚本</h3>
+                    <button class="modal-close" id="automationScriptsModalClose">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="script-options">
+                        <div class="form-group">
+                            <label for="frameworkSelect">测试框架</label>
+                            <select id="frameworkSelect" class="form-select">
+                                <option value="Jest">Jest</option>
+                                <option value="Cypress">Cypress</option>
+                                <option value="Selenium">Selenium</option>
+                                <option value="Playwright">Playwright</option>
+                            </select>
+                        </div>
+                        <button id="generateScriptsBtn" class="btn btn-primary">生成脚本</button>
+                    </div>
+                    <div class="automation-scripts-content" id="automationScriptsContent">
+                        <!-- 自动化脚本内容将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="automationScriptsCloseBtn">关闭</button>
+                    <button type="button" class="btn btn-primary" id="exportScriptsBtn">导出脚本</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 加载指示器 -->
+        <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p>处理中...</p>
+        </div>
+
+        <!-- 通知消息 -->
+        <div id="notification" class="notification" style="display: none;">
+            <span id="notificationMessage"></span>
+            <button id="notificationClose" class="notification-close">&times;</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -6,7 +6,10 @@ import {
   Message,
   People,
   BookmarkOne,
-  Application
+  Application,
+  FileText,
+  CheckOne,
+  TableFile
 } from '@icon-park/vue-next'
 
 // 菜单项接口
@@ -130,8 +133,8 @@ export const useMenuStore = defineStore('menu', {
     // 加载菜单配置
     loadMenuConfig() {
       const defaultConfig = {
-        enabledPlugins: ['message-plugin', 'contact-plugin'], // 笔记插件默认不启用
-        pluginOrder: ['message-plugin', 'contact-plugin', 'note-plugin'],
+        enabledPlugins: ['frontend_message-plugin_1.0.0', 'frontend_contact-plugin_1.0.0'], // 笔记插件默认不启用
+        pluginOrder: ['frontend_message-plugin_1.0.0', 'frontend_contact-plugin_1.0.0', 'frontend_note-plugin_1.0.0'],
         coreMenuOrder: ['workspace', 'settings'] // 核心菜单项的默认顺序（P2P已移除）
       }
       const savedConfig = storage.get('menuConfig', defaultConfig)
@@ -162,10 +165,33 @@ export const useMenuStore = defineStore('menu', {
         pluginConfig?.shortName || pluginConfig?.menuTitle || pluginConfig?.name || pluginId
       )
 
+      // 根据插件ID或配置选择合适的图标
+      let pluginIcon = Application // 默认图标
+      
+      // 如果插件配置中有图标信息，优先使用
+      if (pluginConfig?.icon) {
+        pluginIcon = pluginConfig.icon as any
+      } else {
+        // 根据插件ID设置特定图标
+         switch (pluginId) {
+           case 'requirement-management':
+             pluginIcon = FileText
+             break
+           case 'task-manager':
+             pluginIcon = CheckOne
+             break
+           case 'data-analysis':
+             pluginIcon = TableFile
+             break
+           default:
+             pluginIcon = Application
+         }
+      }
+
       return {
         id: pluginId,
         link: `/plugin/${pluginId}`,
-        icon: markRaw(Application), // 默认使用Application图标
+        icon: markRaw(pluginIcon),
         title: displayTitle,
         pluginId: pluginId
       }
