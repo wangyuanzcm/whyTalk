@@ -14,8 +14,6 @@ const urlCallback = () => {
     window.location.reload()
   }
 
-  // P2P 模式已被移除，始终使用 WebSocket 连接
-
   // 检查 SOCKET_API 是否配置
   if (!import.meta.env.VITE_SOCKET_API) {
     console.warn('VITE_SOCKET_API not configured, skipping WebSocket connection')
@@ -27,13 +25,9 @@ const urlCallback = () => {
 
 class Connect {
   private conn: WsSocket | null = null
-  // P2P 模式已被移除
-  // private isP2PMode: boolean
   private initialized: boolean = false
 
   constructor() {
-    // P2P 模式已被移除
-    // this.isP2PMode = import.meta.env.VITE_P2P_MODE === 'true'
   }
 
   private initialize() {
@@ -64,8 +58,6 @@ class Connect {
 
       this.bindEvents()
     } else {
-      console.log('P2P mode enabled, skipping WebSocket connection')
-      // 在 P2P 模式下，直接设置为已连接状态
       useUserStore().updateSocketStatus(true)
       // TODO: 通过插件间通信加载对话列表
       // if (isLogin()) {
@@ -76,30 +68,25 @@ class Connect {
 
   connect() {
     this.initialize()
-    // P2P 模式已被移除，直接使用 WebSocket 连接
     this.conn?.connection()
   }
 
   disconnect() {
     this.initialize()
-    // P2P 模式已被移除，直接使用 WebSocket 断开
     this.conn?.close()
   }
 
   isConnect() {
     this.initialize()
-    // P2P 模式已被移除，直接检查 WebSocket 连接状态
     return this.conn?.connect?.readyState === WebSocket.OPEN
   }
 
   emit(event: string, data: any) {
     this.initialize()
-    // P2P 模式已被移除，直接使用 WebSocket 发送事件
     this.conn?.emit(event, data)
   }
 
   bindEvents() {
-    // P2P 模式已被移除，直接绑定 WebSocket 事件
     if (!this.conn) {
       return
     }

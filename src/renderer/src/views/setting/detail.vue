@@ -76,9 +76,9 @@ loadDetail()
 </script>
 
 <template>
-  <h3 class="title">个人信息</h3>
+  <h3 class="title">个人中心</h3>
 
-  <section class="el-container container">
+  <section class="container">
     <aside class="el-aside el-aside-left">
       <n-avatar
         :size="150"
@@ -97,19 +97,11 @@ loadDetail()
         label-width="auto"
         require-mark-placement="right-hanging"
         size="medium"
-        style="max-width: 500px; margin-top: 25px"
+        style="margin-top: 25px"
       >
         <n-form-item label="登录账号：">
           {{ hidePhone(detail.mobile) }}
-          <n-button class="mt-l15" type="primary" text @click="router.push('/settings/security')">
-            修改
-          </n-button>
-        </n-form-item>
-        <n-form-item label="电子邮箱：">
-          {{ detail.email }}
-          <n-button class="mt-l15" type="primary" text @click="router.push('/settings/security')">
-            修改
-          </n-button>
+          <n-button type="primary" text @click="router.push('/settings/security')"> 修改 </n-button>
         </n-form-item>
         <n-form-item label="我的昵称：">
           <n-input
@@ -180,7 +172,6 @@ loadDetail()
 }
 
 .container {
-  .flex-row();
   gap: var(--spacing-xl);
   background: var(--color-bg-content);
   border-radius: var(--border-radius-lg);
@@ -192,28 +183,28 @@ loadDetail()
 .el-aside-left {
   .flex-column();
   align-items: center;
-  width: 200px;
+  // width: 200px;
   flex-shrink: 0;
-  
+
   .avatar-box {
     background: var(--color-bg-secondary);
     border-radius: var(--border-radius-lg);
     margin-bottom: var(--spacing-lg);
     transition: all var(--transition-base);
     border: 2px solid var(--color-border-light);
-    
+
     &:hover {
       border-color: var(--color-primary);
       transform: scale(1.02);
       .card-shadow-hover();
     }
   }
-  
+
   :deep(.n-button) {
     color: var(--color-primary);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
-    
+
     &:hover {
       color: var(--color-primary-hover);
     }
@@ -223,87 +214,87 @@ loadDetail()
 .el-main {
   flex: 1;
   padding: 0;
-  
+
   :deep(.n-form) {
-    max-width: 500px;
-    
+    max-width: 800px;
+    margin: 0 auto;
     .n-form-item {
-      margin-bottom: var(--spacing-lg);
-      
+      margin-bottom: var(--spacing-sm);
+
       .n-form-item-label {
         font-weight: var(--font-weight-medium);
         color: var(--color-text-primary);
         font-size: var(--font-size-sm);
       }
-      
+
       .n-form-item-blank {
         .flex-center();
         justify-content: flex-start;
         gap: var(--spacing-md);
-        
+
         .n-input {
           border-radius: var(--border-radius-md);
           border: 1px solid var(--color-border-light);
           transition: all var(--transition-base);
-          
+
           &:hover {
             border-color: var(--color-primary-light);
           }
-          
+
           &:focus-within {
             border-color: var(--color-primary);
             .card-shadow();
           }
         }
-        
+
         .n-date-picker {
           border-radius: var(--border-radius-md);
-          
+
           .n-input {
             border-radius: var(--border-radius-md);
           }
         }
-        
+
         .n-radio-group {
           .n-radio {
             margin-right: var(--spacing-lg);
-            
+
             .n-radio__label {
               font-size: var(--font-size-sm);
               color: var(--color-text-primary);
             }
           }
         }
-        
+
         .n-button {
           &.n-button--text-type {
             color: var(--color-primary);
             font-size: var(--font-size-sm);
-            padding: var(--spacing-xs) var(--spacing-sm);
+            padding: var(--spacing-sm);
             border-radius: var(--border-radius-sm);
             transition: all var(--transition-base);
-            
+
             &:hover {
               background: var(--color-primary-light);
               color: var(--color-primary-hover);
             }
           }
-          
+
           &.n-button--primary-type {
             background: var(--color-primary);
             border: none;
-            border-radius: var(--border-radius-md);
-            padding: var(--spacing-md) var(--spacing-xl);
+            border-radius: var(--border-radius-sm);
+            padding: 0 var(--spacing-sm);
             font-weight: var(--font-weight-medium);
             transition: all var(--transition-base);
             margin-left: 0;
-            
+
             &:hover {
               background: var(--color-primary-hover);
               transform: translateY(-1px);
               .card-shadow();
             }
-            
+
             &:active {
               transform: translateY(0);
             }
@@ -311,7 +302,7 @@ loadDetail()
         }
       }
     }
-    
+
     // 账号和邮箱显示样式
     .n-form-item:nth-child(1),
     .n-form-item:nth-child(2) {
@@ -320,7 +311,7 @@ loadDetail()
         color: var(--color-text-secondary);
         font-family: var(--font-family-mono);
         background: var(--color-bg-secondary);
-        padding: var(--spacing-sm) var(--spacing-md);
+        // padding: var(--spacing-sm);
         border-radius: var(--border-radius-md);
         border: 1px solid var(--color-border-light);
       }
@@ -337,21 +328,19 @@ loadDetail()
   .container();
   .spacing-responsive(var(--spacing-lg), var(--spacing-xl));
 }
-
-// 平板端优化
-.tablet-only() {
+.desktop-only() {
   .container {
-    .flex-column();
+    .flex-row();
     gap: var(--spacing-lg);
     padding: var(--spacing-lg);
   }
-  
+
   .el-aside-left {
     width: 100%;
-    .flex-row();
+    .flex-column();
     justify-content: center;
     gap: var(--spacing-lg);
-    
+
     .avatar-box {
       margin-bottom: 0;
       :deep(.n-avatar) {
@@ -360,11 +349,11 @@ loadDetail()
       }
     }
   }
-  
+
   .el-main {
     :deep(.n-form) {
       max-width: 100%;
-      
+
       .n-form-item {
         .n-form-item-label {
           min-width: 100px;
@@ -373,147 +362,36 @@ loadDetail()
     }
   }
 }
-
-// 移动端优化
-.mobile-only() {
-  .title {
-    font-size: var(--font-size-md);
-    margin-bottom: var(--spacing-md);
-    text-align: center;
-  }
-  
+// 平板端优化
+.tablet-only() {
   .container {
     .flex-column();
-    padding: var(--spacing-md);
-    gap: var(--spacing-md);
+    gap: var(--spacing-lg);
+    padding: var(--spacing-lg);
   }
-  
+
   .el-aside-left {
     width: 100%;
     .flex-column();
-    align-items: center;
-    
-    .avatar-box {
-      margin-bottom: var(--spacing-sm);
-      
-      :deep(.n-avatar) {
-        width: 100px !important;
-        height: 100px !important;
-      }
-    }
-    
-    :deep(.n-button) {
-      font-size: var(--font-size-xs);
-    }
-  }
-  
-  .el-main {
-    :deep(.n-form) {
-      .n-form-item {
-        margin-bottom: var(--spacing-md);
-        
-        .n-form-item-label {
-          margin-bottom: var(--spacing-xs);
-          font-size: var(--font-size-xs);
-          min-width: auto;
-        }
-        
-        .n-form-item-blank {
-          .flex-column();
-          align-items: stretch;
-          gap: var(--spacing-xs);
-          
-          .n-input {
-            width: 100%;
-          }
-          
-          .n-date-picker {
-            width: 100%;
-          }
-          
-          .n-radio-group {
-            .n-radio {
-              margin-right: var(--spacing-md);
-              margin-bottom: var(--spacing-xs);
-            }
-          }
-          
-          .n-button {
-            &.n-button--text-type {
-              align-self: flex-start;
-              padding: var(--spacing-xs);
-            }
-          }
-        }
-      }
-      
-      // 账号和邮箱在移动端的特殊处理
-      .n-form-item:nth-child(1),
-      .n-form-item:nth-child(2) {
-        .n-form-item-blank {
-          .flex-row();
-          align-items: center;
-          justify-content: space-between;
-          padding: var(--spacing-sm);
-          font-size: var(--font-size-xs);
-          
-          .n-button {
-            margin-left: var(--spacing-xs);
-            flex-shrink: 0;
-          }
-        }
-      }
-      
-      // 保存按钮在移动端的处理
-      .n-form-item:last-child {
-        .n-form-item-blank {
-          justify-content: center;
-          
-          .n-button {
-            &.n-button--primary-type {
-              width: 100%;
-              margin-left: 0;
-              padding: var(--spacing-md);
-            }
-          }
-        }
-      }
-    }
-  }
-}
+    justify-content: center;
+    gap: var(--spacing-lg);
 
-// 超小屏幕优化
-.desktop-down(@breakpoint-xs) {
-  .title {
-    font-size: var(--font-size-sm);
-  }
-  
-  .container {
-    padding: var(--spacing-sm);
-  }
-  
-  .el-aside-left {
     .avatar-box {
+      margin-bottom: 0;
       :deep(.n-avatar) {
-        width: 80px !important;
-        height: 80px !important;
+        width: 120px !important;
+        height: 120px !important;
       }
     }
   }
-  
+
   .el-main {
     :deep(.n-form) {
+      max-width: 100%;
+
       .n-form-item {
-        margin-bottom: var(--spacing-sm);
-        
         .n-form-item-label {
-          font-size: var(--font-size-2xs);
-        }
-        
-        .n-form-item-blank {
-          .n-input {
-            font-size: var(--font-size-xs);
-          }
+          min-width: 100px;
         }
       }
     }
@@ -525,71 +403,71 @@ loadDetail()
   .title {
     color: var(--color-text-primary-dark);
   }
-  
+
   .container {
     background: var(--color-bg-content-dark);
     border-color: var(--color-border-dark);
   }
-  
+
   .el-aside-left {
     .avatar-box {
       background: var(--color-bg-secondary-dark);
       border-color: var(--color-border-dark);
-      
+
       &:hover {
         border-color: var(--color-primary-dark);
       }
     }
-    
+
     :deep(.n-button) {
       color: var(--color-primary-dark);
-      
+
       &:hover {
         color: var(--color-primary-dark-hover);
       }
     }
   }
-  
+
   .el-main {
     :deep(.n-form) {
       .n-form-item {
         .n-form-item-label {
           color: var(--color-text-primary-dark);
         }
-        
+
         .n-form-item-blank {
           .n-input {
             border-color: var(--color-border-dark);
             background: var(--color-bg-input-dark);
-            
+
             &:hover {
               border-color: var(--color-primary-dark-light);
             }
-            
+
             &:focus-within {
               border-color: var(--color-primary-dark);
             }
           }
-          
+
           .n-radio {
             .n-radio__label {
               color: var(--color-text-primary-dark);
             }
           }
-          
+
           .n-button {
             &.n-button--text-type {
               color: var(--color-primary-dark);
-              
+
               &:hover {
                 background: var(--color-primary-dark-light);
                 color: var(--color-primary-dark-hover);
               }
             }
-            
+
             &.n-button--primary-type {
               background: var(--color-primary-dark);
-              
+
               &:hover {
                 background: var(--color-primary-dark-hover);
               }
@@ -597,7 +475,7 @@ loadDetail()
           }
         }
       }
-      
+
       // 账号和邮箱显示样式 - 暗色主题
       .n-form-item:nth-child(1),
       .n-form-item:nth-child(2) {

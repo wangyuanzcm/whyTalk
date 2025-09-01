@@ -195,18 +195,25 @@ onMounted(() => {
           </NEmpty>
         </div>
 
-        <NGrid v-else :cols="3" :x-gap="16" :y-gap="16" class="plugin-grid">
+        <NGrid v-else :cols="3" :x-gap="12" :y-gap="12" class="plugin-grid">
           <NGridItem v-for="plugin in plugins" :key="plugin.id">
-            <NCard class="plugin-card" hoverable :class="{ 'plugin-disabled': !plugin.enabled }">
+            <NCard
+              class="plugin-card"
+              hoverable
+              bordered
+              :class="{ 'plugin-disabled': !plugin.enabled }"
+            >
               <template #header>
                 <div class="plugin-header">
                   <div class="plugin-info">
                     <h3 class="plugin-name">{{ plugin.config.name }}</h3>
-                    <p class="plugin-version">v{{ plugin.config.version }}</p>
+                    <p class="plugin-version">
+                      v{{ plugin.config.version }}
+                      <NTag :type="getStatusColor(plugin.enabled)" size="small">
+                        {{ getStatusText(plugin.enabled) }}
+                      </NTag>
+                    </p>
                   </div>
-                  <NTag :type="getStatusColor(plugin.enabled)" size="small">
-                    {{ getStatusText(plugin.enabled) }}
-                  </NTag>
                 </div>
               </template>
 
@@ -235,11 +242,10 @@ onMounted(() => {
                   <NTooltip trigger="hover">
                     <template #trigger>
                       <NButton
-                        type="primary"
-                        size="small"
                         :disabled="
                           !plugin.enabled || (plugin.type === 'system' && !plugin.config.ui)
                         "
+                        :bordered="false"
                         @click="openPlugin(plugin)"
                       >
                         <Play :size="16" style="margin-right: 4px" />
@@ -253,7 +259,7 @@ onMounted(() => {
                     <span v-else>打开插件应用</span>
                   </NTooltip>
 
-                  <NButton size="small" quaternary @click="configurePlugin(plugin)">
+                  <NButton :bordered="false" @click="configurePlugin(plugin)">
                     <Setting :size="16" style="margin-right: 4px" />
                     配置
                   </NButton>
@@ -279,8 +285,10 @@ onMounted(() => {
 }
 
 .workspace-header {
+  display: flex;
+  flex-direction: row;
   margin-bottom: var(--spacing-xl);
-  padding-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-sm);
   border-bottom: 1px solid var(--color-border-light);
 
   h2 {
@@ -290,7 +298,7 @@ onMounted(() => {
     color: var(--color-text-primary);
     .flex-center();
     justify-content: flex-start;
-    
+    margin-right: var(--spacing-sm);
     // 图标样式
     :deep(.icon-park-icon) {
       margin-right: var(--spacing-sm);
@@ -299,7 +307,8 @@ onMounted(() => {
   }
 
   .workspace-description {
-    margin: 0;
+    // margin: 0;
+    .flex-center();
     color: var(--color-text-secondary);
     font-size: var(--font-size-sm);
     line-height: var(--line-height-relaxed);
@@ -314,7 +323,7 @@ onMounted(() => {
 .empty-container {
   .flex-center();
   min-height: 300px;
-  
+
   :deep(.n-empty) {
     .n-empty__description {
       color: var(--color-text-secondary);
@@ -333,7 +342,7 @@ onMounted(() => {
   border: 1px solid var(--color-border-light);
   border-radius: var(--border-radius-lg);
   overflow: hidden;
-  
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
@@ -350,12 +359,12 @@ onMounted(() => {
       border-color: var(--color-border-light);
     }
   }
-  
+
   // 卡片内容样式
   :deep(.n-card__content) {
-    padding: var(--spacing-lg);
+    padding: 0 var(--spacing-lg);
   }
-  
+
   :deep(.n-card__action) {
     padding: var(--spacing-md) var(--spacing-lg);
     background: var(--color-bg-card-footer);
@@ -390,7 +399,7 @@ onMounted(() => {
 
 .plugin-content {
   .plugin-description {
-    margin: 0 0 var(--spacing-md) 0;
+    margin: 0 0 var(--spacing-sm) 0;
     font-size: var(--font-size-sm);
     color: var(--color-text-secondary);
     line-height: var(--line-height-relaxed);
@@ -424,11 +433,11 @@ onMounted(() => {
 .plugin-actions {
   .flex-end();
   gap: var(--spacing-sm);
-  
+
   :deep(.n-button) {
     border-radius: var(--border-radius-md);
     transition: all var(--transition-base);
-    
+
     &:hover {
       transform: translateY(-1px);
     }
@@ -445,7 +454,7 @@ onMounted(() => {
 .mobile-up(@breakpoint-2xl) {
   .plugin-grid {
     :deep(.n-grid) {
-      grid-template-columns: repeat(3, 1fr) !important;
+      grid-template-columns: repeat(5, 1fr) !important;
     }
   }
 }
@@ -454,7 +463,7 @@ onMounted(() => {
 .desktop-only() {
   .plugin-grid {
     :deep(.n-grid) {
-      grid-template-columns: repeat(2, 1fr) !important;
+      grid-template-columns: repeat(3, 1fr) !important;
     }
   }
 }
@@ -464,13 +473,13 @@ onMounted(() => {
   .workspace-container {
     padding: var(--spacing-lg);
   }
-  
+
   .plugin-grid {
     :deep(.n-grid) {
       grid-template-columns: repeat(2, 1fr) !important;
     }
   }
-  
+
   .plugin-card {
     height: auto;
     min-height: 260px;
@@ -482,45 +491,45 @@ onMounted(() => {
   .workspace-container {
     padding: var(--spacing-sm);
   }
-  
+
   .workspace-header {
     margin-bottom: var(--spacing-lg);
     padding-bottom: var(--spacing-md);
-    
+
     h2 {
       .font-responsive(var(--font-size-lg), var(--font-size-2xl));
-      
+
       :deep(.icon-park-icon) {
         margin-right: var(--spacing-xs);
       }
     }
-    
+
     .workspace-description {
       font-size: var(--font-size-xs);
       line-height: var(--line-height-normal);
     }
   }
-  
+
   .plugin-grid {
     :deep(.n-grid) {
       grid-template-columns: 1fr !important;
       gap: var(--spacing-md) !important;
     }
   }
-  
+
   .plugin-card {
     height: auto;
     min-height: 220px;
-    
+
     :deep(.n-card__content) {
-      padding: var(--spacing-md);
+      padding: 0 var(--spacing-md);
     }
-    
+
     :deep(.n-card__action) {
       padding: var(--spacing-sm) var(--spacing-md);
     }
   }
-  
+
   .plugin-header {
     .plugin-info {
       .plugin-name {
@@ -528,11 +537,11 @@ onMounted(() => {
       }
     }
   }
-  
+
   .plugin-actions {
     .flex-column();
     gap: var(--spacing-xs);
-    
+
     :deep(.n-button) {
       width: 100%;
       justify-content: center;
@@ -545,21 +554,21 @@ onMounted(() => {
   .workspace-container {
     padding: var(--spacing-xs);
   }
-  
+
   .workspace-header {
     h2 {
       font-size: var(--font-size-md);
     }
   }
-  
+
   .plugin-card {
     min-height: 200px;
-    
+
     :deep(.n-card__content) {
-      padding: var(--spacing-sm);
+      padding: 0 var(--spacing-sm);
     }
   }
-  
+
   .plugin-content {
     .plugin-description {
       .text-ellipsis-multiline(3);
@@ -572,31 +581,31 @@ onMounted(() => {
   .workspace-container {
     background: var(--color-bg-main-dark);
   }
-  
+
   .workspace-header {
     border-bottom-color: var(--color-border-dark);
-    
+
     h2 {
       color: var(--color-text-primary-dark);
     }
-    
+
     .workspace-description {
       color: var(--color-text-secondary-dark);
     }
   }
-  
+
   .plugin-card {
     background: var(--color-bg-card-dark);
     border-color: var(--color-border-dark);
-    
+
     &:hover {
       border-color: var(--color-primary-dark);
     }
-    
+
     &.plugin-disabled {
       background: var(--color-bg-disabled-dark);
     }
-    
+
     :deep(.n-card__action) {
       background: var(--color-bg-card-footer-dark);
       border-top-color: var(--color-border-dark);

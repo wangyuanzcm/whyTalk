@@ -19,33 +19,7 @@ declare global {
         removeAllListeners: (channel: string) => void
       }
 
-      // P2P API已被移除
-      /*
-      p2p: {
-        // 服务控制
-        start: () => Promise<any>
-        stop: () => Promise<any>
-        getStatus: () => Promise<any>
-
-        // 消息相关
-        sendDirectMessage: (params: any) => Promise<any>
-        sendGroupMessage: (params: any) => Promise<any>
-        getChatHistory: (params: any) => Promise<any>
-        getGroupChatHistory: (params: any) => Promise<any>
-        markMessagesAsRead: (params: any) => Promise<any>
-        deleteMessage: (params: any) => Promise<any>
-        recallMessage: (params: any) => Promise<any>
-
-        // 联系人相关
-        addContact: (params: any) => Promise<any>
-        getContacts: () => Promise<any>
-        deleteContact: (params: any) => Promise<any>
-        updateContact: (params: any) => Promise<any>
-        searchContacts: (params: any) => Promise<any>
-        getContactRequests: () => Promise<any>
-        handleContactRequest: (params: any) => Promise<any>
-      }
-      */
+      // P2P功能已被移除
 
         // 群组相关
         createGroup: (params: any) => Promise<any>
@@ -126,31 +100,7 @@ declare global {
       on: (channel: string, listener: (...args: unknown[]) => void) => void
       removeAllListeners: (channel: string) => void
 
-      // P2P API已被移除
-      /*
-      p2p: {
-        // 服务控制
-        start: () => Promise<any>
-        stop: () => Promise<any>
-        getStatus: () => Promise<any>
-
-        // 消息相关
-        sendDirectMessage: (params: any) => Promise<any>
-        sendGroupMessage: (params: any) => Promise<any>
-        getChatHistory: (params: any) => Promise<any>
-        getGroupChatHistory: (params: any) => Promise<any>
-        markMessagesAsRead: (params: any) => Promise<any>
-        deleteMessage: (params: any) => Promise<any>
-        recallMessage: (params: any) => Promise<any>
-
-        // 联系人相关
-        addContact: (params: any) => Promise<any>
-        getContacts: () => Promise<any>
-        deleteContact: (params: any) => Promise<any>
-        updateContact: (params: any) => Promise<any>
-        searchContacts: (params: any) => Promise<any>
-        getContactRequests: () => Promise<any>
-        handleContactRequest: (params: any) => Promise<any>
+      // P2P功能已被移除
 
         // 群组相关
         createGroup: (params: any) => Promise<any>

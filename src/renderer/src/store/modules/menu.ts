@@ -43,16 +43,7 @@ export const useMenuStore = defineStore('menu', {
           title: '工作台',
           core: true
         },
-        // P2P网络菜单项已被移除
-        /*
-    {
-      id: 'p2p',
-      link: '/p2p',
-      icon: markRaw(Connection),
-      title: '网络',
-      core: true
-    },
-    */
+        // P2P功能已被移除
         {
           id: 'settings',
           link: '/settings',

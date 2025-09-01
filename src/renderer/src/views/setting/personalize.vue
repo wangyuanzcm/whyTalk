@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { useSettingsStore } from '@/store'
 import { useThemeStore } from '@/store/modules/theme'
-import ThemeSelector from '../../../../components/theme/ThemeSelector.vue'
+import ThemeSelector from '@/components/theme/ThemeSelector.vue'
 import { NButton, NRadioGroup, NRadio, NSpace, NSelect, NDivider } from 'naive-ui'
 
 const settingsStore = useSettingsStore()
@@ -85,12 +85,12 @@ const defaultPages = [
       <div class="view-list">
         <div class="content">
           <div class="name">自定义主题</div>
-          <div class="desc">管理和自定义应用主题样式，当前主题：{{ themeStore.currentTheme?.name || '默认主题' }}</div>
+          <div class="desc">
+            管理和自定义应用主题样式，当前主题：{{ themeStore.currentTheme?.name || '默认主题' }}
+          </div>
         </div>
         <div class="tools">
-          <n-button type="primary" @click="showThemeSelector = true">
-            主题管理
-          </n-button>
+          <n-button type="primary" @click="showThemeSelector = true"> 主题管理 </n-button>
         </div>
       </div>
 
@@ -156,16 +156,16 @@ const defaultPages = [
   padding: var(--spacing-xl);
   transition: all var(--transition-base);
   .card-shadow();
-  
+
   &:hover {
     border-color: var(--color-primary-light);
     .card-shadow-hover();
     transform: translateY(-2px);
   }
-  
+
   .content {
     flex: 1;
-    
+
     .name {
       font-size: var(--font-size-md);
       font-weight: var(--font-weight-semibold);
@@ -173,42 +173,42 @@ const defaultPages = [
       margin-bottom: var(--spacing-xs);
       line-height: var(--line-height-tight);
     }
-    
+
     .desc {
       font-size: var(--font-size-sm);
       color: var(--color-text-secondary);
       line-height: var(--line-height-normal);
     }
   }
-  
+
   .tools {
     flex-shrink: 0;
     margin-left: var(--spacing-lg);
-    
+
     :deep(.n-radio-group) {
       .n-radio {
         margin-right: var(--spacing-lg);
-        
+
         .n-radio__label {
           font-size: var(--font-size-sm);
           font-weight: var(--font-weight-medium);
           color: var(--color-text-primary);
         }
-        
+
         .n-radio__dot {
           border-color: var(--color-border-medium);
-          
+
           &::after {
             background: var(--color-primary);
           }
         }
-        
+
         &.n-radio--checked {
           .n-radio__dot {
             border-color: var(--color-primary);
           }
         }
-        
+
         &:hover {
           .n-radio__dot {
             border-color: var(--color-primary-light);
@@ -216,7 +216,7 @@ const defaultPages = [
         }
       }
     }
-    
+
     :deep(.n-button) {
       &.n-button--text-type {
         color: var(--color-primary);
@@ -225,7 +225,7 @@ const defaultPages = [
         padding: var(--spacing-sm) var(--spacing-md);
         border-radius: var(--border-radius-md);
         transition: all var(--transition-base);
-        
+
         &:hover {
           background: var(--color-primary-light);
           color: var(--color-primary-hover);
@@ -233,22 +233,22 @@ const defaultPages = [
         }
       }
     }
-    
+
     :deep(.n-select) {
       .n-base-selection {
         border-radius: var(--border-radius-md);
         border: 1px solid var(--color-border-light);
         transition: all var(--transition-base);
-        
+
         &:hover {
           border-color: var(--color-primary-light);
         }
-        
+
         &.n-base-selection--focus {
           border-color: var(--color-primary);
           .card-shadow();
         }
-        
+
         .n-base-selection-label {
           font-size: var(--font-size-sm);
           color: var(--color-text-primary);
@@ -279,44 +279,44 @@ const defaultPages = [
     align-items: flex-start;
     gap: var(--spacing-lg);
     padding: var(--spacing-lg);
-    
+
     .content {
       width: 100%;
       margin-bottom: var(--spacing-sm);
-      
+
       .name {
         font-size: var(--font-size-sm);
         margin-bottom: var(--spacing-xs);
       }
-      
+
       .desc {
         font-size: var(--font-size-xs);
       }
     }
-    
+
     .tools {
       margin-left: 0;
       width: 100%;
-      
+
       :deep(.n-radio-group) {
         .flex-row();
         flex-wrap: wrap;
         gap: var(--spacing-md);
-        
+
         .n-radio {
           margin-right: 0;
-          
+
           .n-radio__label {
             font-size: var(--font-size-xs);
           }
         }
       }
-      
+
       :deep(.n-select) {
         width: 100% !important;
         max-width: 200px;
       }
-      
+
       :deep(.n-button) {
         &.n-button--text-type {
           font-size: var(--font-size-xs);
@@ -334,69 +334,69 @@ const defaultPages = [
     margin-bottom: var(--spacing-md);
     text-align: center;
   }
-  
+
   .view-box {
     gap: var(--spacing-md);
   }
-  
+
   .view-list {
     .flex-column();
     align-items: stretch;
     gap: var(--spacing-md);
     padding: var(--spacing-md);
     border-radius: var(--border-radius-md);
-    
+
     &:hover {
       transform: none;
     }
-    
+
     .content {
       text-align: left;
-      
+
       .name {
         font-size: var(--font-size-xs);
         margin-bottom: var(--spacing-2xs);
         font-weight: var(--font-weight-medium);
       }
-      
+
       .desc {
         font-size: var(--font-size-2xs);
         line-height: var(--line-height-relaxed);
       }
     }
-    
+
     .tools {
       margin-left: 0;
       width: 100%;
-      
+
       :deep(.n-radio-group) {
         .flex-column();
         align-items: flex-start;
         gap: var(--spacing-sm);
-        
+
         .n-radio {
           margin-right: 0;
-          
+
           .n-radio__label {
             font-size: var(--font-size-2xs);
           }
-          
+
           .n-radio__dot {
             transform: scale(0.8);
           }
         }
       }
-      
+
       :deep(.n-select) {
         width: 100% !important;
-        
+
         .n-base-selection {
           .n-base-selection-label {
             font-size: var(--font-size-2xs);
           }
         }
       }
-      
+
       :deep(.n-button) {
         &.n-button--text-type {
           font-size: var(--font-size-2xs);
@@ -414,34 +414,34 @@ const defaultPages = [
     font-size: var(--font-size-sm);
     margin-bottom: var(--spacing-sm);
   }
-  
+
   .view-list {
     padding: var(--spacing-sm);
     gap: var(--spacing-sm);
-    
+
     .content {
       .name {
         font-size: var(--font-size-2xs);
       }
-      
+
       .desc {
         font-size: var(--font-size-3xs);
       }
     }
-    
+
     .tools {
       :deep(.n-radio-group) {
         .n-radio {
           .n-radio__label {
             font-size: var(--font-size-3xs);
           }
-          
+
           .n-radio__dot {
             transform: scale(0.7);
           }
         }
       }
-      
+
       :deep(.n-select) {
         .n-base-selection {
           .n-base-selection-label {
@@ -449,7 +449,7 @@ const defaultPages = [
           }
         }
       }
-      
+
       :deep(.n-button) {
         &.n-button--text-type {
           font-size: var(--font-size-3xs);
@@ -465,46 +465,46 @@ const defaultPages = [
   .title {
     color: var(--color-text-primary-dark);
   }
-  
+
   .view-list {
     background: var(--color-bg-content-dark);
     border-color: var(--color-border-dark);
-    
+
     &:hover {
       border-color: var(--color-primary-dark-light);
     }
-    
+
     .content {
       .name {
         color: var(--color-text-primary-dark);
       }
-      
+
       .desc {
         color: var(--color-text-secondary-dark);
       }
     }
-    
+
     .tools {
       :deep(.n-radio-group) {
         .n-radio {
           .n-radio__label {
             color: var(--color-text-primary-dark);
           }
-          
+
           .n-radio__dot {
             border-color: var(--color-border-medium-dark);
-            
+
             &::after {
               background: var(--color-primary-dark);
             }
           }
-          
+
           &.n-radio--checked {
             .n-radio__dot {
               border-color: var(--color-primary-dark);
             }
           }
-          
+
           &:hover {
             .n-radio__dot {
               border-color: var(--color-primary-dark-light);
@@ -512,31 +512,31 @@ const defaultPages = [
           }
         }
       }
-      
+
       :deep(.n-button) {
         &.n-button--text-type {
           color: var(--color-primary-dark);
-          
+
           &:hover {
             background: var(--color-primary-dark-light);
             color: var(--color-primary-dark-hover);
           }
         }
       }
-      
+
       :deep(.n-select) {
         .n-base-selection {
           border-color: var(--color-border-dark);
           background: var(--color-bg-input-dark);
-          
+
           &:hover {
             border-color: var(--color-primary-dark-light);
           }
-          
+
           &.n-base-selection--focus {
             border-color: var(--color-primary-dark);
           }
-          
+
           .n-base-selection-label {
             color: var(--color-text-primary-dark);
           }

@@ -1,261 +1,220 @@
 <template>
   <div v-if="props.show" class="theme-selector-modal" @click.self="emit('update:show', false)">
     <div class="theme-selector">
-    <!-- 主题选择器头部 -->
-    <div class="theme-selector-header">
-      <h3 class="theme-selector-title">选择主题</h3>
-      <div class="theme-selector-actions">
-        <button 
-          class="btn btn-secondary"
-          @click="showEditModal = true"
+      <!-- 主题选择器头部 -->
+      <div class="theme-selector-header">
+        <h3 class="theme-selector-title">选择主题</h3>
+        <div class="theme-selector-actions">
+          <button class="btn btn-secondary" @click="showEditModal = true">
+            <i class="icon-plus"></i>
+            新建主题
+          </button>
+          <button class="btn btn-close" title="关闭" @click="emit('update:show', false)">×</button>
+        </div>
+      </div>
+
+      <!-- 自动主题切换 -->
+      <div class="theme-auto-switch">
+        <label class="switch-label">
+          <input v-model="autoTheme" type="checkbox" @change="handleAutoThemeChange" />
+          <span class="switch-text">跟随系统深色模式</span>
+        </label>
+      </div>
+
+      <!-- 主题分类标签 -->
+      <div v-if="!autoTheme" class="theme-tabs">
+        <button
+          class="theme-tab"
+          :class="{ active: activeTab === 'light' }"
+          @click="activeTab = 'light'"
         >
-          <i class="icon-plus"></i>
-          新建主题
+          浅色主题
         </button>
-        <button 
-          class="btn btn-close"
-          @click="emit('update:show', false)"
-          title="关闭"
+        <button
+          class="theme-tab"
+          :class="{ active: activeTab === 'dark' }"
+          @click="activeTab = 'dark'"
         >
-          ×
+          深色主题
         </button>
       </div>
-    </div>
 
-    <!-- 自动主题切换 -->
-    <div class="theme-auto-switch">
-      <label class="switch-label">
-        <input 
-          type="checkbox" 
-          v-model="autoTheme"
-          @change="handleAutoThemeChange"
-        >
-        <span class="switch-text">跟随系统深色模式</span>
-      </label>
-    </div>
+      <!-- 自动模式的主题选择 -->
+      <div v-if="autoTheme" class="theme-auto-selection">
+        <div class="theme-mode-group">
+          <h4 class="theme-mode-title">浅色模式主题</h4>
+          <div class="theme-grid">
+            <div
+              v-for="theme in lightThemes"
+              :key="theme.id"
+              class="theme-item"
+              :class="{
+                active: lightThemeId === theme.id,
+                'is-custom': theme.isCustom
+              }"
+              @click="handleLightThemeSelect(theme.id)"
+            >
+              <div class="theme-preview" :style="getThemePreviewStyle(theme)">
+                <div class="theme-preview-content">
+                  <div class="theme-preview-header"></div>
+                  <div class="theme-preview-body">
+                    <div class="theme-preview-sidebar"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="theme-info">
+                <span class="theme-name">{{ theme.name }}</span>
+                <div v-if="theme.isCustom" class="theme-actions">
+                  <button class="btn-icon" title="编辑主题" @click.stop="editTheme(theme)">
+                    <i class="icon-edit"></i>
+                  </button>
+                  <button class="btn-icon" title="复制主题" @click.stop="duplicateTheme(theme.id)">
+                    <i class="icon-copy"></i>
+                  </button>
+                  <button
+                    class="btn-icon btn-danger"
+                    title="删除主题"
+                    @click.stop="deleteTheme(theme.id)"
+                  >
+                    <i class="icon-delete"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-    <!-- 主题分类标签 -->
-    <div class="theme-tabs" v-if="!autoTheme">
-      <button 
-        class="theme-tab"
-        :class="{ active: activeTab === 'light' }"
-        @click="activeTab = 'light'"
-      >
-        浅色主题
-      </button>
-      <button 
-        class="theme-tab"
-        :class="{ active: activeTab === 'dark' }"
-        @click="activeTab = 'dark'"
-      >
-        深色主题
-      </button>
-    </div>
+        <div class="theme-mode-group">
+          <h4 class="theme-mode-title">深色模式主题</h4>
+          <div class="theme-grid">
+            <div
+              v-for="theme in darkThemes"
+              :key="theme.id"
+              class="theme-item"
+              :class="{
+                active: darkThemeId === theme.id,
+                'is-custom': theme.isCustom
+              }"
+              @click="handleDarkThemeSelect(theme.id)"
+            >
+              <div class="theme-preview" :style="getThemePreviewStyle(theme)">
+                <div class="theme-preview-content">
+                  <div class="theme-preview-header"></div>
+                  <div class="theme-preview-body"></div>
+                </div>
+              </div>
+              <div class="theme-info">
+                <span class="theme-name">{{ theme.name }}</span>
+                <div v-if="theme.isCustom" class="theme-actions">
+                  <button class="btn-icon" title="编辑主题" @click.stop="editTheme(theme)">
+                    <i class="icon-edit"></i>
+                  </button>
+                  <button class="btn-icon" title="复制主题" @click.stop="duplicateTheme(theme.id)">
+                    <i class="icon-copy"></i>
+                  </button>
+                  <button
+                    class="btn-icon btn-danger"
+                    title="删除主题"
+                    @click.stop="deleteTheme(theme.id)"
+                  >
+                    <i class="icon-delete"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-    <!-- 自动模式的主题选择 -->
-    <div class="theme-auto-selection" v-if="autoTheme">
-      <div class="theme-mode-group">
-        <h4 class="theme-mode-title">浅色模式主题</h4>
+      <!-- 手动模式的主题选择 -->
+      <div v-else class="theme-manual-selection">
         <div class="theme-grid">
-          <div 
-            v-for="theme in lightThemes" 
-            :key="theme.id"
-            class="theme-item"
-            :class="{ 
-              active: lightThemeId === theme.id,
-              'is-custom': theme.isCustom 
-            }"
-            @click="handleLightThemeSelect(theme.id)"
-          >
-            <div class="theme-preview" :style="getThemePreviewStyle(theme)">
-              <div class="theme-preview-content">
-          <div class="theme-preview-header"></div>
-          <div class="theme-preview-body">
-            <div class="theme-preview-sidebar"></div>
+          <!-- 主题加载状态 -->
+          <div v-if="themeStore.loading" class="theme-loading">
+            <div class="loading-spinner"></div>
+            <p>正在加载主题...</p>
           </div>
-        </div>
-            </div>
-            <div class="theme-info">
-              <span class="theme-name">{{ theme.name }}</span>
-              <div class="theme-actions" v-if="theme.isCustom">
-                <button 
-                  class="btn-icon"
-                  @click.stop="editTheme(theme)"
-                  title="编辑主题"
-                >
-                  <i class="icon-edit"></i>
-                </button>
-                <button 
-                  class="btn-icon"
-                  @click.stop="duplicateTheme(theme.id)"
-                  title="复制主题"
-                >
-                  <i class="icon-copy"></i>
-                </button>
-                <button 
-                  class="btn-icon btn-danger"
-                  @click.stop="deleteTheme(theme.id)"
-                  title="删除主题"
-                >
-                  <i class="icon-delete"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      <div class="theme-mode-group">
-        <h4 class="theme-mode-title">深色模式主题</h4>
-        <div class="theme-grid">
-          <div 
-            v-for="theme in darkThemes" 
-            :key="theme.id"
-            class="theme-item"
-            :class="{ 
-              active: darkThemeId === theme.id,
-              'is-custom': theme.isCustom 
-            }"
-            @click="handleDarkThemeSelect(theme.id)"
-          >
-            <div class="theme-preview" :style="getThemePreviewStyle(theme)">
-              <div class="theme-preview-content">
-                <div class="theme-preview-header"></div>
-                <div class="theme-preview-body"></div>
+          <!-- 主题列表 -->
+          <template v-else>
+            <div
+              v-for="theme in currentThemes"
+              :key="theme.id"
+              class="theme-item"
+              :class="{
+                active: currentThemeId === theme.id,
+                'is-custom': theme.isCustom
+              }"
+              @click="handleThemeSelect(theme.id)"
+            >
+              <div class="theme-preview" :style="getThemePreviewStyle(theme)">
+                <div class="theme-preview-content">
+                  <div class="theme-preview-header"></div>
+                  <div class="theme-preview-body"></div>
+                </div>
+              </div>
+              <div class="theme-info">
+                <span class="theme-name">{{ theme.name }}</span>
+                <div v-if="theme.isCustom" class="theme-actions">
+                  <button class="btn-icon" title="编辑主题" @click.stop="editTheme(theme)">
+                    <i class="icon-edit"></i>
+                  </button>
+                  <button class="btn-icon" title="复制主题" @click.stop="duplicateTheme(theme.id)">
+                    <i class="icon-copy"></i>
+                  </button>
+                  <button
+                    class="btn-icon btn-danger"
+                    title="删除主题"
+                    @click.stop="deleteTheme(theme.id)"
+                  >
+                    <i class="icon-delete"></i>
+                  </button>
+                </div>
+                <div v-else class="theme-actions">
+                  <button class="btn-icon" title="复制主题" @click.stop="duplicateTheme(theme.id)">
+                    <i class="icon-copy"></i>
+                  </button>
+                </div>
               </div>
             </div>
-            <div class="theme-info">
-              <span class="theme-name">{{ theme.name }}</span>
-              <div class="theme-actions" v-if="theme.isCustom">
-                <button 
-                  class="btn-icon"
-                  @click.stop="editTheme(theme)"
-                  title="编辑主题"
-                >
-                  <i class="icon-edit"></i>
-                </button>
-                <button 
-                  class="btn-icon"
-                  @click.stop="duplicateTheme(theme.id)"
-                  title="复制主题"
-                >
-                  <i class="icon-copy"></i>
-                </button>
-                <button 
-                  class="btn-icon btn-danger"
-                  @click.stop="deleteTheme(theme.id)"
-                  title="删除主题"
-                >
-                  <i class="icon-delete"></i>
-                </button>
+
+            <!-- 添加新主题按钮 -->
+            <div class="theme-item theme-add" @click="createNewTheme">
+              <div class="theme-preview theme-add-preview">
+                <div class="theme-add-icon">
+                  <i class="icon-plus"></i>
+                </div>
+              </div>
+              <div class="theme-info">
+                <span class="theme-name">创建新主题</span>
               </div>
             </div>
-          </div>
+
+            <!-- 空状态 -->
+            <div v-if="currentThemes.length === 0" class="theme-empty">
+              <div class="empty-icon">🎨</div>
+              <p>暂无{{ activeTab === 'light' ? '浅色' : '深色' }}主题</p>
+              <button class="btn-primary" @click="createNewTheme">创建第一个主题</button>
+            </div>
+          </template>
         </div>
       </div>
-    </div>
 
-    <!-- 手动模式的主题选择 -->
-    <div class="theme-manual-selection" v-else>
-      <div class="theme-grid">
-        <!-- 主题加载状态 -->
-        <div v-if="themeStore.loading" class="theme-loading">
-          <div class="loading-spinner"></div>
-          <p>正在加载主题...</p>
-        </div>
-        
-        <!-- 主题列表 -->
-        <template v-else>
-          <div 
-            v-for="theme in currentThemes" 
-            :key="theme.id"
-            class="theme-item"
-            :class="{ 
-              active: currentThemeId === theme.id,
-              'is-custom': theme.isCustom 
-            }"
-            @click="handleThemeSelect(theme.id)"
-          >
-            <div class="theme-preview" :style="getThemePreviewStyle(theme)">
-              <div class="theme-preview-content">
-                <div class="theme-preview-header"></div>
-                <div class="theme-preview-body"></div>
-              </div>
-            </div>
-            <div class="theme-info">
-              <span class="theme-name">{{ theme.name }}</span>
-              <div class="theme-actions" v-if="theme.isCustom">
-                <button 
-                  class="btn-icon"
-                  @click.stop="editTheme(theme)"
-                  title="编辑主题"
-                >
-                  <i class="icon-edit"></i>
-                </button>
-                <button 
-                  class="btn-icon"
-                  @click.stop="duplicateTheme(theme.id)"
-                  title="复制主题"
-                >
-                  <i class="icon-copy"></i>
-                </button>
-                <button 
-                  class="btn-icon btn-danger"
-                  @click.stop="deleteTheme(theme.id)"
-                  title="删除主题"
-                >
-                  <i class="icon-delete"></i>
-                </button>
-              </div>
-              <div class="theme-actions" v-else>
-                <button 
-                  class="btn-icon"
-                  @click.stop="duplicateTheme(theme.id)"
-                  title="复制主题"
-                >
-                  <i class="icon-copy"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- 添加新主题按钮 -->
-          <div class="theme-item theme-add" @click="createNewTheme">
-            <div class="theme-preview theme-add-preview">
-              <div class="theme-add-icon">
-                <i class="icon-plus"></i>
-              </div>
-            </div>
-            <div class="theme-info">
-              <span class="theme-name">创建新主题</span>
-            </div>
-          </div>
-          
-          <!-- 空状态 -->
-          <div v-if="currentThemes.length === 0" class="theme-empty">
-            <div class="empty-icon">🎨</div>
-            <p>暂无{{ activeTab === 'light' ? '浅色' : '深色' }}主题</p>
-            <button class="btn-primary" @click="createNewTheme">创建第一个主题</button>
-          </div>
-        </template>
-      </div>
-    </div>
-
-    <!-- 主题编辑模态框 -->
-    <ThemeEditModal 
-      v-if="showEditModal"
-      v-model="showEditModal"
-      :theme="editingTheme"
-      @save="handleThemeSave"
-    />
+      <!-- 主题编辑模态框 -->
+      <ThemeEditModal
+        v-if="showEditModal"
+        v-model="showEditModal"
+        :theme="editingTheme"
+        @save="handleThemeSave"
+      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { useThemeStore } from '../../renderer/src/store/modules/theme'
-import type { Theme } from '../../renderer/src/types/theme'
+import { useThemeStore } from '@/store/modules/theme'
+import type { Theme } from '@/types/theme'
 import ThemeEditModal from './ThemeEditModal.vue'
 
 /**
@@ -362,7 +321,7 @@ function getThemePreviewStyle(theme: Theme) {
       '--preview-accent': '#6c757d'
     }
   }
-  
+
   return {
     '--preview-primary': previewColors.primary,
     '--preview-background': previewColors.background,
@@ -399,7 +358,7 @@ async function deleteTheme(themeId: string) {
   if (!confirm('确定要删除这个主题吗？')) {
     return
   }
-  
+
   try {
     await themeStore.deleteTheme(themeId)
   } catch (error) {
@@ -558,7 +517,7 @@ watch(
   color: var(--color-text-primary, #333);
 }
 
-.switch-label input[type="checkbox"] {
+.switch-label input[type='checkbox'] {
   width: 16px;
   height: 16px;
   cursor: pointer;
@@ -594,7 +553,9 @@ watch(
   background: var(--color-primary, #007bff);
   color: white;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0 4px 12px rgba(0, 123, 255, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .theme-tab:hover:not(.active) {
@@ -650,7 +611,9 @@ watch(
 .theme-item:hover {
   border-color: var(--color-primary-light, #b3d9ff);
   transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 8px 25px rgba(0, 123, 255, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0 8px 25px rgba(0, 123, 255, 0.15),
+    0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .theme-item:hover::before {
@@ -659,7 +622,9 @@ watch(
 
 .theme-item.active {
   border-color: var(--color-primary, #007bff);
-  box-shadow: 0 0 0 2px var(--color-primary, #007bff), 0 8px 25px rgba(0, 123, 255, 0.2);
+  box-shadow:
+    0 0 0 2px var(--color-primary, #007bff),
+    0 8px 25px rgba(0, 123, 255, 0.2);
   transform: translateY(-2px);
 }
 
@@ -731,7 +696,11 @@ watch(
 
 .theme-preview-header {
   height: 35px;
-  background: linear-gradient(135deg, var(--preview-primary, #007bff), var(--preview-primary, #007bff));
+  background: linear-gradient(
+    135deg,
+    var(--preview-primary, #007bff),
+    var(--preview-primary, #007bff)
+  );
   position: relative;
   display: flex;
   align-items: center;
@@ -900,10 +869,18 @@ watch(
 }
 
 /* 图标样式 */
-.icon-plus::before { content: '+'; }
-.icon-edit::before { content: '✏️'; }
-.icon-copy::before { content: '📋'; }
-.icon-delete::before { content: '🗑️'; }
+.icon-plus::before {
+  content: '+';
+}
+.icon-edit::before {
+  content: '✏️';
+}
+.icon-copy::before {
+  content: '📋';
+}
+.icon-delete::before {
+  content: '🗑️';
+}
 
 /* 加载状态样式 */
 .theme-loading {
@@ -927,8 +904,12 @@ watch(
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* 添加新主题按钮样式 */
@@ -1003,11 +984,11 @@ watch(
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 12px;
   }
-  
+
   .theme-preview {
     height: 100px;
   }
-  
+
   .theme-selector-header {
     flex-direction: column;
     gap: 12px;

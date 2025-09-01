@@ -16,23 +16,23 @@
         <!-- 基本信息 -->
         <div class="form-section">
           <h4 class="section-title">基本信息</h4>
-          
+
           <div class="form-group">
             <label class="form-label">主题名称</label>
-            <input 
-              type="text" 
-              class="form-input"
+            <input
               v-model="formData.name"
+              type="text"
+              class="form-input"
               placeholder="请输入主题名称"
               maxlength="50"
-            >
+            />
           </div>
 
           <div class="form-group">
             <label class="form-label">主题描述</label>
-            <textarea 
-              class="form-textarea"
+            <textarea
               v-model="formData.description"
+              class="form-textarea"
               placeholder="请输入主题描述（可选）"
               rows="3"
               maxlength="200"
@@ -41,11 +41,7 @@
 
           <div class="form-group">
             <label class="switch-label">
-              <input 
-                type="checkbox" 
-                v-model="formData.isDark"
-                @change="handleDarkModeChange"
-              >
+              <input v-model="formData.isDark" type="checkbox" @change="handleDarkModeChange" />
               <span class="switch-text">深色主题</span>
             </label>
           </div>
@@ -54,25 +50,25 @@
         <!-- 颜色配置 -->
         <div class="form-section">
           <h4 class="section-title">颜色配置</h4>
-          
+
           <div class="color-grid">
             <!-- 主色 -->
             <div class="color-group">
               <label class="color-label">主色</label>
               <div class="color-input-group">
-                <input 
-                  type="color" 
+                <input
+                  v-model="formData.config.primary"
+                  type="color"
                   class="color-picker"
-                  v-model="formData.config.primary"
                   @input="handleColorChange"
-                >
-                <input 
-                  type="text" 
+                />
+                <input
+                  v-model="formData.config.primary"
+                  type="text"
                   class="color-text"
-                  v-model="formData.config.primary"
-                  @input="handleColorChange"
                   placeholder="#007bff"
-                >
+                  @input="handleColorChange"
+                />
               </div>
             </div>
 
@@ -80,19 +76,19 @@
             <div class="color-group">
               <label class="color-label">字体颜色</label>
               <div class="color-input-group">
-                <input 
-                  type="color" 
+                <input
+                  v-model="formData.config.font"
+                  type="color"
                   class="color-picker"
-                  v-model="formData.config.font"
                   @input="handleColorChange"
-                >
-                <input 
-                  type="text" 
+                />
+                <input
+                  v-model="formData.config.font"
+                  type="text"
                   class="color-text"
-                  v-model="formData.config.font"
-                  @input="handleColorChange"
                   placeholder="#333333"
-                >
+                  @input="handleColorChange"
+                />
               </div>
             </div>
 
@@ -100,19 +96,19 @@
             <div class="color-group">
               <label class="color-label">背景颜色</label>
               <div class="color-input-group">
-                <input 
-                  type="color" 
+                <input
+                  v-model="formData.config.background"
+                  type="color"
                   class="color-picker"
-                  v-model="formData.config.background"
                   @input="handleColorChange"
-                >
-                <input 
-                  type="text" 
+                />
+                <input
+                  v-model="formData.config.background"
+                  type="text"
                   class="color-text"
-                  v-model="formData.config.background"
-                  @input="handleColorChange"
                   placeholder="#ffffff"
-                >
+                  @input="handleColorChange"
+                />
               </div>
             </div>
 
@@ -120,19 +116,19 @@
             <div class="color-group">
               <label class="color-label">表面颜色</label>
               <div class="color-input-group">
-                <input 
-                  type="color" 
+                <input
+                  v-model="formData.config.surface"
+                  type="color"
                   class="color-picker"
-                  v-model="formData.config.surface"
                   @input="handleColorChange"
-                >
-                <input 
-                  type="text" 
+                />
+                <input
+                  v-model="formData.config.surface"
+                  type="text"
                   class="color-text"
-                  v-model="formData.config.surface"
-                  @input="handleColorChange"
                   placeholder="#f8f9fa"
-                >
+                  @input="handleColorChange"
+                />
               </div>
             </div>
 
@@ -140,19 +136,19 @@
             <div class="color-group">
               <label class="color-label">边框颜色</label>
               <div class="color-input-group">
-                <input 
-                  type="color" 
+                <input
+                  v-model="formData.config.border"
+                  type="color"
                   class="color-picker"
-                  v-model="formData.config.border"
                   @input="handleColorChange"
-                >
-                <input 
-                  type="text" 
+                />
+                <input
+                  v-model="formData.config.border"
+                  type="text"
                   class="color-text"
-                  v-model="formData.config.border"
-                  @input="handleColorChange"
                   placeholder="#e9ecef"
-                >
+                  @input="handleColorChange"
+                />
               </div>
             </div>
 
@@ -160,19 +156,19 @@
             <div class="color-group">
               <label class="color-label">错误颜色</label>
               <div class="color-input-group">
-                <input 
-                  type="color" 
+                <input
+                  v-model="formData.config.error"
+                  type="color"
                   class="color-picker"
-                  v-model="formData.config.error"
                   @input="handleColorChange"
-                >
-                <input 
-                  type="text" 
+                />
+                <input
+                  v-model="formData.config.error"
+                  type="text"
                   class="color-text"
-                  v-model="formData.config.error"
-                  @input="handleColorChange"
                   placeholder="#dc3545"
-                >
+                  @input="handleColorChange"
+                />
               </div>
             </div>
 
@@ -180,19 +176,19 @@
             <div class="color-group">
               <label class="color-label">警告颜色</label>
               <div class="color-input-group">
-                <input 
-                  type="color" 
+                <input
+                  v-model="formData.config.warning"
+                  type="color"
                   class="color-picker"
-                  v-model="formData.config.warning"
                   @input="handleColorChange"
-                >
-                <input 
-                  type="text" 
+                />
+                <input
+                  v-model="formData.config.warning"
+                  type="text"
                   class="color-text"
-                  v-model="formData.config.warning"
-                  @input="handleColorChange"
                   placeholder="#ffc107"
-                >
+                  @input="handleColorChange"
+                />
               </div>
             </div>
 
@@ -200,19 +196,19 @@
             <div class="color-group">
               <label class="color-label">成功颜色</label>
               <div class="color-input-group">
-                <input 
-                  type="color" 
+                <input
+                  v-model="formData.config.success"
+                  type="color"
                   class="color-picker"
-                  v-model="formData.config.success"
                   @input="handleColorChange"
-                >
-                <input 
-                  type="text" 
+                />
+                <input
+                  v-model="formData.config.success"
+                  type="text"
                   class="color-text"
-                  v-model="formData.config.success"
-                  @input="handleColorChange"
                   placeholder="#28a745"
-                >
+                  @input="handleColorChange"
+                />
               </div>
             </div>
           </div>
@@ -221,34 +217,31 @@
         <!-- 背景图片 -->
         <div class="form-section">
           <h4 class="section-title">背景图片</h4>
-          
+
           <div class="background-config">
             <div class="form-group">
               <label class="form-label">背景图片 URL</label>
               <div class="background-input-group">
-                <input 
-                  type="text" 
-                  class="form-input"
+                <input
                   v-model="formData.config.backgroundImage"
+                  type="text"
+                  class="form-input"
                   placeholder="请输入图片 URL 或留空"
                   @input="handleBackgroundChange"
-                >
-                <button 
+                />
+                <button
+                  v-if="formData.config.backgroundImage"
                   class="btn btn-secondary"
                   @click="clearBackground"
-                  v-if="formData.config.backgroundImage"
                 >
                   清除
                 </button>
               </div>
             </div>
 
-            <div class="form-group" v-if="formData.config.backgroundImage">
+            <div v-if="formData.config.backgroundImage" class="form-group">
               <label class="form-label">背景模式</label>
-              <select 
-                class="form-select"
-                v-model="formData.config.backgroundSize"
-              >
+              <select v-model="formData.config.backgroundSize" class="form-select">
                 <option value="cover">覆盖</option>
                 <option value="contain">包含</option>
                 <option value="auto">自动</option>
@@ -256,12 +249,9 @@
               </select>
             </div>
 
-            <div class="form-group" v-if="formData.config.backgroundImage">
+            <div v-if="formData.config.backgroundImage" class="form-group">
               <label class="form-label">背景位置</label>
-              <select 
-                class="form-select"
-                v-model="formData.config.backgroundPosition"
-              >
+              <select v-model="formData.config.backgroundPosition" class="form-select">
                 <option value="center">居中</option>
                 <option value="top">顶部</option>
                 <option value="bottom">底部</option>
@@ -270,12 +260,9 @@
               </select>
             </div>
 
-            <div class="form-group" v-if="formData.config.backgroundImage">
+            <div v-if="formData.config.backgroundImage" class="form-group">
               <label class="switch-label">
-                <input 
-                  type="checkbox" 
-                  v-model="formData.config.backgroundRepeat"
-                >
+                <input v-model="formData.config.backgroundRepeat" type="checkbox" />
                 <span class="switch-text">重复背景</span>
               </label>
             </div>
@@ -285,7 +272,7 @@
         <!-- 预览区域 -->
         <div class="form-section">
           <h4 class="section-title">主题预览</h4>
-          
+
           <div class="theme-preview-container">
             <div class="theme-preview-demo" :style="previewStyle">
               <div class="preview-header">
@@ -298,7 +285,9 @@
               <div class="preview-content">
                 <div class="preview-card">
                   <h5 class="preview-card-title">卡片标题</h5>
-                  <p class="preview-card-text">这是一段示例文本，用于展示主题的文字颜色和背景效果。</p>
+                  <p class="preview-card-text">
+                    这是一段示例文本，用于展示主题的文字颜色和背景效果。
+                  </p>
                   <div class="preview-status">
                     <span class="status-success">成功</span>
                     <span class="status-warning">警告</span>
@@ -314,14 +303,8 @@
       <!-- 模态框底部 -->
       <div class="modal-footer">
         <div class="footer-actions">
-          <button class="btn btn-secondary" @click="handleClose">
-            取消
-          </button>
-          <button 
-            class="btn btn-danger" 
-            v-if="isEditing && theme?.isCustom"
-            @click="handleDelete"
-          >
+          <button class="btn btn-secondary" @click="handleClose">取消</button>
+          <button v-if="isEditing && theme?.isCustom" class="btn btn-danger" @click="handleDelete">
             删除主题
           </button>
           <button class="btn btn-primary" @click="handleSave">
@@ -335,10 +318,10 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
-import { useThemeStore } from '../../renderer/src/store/modules/theme'
-import type { Theme, ThemeConfig } from '../../renderer/src/types/theme'
-import { buildThemeColors } from '../../renderer/src/utils/theme/themeUtils'
-import { isValidRgbColor } from '../../renderer/src/utils/theme/colorUtils'
+import { useThemeStore } from '@/store/modules/theme'
+import type { Theme, ThemeConfig } from '@/types/theme'
+import { buildThemeColors } from '@/utils/theme/themeUtils'
+import { isValidRgbColor } from '@/utils/theme/colorUtils'
 
 /**
  * 主题编辑模态框组件
@@ -392,27 +375,30 @@ const isEditing = computed(() => !!props.theme)
 
 // 预览样式
 const previewStyle = computed(() => {
-  const colors = buildThemeColors({
-    id: 'preview',
-    name: formData.value.name,
-    isDark: formData.value.isDark,
-    isCustom: true,
-    config: formData.value.config
-  }, '')
-  
+  const colors = buildThemeColors(
+    {
+      id: 'preview',
+      name: formData.value.name,
+      isDark: formData.value.isDark,
+      isCustom: true,
+      config: formData.value.config
+    },
+    ''
+  )
+
   const style: Record<string, string> = {
     ...colors,
     backgroundColor: formData.value.config.background,
     color: formData.value.config.font
   }
-  
+
   if (formData.value.config.backgroundImage) {
     style.backgroundImage = `url(${formData.value.config.backgroundImage})`
     style.backgroundSize = formData.value.config.backgroundSize || 'cover'
     style.backgroundPosition = formData.value.config.backgroundPosition || 'center'
     style.backgroundRepeat = formData.value.config.backgroundRepeat ? 'repeat' : 'no-repeat'
   }
-  
+
   return style
 })
 
@@ -500,24 +486,33 @@ function validateForm(): string | null {
   if (!formData.value.name.trim()) {
     return '请输入主题名称'
   }
-  
+
   if (formData.value.name.length > 50) {
     return '主题名称不能超过50个字符'
   }
-  
+
   if (formData.value.description.length > 200) {
     return '主题描述不能超过200个字符'
   }
-  
+
   // 验证颜色格式
-  const colorFields = ['primary', 'font', 'background', 'surface', 'border', 'error', 'warning', 'success']
+  const colorFields = [
+    'primary',
+    'font',
+    'background',
+    'surface',
+    'border',
+    'error',
+    'warning',
+    'success'
+  ]
   for (const field of colorFields) {
     const color = formData.value.config[field as keyof ThemeConfig] as string
     if (color && !isValidRgbColor(color)) {
       return `${field} 颜色格式不正确`
     }
   }
-  
+
   return null
 }
 
@@ -530,7 +525,7 @@ async function handleSave() {
     alert(error)
     return
   }
-  
+
   try {
     if (isEditing.value && props.theme) {
       // 更新现有主题
@@ -541,7 +536,7 @@ async function handleSave() {
         isDark: formData.value.isDark,
         config: formData.value.config
       }
-      
+
       await themeStore.updateTheme(updatedTheme)
       emit('save', updatedTheme)
     } else {
@@ -552,10 +547,10 @@ async function handleSave() {
         isDark: formData.value.isDark,
         config: formData.value.config
       })
-      
+
       emit('save', newTheme)
     }
-    
+
     handleClose()
   } catch (error) {
     console.error('保存主题失败:', error)
@@ -570,11 +565,11 @@ async function handleDelete() {
   if (!props.theme || !props.theme.isCustom) {
     return
   }
-  
+
   if (!confirm('确定要删除这个主题吗？此操作不可撤销。')) {
     return
   }
-  
+
   try {
     await themeStore.deleteTheme(props.theme.id)
     handleClose()
@@ -745,7 +740,7 @@ onMounted(() => {
   color: var(--color-text-primary, #333);
 }
 
-.switch-label input[type="checkbox"] {
+.switch-label input[type='checkbox'] {
   width: 16px;
   height: 16px;
   cursor: pointer;
@@ -963,7 +958,9 @@ onMounted(() => {
 }
 
 /* 图标样式 */
-.icon-close::before { content: '✕'; }
+.icon-close::before {
+  content: '✕';
+}
 
 /* 响应式设计 */
 @media (max-width: 768px) {
@@ -972,19 +969,19 @@ onMounted(() => {
     max-width: none;
     width: calc(100% - 20px);
   }
-  
+
   .color-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .modal-body {
     padding: 16px;
   }
-  
+
   .footer-actions {
     flex-direction: column;
   }
-  
+
   .preview-header {
     flex-direction: column;
     gap: 12px;

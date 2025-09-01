@@ -7,9 +7,7 @@ import { loggerService } from './logger/LoggerService'
 import { updaterService } from './updater/UpdaterService'
 // settingsService removed - functionality moved to user preferences
 // pluginManager removed - functionality integrated into plugin services
-// import { p2pManager } from './p2p/P2PManager' // 替换为LocalSend实现
-import { localSendP2PManager as p2pManager } from './p2p/LocalSendP2PManager'
-import { localSendIPCHandler } from './p2p/LocalSendIPCHandler'
+// P2P功能已被移除
 // 插件相关服务已移除，VSCode风格插件系统使用独立的管理器
 import { ipcHandler } from './ipc/IPCHandler'
 // P2PServiceClient and P2PIPCBridge removed - using LocalSend implementation
@@ -58,23 +56,13 @@ export class ServiceManager {
 
       // 插件服务初始化已移除，VSCode风格插件系统独立管理
 
-      // 初始化 LocalSend IPC 处理器
-      localSendIPCHandler.initialize()
-      console.log('LocalSend IPC handler initialized')
-
-      await p2pManager.start()
-      console.log('LocalSend P2P Manager started')
+      // P2P功能已被移除
 
       // 初始化IPC处理器 - ipcHandler在导入时就会自动初始化
       // 这里只需要确保模块被加载
       console.log('IPC handler initialized:', !!ipcHandler)
 
-      // P2P服务现在使用LocalSend实现
-      console.log('P2P Service using LocalSend implementation')
-
-      // 启动定时任务
-      this.startScheduledTasks()
-      console.log('Scheduled tasks started')
+      // P2P功能已被移除
 
       this.isInitialized = true
       console.log('All services initialized successfully')
@@ -95,12 +83,9 @@ export class ServiceManager {
       // 停止定时任务
       this.stopScheduledTasks()
 
-      // P2P服务清理现在由LocalSend管理器处理
-      console.log('P2P Service cleanup handled by LocalSend manager')
+      // P2P功能已被移除
 
       // 清理所有服务
-      await p2pManager.cleanup()
-      localSendIPCHandler.cleanup()
       // 插件服务清理已移除，VSCode风格插件系统独立管理
       await updaterService.cleanup()
       await uploadService.cleanup()
@@ -165,13 +150,7 @@ export class ServiceManager {
     return updaterService
   }
 
-  public getP2PManager() {
-    return p2pManager
-  }
-
-  public getLocalSendIPCHandler() {
-    return localSendIPCHandler
-  }
+  // P2P功能已被移除
 
   public setMainWindow(_mainWindow: BrowserWindow): void {
     // P2P IPC bridge removed - using LocalSend implementation
@@ -190,7 +169,7 @@ export {
   loggerService,
   // settingsService removed
   // pluginManager removed
-  p2pManager,
+  // P2P功能已被移除
   // 插件服务导出已移除，VSCode风格插件系统独立管理
   ipcHandler
 }

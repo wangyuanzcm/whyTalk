@@ -54,6 +54,8 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     ScreenshotCapture: typeof import('./src/components/Screenshot/ScreenshotCapture.vue')['default']
     SkipBottomButton: typeof import('./src/components/chat/SkipBottomButton.vue')['default']
+    ThemeEditModal: typeof import('./src/components/theme/ThemeEditModal.vue')['default']
+    ThemeSelector: typeof import('./src/components/theme/ThemeSelector.vue')['default']
     TreeMenu: typeof import('./src/components/basic/tree-menu/TreeMenu.vue')['default']
     UpdateManager: typeof import('./src/components/UpdateManager.vue')['default']
     UserSearchModal: typeof import('./src/components/user/UserSearchModal.vue')['default']
