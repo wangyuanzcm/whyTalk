@@ -44,6 +44,6 @@ appImage:
 npmRebuild: false
 publish:
   provider: generic
-  url: https://example.com/auto-updates
+  url: http://175.178.158.23:19000/electron-updates
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/

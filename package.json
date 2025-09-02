@@ -1,6 +1,6 @@
 {
   "name": "why-talk",
-  "version": "1.0.0",
+  "version": "1.0.5",
   "description": "An Electron application with Vue and TypeScript",
   "main": "./out/main/index.js",
   "author": "wangyuanzcm@sina.com",
@@ -23,7 +23,14 @@
     "build:linux": "npm run build && electron-builder --linux",
     "ext:package": "cd extensions/sample-extension && npm run package",
     "ext:build": "cd extensions/sample-extension && npm run build",
-    "ext:clean": "cd extensions/sample-extension && npm run clean"
+    "ext:clean": "cd extensions/sample-extension && npm run clean",
+    "upload": "node scripts/upload-release.js",
+    "release": "node scripts/upload-release.js",
+    "release:patch": "node scripts/upload-release.js -v patch",
+    "release:minor": "node scripts/upload-release.js -v minor",
+    "release:major": "node scripts/upload-release.js -v major",
+    "release:all": "node scripts/upload-release.js -p all",
+    "upload:only": "node scripts/upload-release.js --skip-build --skip-version"
   },
   "dependencies": {
     "@chainsafe/libp2p-gossipsub": "^14.1.1",

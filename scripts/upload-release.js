@@ -3,6 +3,7 @@ const path = require('path')
 const Minio = require('minio')
 const FormData = require('form-data')
 const fetch = require('node-fetch')
+const { execSync } = require('child_process')
 
 /**
  * 加载配置文件
@@ -395,10 +396,153 @@ function validateMinioConfig() {
 }
 
 /**
- * 主函数：上传所有构建产物
+ * 更新软件版本号
+ * @param {string} versionType 版本类型: patch, minor, major
+ * @returns {string} 新版本号
  */
-async function main() {
-  console.log('🚀 开始上传 Electron 构建产物...')
+function updateVersion(versionType = 'patch') {
+  try {
+    console.log(`📝 更新版本号 (${versionType})...`)
+    const result = execSync(`npm version ${versionType} --no-git-tag-version`, { 
+      encoding: 'utf8',
+      cwd: path.join(__dirname, '..')
+    })
+    const newVersion = result.trim()
+    console.log(`✅ 版本已更新为: ${newVersion}`)
+    return newVersion
+  } catch (error) {
+    console.error('❌ 更新版本失败:', error.message)
+    throw error
+  }
+}
+
+/**
+ * 获取当前操作系统支持的构建平台
+ * @returns {string[]} 支持的平台列表
+ */
+function getSupportedPlatforms() {
+  const os = require('os')
+  const platform = os.platform()
+  
+  switch (platform) {
+    case 'win32':
+      return ['win'] // Windows 只构建 Windows 版本，避免跨平台构建问题
+    case 'darwin':
+      return ['win', 'mac', 'linux'] // macOS 可以构建所有平台
+    case 'linux':
+      return ['linux'] // Linux 只构建 Linux 版本
+    default:
+      return ['win'] // 默认只支持 Windows
+  }
+}
+
+/**
+ * 执行构建
+ * @param {string} platform 构建平台: win, mac, linux, 或 all
+ */
+function buildApplication(platform = 'win') {
+  try {
+    console.log(`🔨 开始构建应用 (${platform})...`)
+    
+    const supportedPlatforms = getSupportedPlatforms()
+    let buildCommands = []
+    
+    if (platform === 'all') {
+      // 构建所有支持的平台
+      console.log(`📋 当前系统支持的构建平台: ${supportedPlatforms.join(', ')}`)
+      
+      for (const p of supportedPlatforms) {
+        switch (p) {
+          case 'win':
+            buildCommands.push('npm run build:win')
+            break
+          case 'mac':
+            buildCommands.push('npm run build:mac')
+            break
+          case 'linux':
+            buildCommands.push('npm run build:linux')
+            break
+        }
+      }
+    } else {
+      // 检查指定平台是否支持
+      if (!supportedPlatforms.includes(platform)) {
+        console.warn(`⚠️  当前系统不支持构建 ${platform} 平台，将跳过构建`)
+        console.log(`💡 支持的平台: ${supportedPlatforms.join(', ')}`)
+        return
+      }
+      
+      switch (platform) {
+        case 'win':
+          buildCommands.push('npm run build:win')
+          break
+        case 'mac':
+          buildCommands.push('npm run build:mac')
+          break
+        case 'linux':
+          buildCommands.push('npm run build:linux')
+          break
+        default:
+          buildCommands.push('npm run build:win')
+      }
+    }
+    
+    // 逐个执行构建命令
+    for (let i = 0; i < buildCommands.length; i++) {
+      const command = buildCommands[i]
+      const platformName = command.includes('win') ? 'Windows' : 
+                          command.includes('mac') ? 'macOS' : 'Linux'
+      
+      console.log(`📦 [${i + 1}/${buildCommands.length}] 构建 ${platformName} 版本...`)
+      execSync(command, { 
+        stdio: 'inherit',
+        cwd: path.join(__dirname, '..')
+      })
+      console.log(`✅ ${platformName} 版本构建完成`)
+    }
+    
+    console.log('🎉 所有支持平台的应用构建完成')
+  } catch (error) {
+    console.error('❌ 构建失败:', error.message)
+    throw error
+  }
+}
+
+/**
+ * 主函数：更新版本、构建并上传所有构建产物
+ * @param {Object} options 选项
+ * @param {string} options.versionType 版本类型: patch, minor, major
+ * @param {string} options.platform 构建平台: win, mac, linux, all
+ * @param {boolean} options.skipBuild 是否跳过构建
+ * @param {boolean} options.skipVersionUpdate 是否跳过版本更新
+ */
+async function main(options = {}) {
+  const {
+    versionType = 'patch',
+    platform = 'win',
+    skipBuild = false,
+    skipVersionUpdate = false
+  } = options
+  
+  console.log('🚀 开始自动化发布流程...')
+  
+  try {
+    // 1. 更新版本号
+    if (!skipVersionUpdate) {
+      updateVersion(versionType)
+    } else {
+      console.log('⏭️  跳过版本更新')
+    }
+    
+    // 2. 执行构建
+    if (!skipBuild) {
+      buildApplication(platform)
+    } else {
+      console.log('⏭️  跳过构建步骤')
+    }
+    
+    // 3. 开始上传流程
+    console.log('\n📦 开始上传构建产物...')
 
   const serverType = CONFIG.server.type
   console.log('上传方式:', serverType === 'minio' ? 'MinIO S3 兼容存储' : 'HTTP 服务器')
@@ -490,27 +634,139 @@ async function main() {
   console.log(`❌ 失败: ${failCount} 个文件`)
   console.log(`⏱️  总耗时: ${duration} 秒`)
 
-  if (failCount > 0) {
-    console.log('\n⚠️  部分文件上传失败，请检查网络连接和服务器状态')
-    console.log('💡 提示: 可以重新运行此脚本来重试失败的上传')
-    process.exit(1)
-  } else {
-    console.log('\n🎉 所有文件上传完成！')
-    if (serverType === 'minio') {
-      const minioConfig = CONFIG.server.minio
-      console.log(`🌐 文件已上传到 MinIO 存储桶: ${minioConfig.bucketName}`)
+    if (failCount > 0) {
+      console.log('\n⚠️  部分文件上传失败，请检查网络连接和服务器状态')
+      console.log('💡 提示: 可以重新运行此脚本来重试失败的上传')
+      throw new Error(`上传失败: ${failCount} 个文件上传失败`)
     } else {
-      console.log(`🌐 文件已上传到: ${CONFIG.server.http.url}`)
+      console.log('\n🎉 所有文件上传完成！')
+      if (serverType === 'minio') {
+        const minioConfig = CONFIG.server.minio
+        console.log(`🌐 文件已上传到 MinIO 存储桶: ${minioConfig.bucketName}`)
+      } else {
+        console.log(`🌐 文件已上传到: ${CONFIG.server.http.url}`)
+      }
+      
+      console.log('\n✨ 自动化发布流程完成！')
+    }
+    
+  } catch (error) {
+    console.error('\n❌ 发布流程失败:', error.message)
+    throw error
+  }
+}
+
+/**
+ * 解析命令行参数
+ * @returns {Object} 解析后的选项
+ */
+function parseCommandLineArgs() {
+  const args = process.argv.slice(2)
+  const options = {
+    versionType: 'patch',
+    platform: 'win',
+    skipBuild: false,
+    skipVersionUpdate: false
+  }
+  
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i]
+    
+    switch (arg) {
+      case '--version-type':
+      case '-v':
+        if (i + 1 < args.length) {
+          const versionType = args[i + 1]
+          if (['patch', 'minor', 'major'].includes(versionType)) {
+            options.versionType = versionType
+            i++
+          } else {
+            console.error('❌ 无效的版本类型，支持: patch, minor, major')
+            process.exit(1)
+          }
+        }
+        break
+        
+      case '--platform':
+      case '-p':
+        if (i + 1 < args.length) {
+          const platform = args[i + 1]
+          if (['win', 'mac', 'linux', 'all'].includes(platform)) {
+            options.platform = platform
+            i++
+          } else {
+            console.error('❌ 无效的平台类型，支持: win, mac, linux, all')
+            process.exit(1)
+          }
+        }
+        break
+        
+      case '--skip-build':
+        options.skipBuild = true
+        break
+        
+      case '--skip-version':
+        options.skipVersionUpdate = true
+        break
+        
+      case '--help':
+      case '-h':
+        console.log('📖 使用说明:')
+        console.log('  node scripts/upload-release.js [选项]')
+        console.log('')
+        console.log('选项:')
+        console.log('  -v, --version-type <type>  版本类型 (patch|minor|major) [默认: patch]')
+        console.log('  -p, --platform <platform> 构建平台 (win|mac|linux|all) [默认: win]')
+        console.log('  --skip-build              跳过构建步骤')
+        console.log('  --skip-version            跳过版本更新')
+        console.log('  -h, --help                显示帮助信息')
+        console.log('')
+        console.log('示例:')
+        console.log('  node scripts/upload-release.js                    # 默认: patch版本, Windows平台')
+        console.log('  node scripts/upload-release.js -v minor -p all    # minor版本, 所有平台')
+        console.log('  node scripts/upload-release.js --skip-build       # 跳过构建，仅上传')
+        process.exit(0)
+        break
+        
+      default:
+        if (arg.startsWith('-')) {
+          console.error(`❌ 未知参数: ${arg}`)
+          console.log('使用 --help 查看帮助信息')
+          process.exit(1)
+        }
     }
   }
+  
+  return options
 }
 
 // 执行主函数
 if (require.main === module) {
-  main().catch((error) => {
-    console.error('❌ 上传过程中发生未处理的错误:', error)
+  const options = parseCommandLineArgs()
+  
+  main(options).catch((error) => {
+    console.error('❌ 发布过程中发生未处理的错误:', error)
     process.exit(1)
   })
+} else {
+  // 如果是被其他模块引用，提供默认的错误处理包装
+  const originalMain = main
+  main = async (options = {}) => {
+    try {
+      return await originalMain(options)
+    } catch (error) {
+      console.error('❌ 发布过程中发生错误:', error.message)
+      throw error
+    }
+  }
 }
 
-module.exports = { uploadFile, getBuildArtifacts, main }
+module.exports = { 
+  uploadFile, 
+  getBuildArtifacts, 
+  main, 
+  updateVersion, 
+  buildApplication,
+  getSupportedPlatforms,
+  parseCommandLineArgs 
+}
