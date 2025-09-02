@@ -54,7 +54,8 @@ export class VSCodeStylePluginManager extends EventEmitter {
       this.userExtensionsPath = path.join(process.cwd(), 'user-extensions')
     } else {
       this.builtinExtensionsPath = path.join(process.resourcesPath, 'extensions')
-      this.userExtensionsPath = path.join(app.getPath('userData'), 'extensions')
+      // 修改：将用户插件安装到软件安装目录而不是用户数据目录
+      this.userExtensionsPath = path.join(process.resourcesPath, 'user-extensions')
     }
   }
 

@@ -56,11 +56,15 @@ export class ExtensionLoader extends EventEmitter {
     const appPath = isDev ? process.cwd() : process.resourcesPath
 
     this.builtinExtensionPath = path.join(appPath, 'extensions')
-    this.userExtensionPath = path.join(
-      process.env.APPDATA || process.env.HOME || '',
-      '.whytalk',
-      'extensions'
-    )
+    
+    // 修改：统一使用软件安装目录存储用户插件，与VSCodeStylePluginManager保持一致
+    if (isDev) {
+      // 开发环境：使用当前工作目录
+      this.userExtensionPath = path.join(process.cwd(), 'user-extensions')
+    } else {
+      // 生产环境：使用软件安装目录
+      this.userExtensionPath = path.join(process.resourcesPath, 'user-extensions')
+    }
 
     // this.extensionPaths = [this.builtinExtensionPath, this.userExtensionPath]
 

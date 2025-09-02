@@ -6,6 +6,7 @@
 import { VSCodeStylePluginManager } from './vscode-style/VSCodeStylePluginManager'
 import { ipcMain, BrowserWindow, app, dialog } from 'electron'
 import path from 'path'
+import fs from 'fs'
 import { createServer } from 'http'
 import { readFile, stat, writeFile, mkdir } from 'fs/promises'
 import { loggerService as logger } from '../services/logger/LoggerService'
@@ -396,6 +397,100 @@ export class PluginSystemManager {
       }
     })
 
+    // 添加extension:开头的IPC处理器，用于插件配置页面
+    // 获取扩展信息（兼容extension:前缀）
+    ipcMain.handle('extension:getExtension', async (_, extensionId: string) => {
+      const extension = this.vscodeStyleManager.getExtension(extensionId)
+      if (!extension) {
+        return null
+      }
+      return {
+        id: extension.id,
+        manifest: extension.manifest,
+        packageJSON: extension.manifest,
+        extensionPath: extension.extensionPath,
+        mainPath: extension.mainPath,
+        isActive: extension.isActive,
+        isBuiltin: extension.isBuiltin,
+        activationEvents: extension.activationEvents,
+        loadTime: extension.loadTime,
+        activationTime: extension.activationTime,
+        error: extension.error
+      }
+    })
+
+    // 执行扩展命令（兼容extension:前缀）
+    ipcMain.handle('extension:executeCommand', async (_, { extensionId, command, args }) => {
+      try {
+        return await this.vscodeStyleManager.executeCommand(command, ...args)
+      } catch (error) {
+        console.error(`Failed to execute command ${command}:`, error)
+        return { success: false, error: error instanceof Error ? error.message : String(error) }
+      }
+    })
+
+    // 获取扩展配置（兼容extension:前缀）
+    ipcMain.handle('extension:getConfiguration', async (_, { extensionId, section }) => {
+      try {
+        // 从插件配置文件中读取配置
+        const configPath = path.join(this.userDataPath, 'plugin-configs', `${extensionId}.json`)
+        if (fs.existsSync(configPath)) {
+          const configData = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
+          if (section) {
+            return { success: true, data: configData[section] }
+          }
+          return { success: true, data: configData }
+        }
+        return { success: true, data: {} }
+      } catch (error) {
+        console.error(`Failed to get configuration for ${extensionId}:`, error)
+        return { success: false, error: error instanceof Error ? error.message : String(error) }
+      }
+    })
+
+    // 更新扩展配置（兼容extension:前缀）
+    ipcMain.handle('extension:updateConfiguration', async (_, { extensionId, section, value }) => {
+      try {
+        const configDir = path.join(this.userDataPath, 'plugin-configs')
+        if (!fs.existsSync(configDir)) {
+          fs.mkdirSync(configDir, { recursive: true })
+        }
+        
+        const configPath = path.join(configDir, `${extensionId}.json`)
+        let configData = {}
+        
+        // 读取现有配置
+        if (fs.existsSync(configPath)) {
+          configData = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
+        }
+        
+        // 更新配置
+        if (section) {
+          configData[section] = value
+        } else {
+          configData = { ...configData, ...value }
+        }
+        
+        // 保存配置
+        fs.writeFileSync(configPath, JSON.stringify(configData, null, 2))
+        
+        return { success: true }
+      } catch (error) {
+        console.error(`Failed to update configuration for ${extensionId}:`, error)
+        return { success: false, error: error instanceof Error ? error.message : String(error) }
+      }
+    })
+
+    // 获取扩展配置架构（兼容extension:前缀）
+    ipcMain.handle('extension:getConfigSchema', async (_, extensionId: string) => {
+      try {
+        return await this.getPluginConfigSchema(extensionId)
+      } catch (error) {
+        console.error(`Failed to get config schema for ${extensionId}:`, error)
+        return null
+      }
+    })
+
     logger.info('插件系统IPC处理器设置完成')
   }
 
@@ -510,8 +605,8 @@ export class PluginSystemManager {
             // 添加调试日志
             logger.info(`扩展服务器收到请求: ${req.method} ${pathname}`)
 
-            // 安全检查：只允许访问extensions目录下的文件
-            if (!pathname.startsWith('/extensions/')) {
+            // 安全检查：只允许访问extensions和user-extensions目录下的文件
+            if (!pathname.startsWith('/extensions/') && !pathname.startsWith('/user-extensions/')) {
               logger.warn(`拒绝访问非扩展路径: ${pathname}`)
               res.writeHead(404, { 'Content-Type': 'text/plain' })
               res.end('Not Found')
@@ -535,12 +630,17 @@ export class PluginSystemManager {
               isDev
             })
 
-            // 安全检查：确保文件路径在extensions目录内
+            // 安全检查：确保文件路径在extensions或user-extensions目录内
             const extensionsDir = path.join(appPath, 'extensions')
+            const userExtensionsDir = path.join(appPath, 'user-extensions')
             const resolvedPath = path.resolve(filePath)
             const resolvedExtensionsDir = path.resolve(extensionsDir)
+            const resolvedUserExtensionsDir = path.resolve(userExtensionsDir)
 
-            if (!resolvedPath.startsWith(resolvedExtensionsDir)) {
+            const isInExtensionsDir = resolvedPath.startsWith(resolvedExtensionsDir)
+            const isInUserExtensionsDir = resolvedPath.startsWith(resolvedUserExtensionsDir)
+
+            if (!isInExtensionsDir && !isInUserExtensionsDir) {
               logger.warn(`拒绝访问扩展目录外的文件: ${resolvedPath}`)
               res.writeHead(403, { 'Content-Type': 'text/plain' })
               res.end('Forbidden')
@@ -641,13 +741,19 @@ export class PluginSystemManager {
 
     // 从扩展路径中提取扩展ID
     const extensionId = path.basename(extensionPath)
-    const url = `http://localhost:${this.extensionServerPort}/extensions/${extensionId}/${relativePath}`
+    
+    // 判断是否为用户插件（在user-extensions目录中）
+    const isUserExtension = extensionPath.includes('user-extensions')
+    const baseDir = isUserExtension ? 'user-extensions' : 'extensions'
+    const url = `http://localhost:${this.extensionServerPort}/${baseDir}/${extensionId}/${relativePath}`
     
     // 添加调试日志
     logger.info(`getExtensionFileUrl 调用:`)
     logger.info(`  extensionPath: ${extensionPath}`)
     logger.info(`  relativePath: ${relativePath}`)
     logger.info(`  extensionId: ${extensionId}`)
+    logger.info(`  isUserExtension: ${isUserExtension}`)
+    logger.info(`  baseDir: ${baseDir}`)
     logger.info(`  extensionServerPort: ${this.extensionServerPort}`)
     logger.info(`  url: ${url}`)
     
