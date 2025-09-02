@@ -86,10 +86,13 @@
   },
   "scripts": {
     "build": "tsc -p ./",
-    "watch": "tsc -watch -p ./"
+    "watch": "tsc -watch -p ./",
+    "package": "node build.js package",
+    "clean": "node build.js clean"
   },
   "devDependencies": {
     "@types/node": "^18.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "archiver": "^6.0.0"
   }
 }

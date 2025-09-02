@@ -557,6 +557,20 @@ export class ExtensionLoader extends EventEmitter {
   }
 
   /**
+   * 获取用户扩展路径
+   */
+  public getUserExtensionsPath(): string {
+    return this.userExtensionPath
+  }
+
+  /**
+   * 获取内置扩展路径
+   */
+  public getBuiltinExtensionsPath(): string {
+    return this.builtinExtensionPath
+  }
+
+  /**
    * 获取统计信息
    */
   public getStats(): {

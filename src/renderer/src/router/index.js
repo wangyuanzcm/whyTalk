@@ -39,7 +39,7 @@ const routes = [
   {
     path: '/plugin-window/:pluginId',
     name: 'plugin-window',
-    meta: { auth: true },
+    meta: { auth: false },
     component: () => import('@/views/plugin/PluginWindow.vue')
   },
   AuthRouter,

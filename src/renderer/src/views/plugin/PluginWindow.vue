@@ -45,7 +45,13 @@ const pluginUrl = ref('')
  * 加载插件数据和配置
  */
 const loadPlugin = async () => {
+  console.log('=== 开始加载插件 ===')
+  console.log('pluginId:', pluginId.value)
+  console.log('当前URL:', window.location.href)
+  console.log('路由参数:', route.params)
+  
   if (!pluginId.value) {
+    console.error('插件ID为空')
     error.value = '插件ID不能为空'
     loading.value = false
     return
@@ -55,27 +61,36 @@ const loadPlugin = async () => {
     loading.value = true
     error.value = ''
 
+    console.log('=== 步骤1: 获取插件信息 ===')
     console.log('Loading plugin:', pluginId.value)
 
     // 获取VSCode风格扩展信息
     const pluginInfo = await PluginAPI.getPluginInfo(pluginId.value)
+    console.log('获取到插件信息:', pluginInfo)
 
     if (pluginInfo.success && pluginInfo.data) {
       const extension = pluginInfo.data
+      console.log('扩展详细信息:', extension)
 
       // VSCode风格扩展处理
       if (extension.packageJSON) {
+        console.log('=== 步骤2: 检查扩展贡献点 ===')
         // 检查扩展是否有webview或UI贡献点
         const contributes = (extension.packageJSON as { contributes?: Record<string, unknown> }).contributes || {}
+        console.log('扩展贡献点:', contributes)
 
         // 如果扩展有webview或自定义UI，尝试激活并获取内容
         if (contributes.views || contributes.webviews || contributes.commands) {
           try {
+            console.log('=== 步骤3: 激活扩展 ===')
             // 激活扩展
             await window.electron.ipcRenderer.invoke('plugin:activateExtension', pluginId.value)
+            console.log('扩展激活成功')
 
+            console.log('=== 步骤4: 检查webview目录 ===')
             // 检查扩展是否有webview目录
             const webviewPath = `${extension.extensionPath}/webview/index.html`
+            console.log('检查webview路径:', webviewPath)
 
             try {
               // 尝试检查webview文件是否存在
@@ -83,8 +98,10 @@ const loadPlugin = async () => {
                 'fs:exists',
                 webviewPath
               )
+              console.log('webview文件存在:', webviewExists)
 
               if (webviewExists) {
+                console.log('=== 步骤5: 使用自定义webview页面 ===')
                 // 如果存在webview目录，直接使用webview页面
                 pluginData.value = {
                   config: {
@@ -98,16 +115,32 @@ const loadPlugin = async () => {
                 }
 
                 try {
+                  console.log('=== 步骤6: 获取扩展文件URL ===')
                   // 使用HTTP URL而不是file://协议
+                  console.log('尝试获取扩展文件URL:', {
+                    extensionPath: extension.extensionPath,
+                    relativePath: 'webview/index.html'
+                  })
                   const httpUrl = await window.electron.ipcRenderer.invoke(
                     'plugin:get-extension-file-url',
                     extension.extensionPath,
                     'webview/index.html'
                   )
+                  console.log('成功获取扩展文件URL:', httpUrl)
                   pluginUrl.value = httpUrl
+                  console.log('插件URL已设置:', pluginUrl.value)
                 } catch (error) {
-                  console.error('Failed to get extension file URL:', error)
+                  console.error('=== 获取扩展文件URL失败 ===')
+                  console.error('错误对象:', error)
+                  console.error('错误详情:', {
+                    message: error?.message,
+                    stack: error?.stack,
+                    extensionPath: extension.extensionPath,
+                    name: error?.name,
+                    code: error?.code
+                  })
                   // 降级到默认页面
+                  console.log('=== 降级到默认扩展信息页面 ===')
                   const extensionInfoHTML = createExtensionInfoPage({
                     manifest: extension.packageJSON,
                     config: {
@@ -119,8 +152,10 @@ const loadPlugin = async () => {
                   })
                   const blob = new Blob([extensionInfoHTML], { type: 'text/html' })
                   pluginUrl.value = URL.createObjectURL(blob)
+                  console.log('默认页面URL已设置:', pluginUrl.value)
                 }
               } else {
+                console.log('=== webview文件不存在，创建默认页面 ===')
                 // 如果没有webview目录，创建默认的扩展信息页面
                 const extensionInfoHTML = createExtensionInfoPage({
                   manifest: extension.packageJSON,
@@ -146,9 +181,11 @@ const loadPlugin = async () => {
                 // 创建插件的blob URL
                 const blob = new Blob([extensionInfoHTML], { type: 'text/html' })
                 pluginUrl.value = URL.createObjectURL(blob)
+                console.log('默认页面URL已设置:', pluginUrl.value)
               }
             } catch (fsError) {
-              console.warn('Failed to check webview directory, falling back to info page:', fsError)
+              console.warn('=== 检查webview目录时出错，降级到信息页面 ===')
+              console.error('文件系统错误:', fsError)
               // 如果文件系统检查失败，创建默认信息页面
               const extensionInfoHTML = createExtensionInfoPage({
                 manifest: extension.packageJSON,
@@ -173,25 +210,41 @@ const loadPlugin = async () => {
 
               const blob = new Blob([extensionInfoHTML], { type: 'text/html' })
               pluginUrl.value = URL.createObjectURL(blob)
+              console.log('默认页面URL已设置:', pluginUrl.value)
             }
           } catch (activationError) {
-            console.error('Extension activation failed:', activationError)
+            console.error('=== 扩展激活失败 ===')
+            console.error('激活错误:', activationError)
             error.value = `扩展激活失败: ${activationError instanceof Error ? activationError.message : String(activationError)}`
           }
         } else {
+          console.warn('=== 扩展没有可用的用户界面 ===')
+          console.log('扩展贡献点:', contributes)
           error.value = '此扩展没有可用的用户界面'
         }
       } else {
+        console.error('=== 无效的扩展格式 ===')
+        console.log('扩展数据:', extension)
         error.value = '无效的扩展格式'
       }
     } else {
+      console.error('=== 获取插件信息失败 ===')
+      console.log('插件信息响应:', pluginInfo)
       error.value = pluginInfo.error || '扩展不存在或加载失败'
     }
   } catch (err) {
-    console.error('Plugin load error:', err)
+    console.error('=== 插件加载异常 ===')
+    console.error('异常对象:', err)
     error.value = err instanceof Error ? err.message : '未知错误'
   } finally {
     loading.value = false
+    console.log('=== 插件加载完成 ===')
+    console.log('最终状态:', {
+      loading: loading.value,
+      error: error.value,
+      pluginUrl: pluginUrl.value,
+      pluginData: pluginData.value
+    })
   }
 }
 
@@ -507,6 +560,14 @@ watch(
 
 // 组件挂载时设置消息监听
 onMounted(() => {
+  console.log('PluginWindow组件已挂载，pluginId:', route.params.pluginId)
+  console.log('当前路由:', route)
+  console.log('开始加载插件...')
+  try {
+    loadPlugin()
+  } catch (error) {
+    console.error('加载插件时出错:', error)
+  }
   window.addEventListener('message', handlePluginMessage)
 })
 

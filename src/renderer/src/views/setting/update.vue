@@ -1,13 +1,13 @@
 <template>
   <div class="update-settings">
     <n-card title="应用更新设置" :bordered="false">
-      <n-space vertical :size="24">
+      <n-space vertical :size="12">
         <!-- 基本设置 -->
-        <n-form-item label="启用自动更新">
+        <n-form-item label="启用自动更新" :show-feedback="false">
           <n-switch v-model:value="config.enabled" @update:value="handleConfigChange" />
         </n-form-item>
 
-        <n-form-item label="更新服务器地址">
+        <n-form-item label="更新服务器地址" :show-feedback="false">
           <n-input
             v-model:value="config.serverUrl"
             placeholder="http://175.178.158.23:19000//electron-updates"
@@ -16,7 +16,7 @@
           />
         </n-form-item>
 
-        <n-form-item label="更新通道">
+        <n-form-item label="更新通道" :show-feedback="false">
           <n-select
             v-model:value="config.channel"
             :options="channelOptions"
@@ -28,7 +28,7 @@
         <!-- 下载设置 -->
         <n-divider title-placement="left">下载设置</n-divider>
 
-        <n-form-item label="自动下载更新">
+        <n-form-item label="自动下载更新" :show-feedback="false">
           <n-switch
             v-model:value="config.autoDownload"
             :disabled="!config.enabled"
@@ -36,7 +36,7 @@
           />
         </n-form-item>
 
-        <n-form-item label="退出时自动安装">
+        <n-form-item label="退出时自动安装" :show-feedback="false">
           <n-switch
             v-model:value="config.autoInstallOnAppQuit"
             :disabled="!config.enabled"
@@ -47,7 +47,7 @@
         <!-- 高级设置 -->
         <n-divider title-placement="left">高级设置</n-divider>
 
-        <n-form-item label="允许预发布版本">
+        <n-form-item label="允许预发布版本" :show-feedback="false">
           <n-switch
             v-model:value="config.allowPrerelease"
             :disabled="!config.enabled"
@@ -55,7 +55,7 @@
           />
         </n-form-item>
 
-        <n-form-item label="启动时检查更新">
+        <n-form-item label="启动时检查更新" :show-feedback="false">
           <n-switch
             v-model:value="config.autoCheckOnStartup"
             :disabled="!config.enabled"
@@ -63,7 +63,7 @@
           />
         </n-form-item>
 
-        <n-form-item label="检查间隔（小时）">
+        <n-form-item label="检查间隔（小时）" :show-feedback="false">
           <n-input-number
             v-model:value="checkIntervalHours"
             :min="1"
@@ -165,7 +165,12 @@ interface UpdateStatus {
   status: string
   currentVersion: string
   availableVersion: string
-  downloadProgress: { percent: number; bytesPerSecond: number; total: number; transferred: number } | null
+  downloadProgress: {
+    percent: number
+    bytesPerSecond: number
+    total: number
+    transferred: number
+  } | null
   error: string
   lastChecked: Date | null
 }
@@ -287,7 +292,7 @@ function handleIntervalChange() {
  */
 async function checkForUpdates() {
   try {
-    const result = await window.electronAPI.updater.checkForUpdates() as any
+    const result = (await window.electronAPI.updater.checkForUpdates()) as any
     if (!result?.success) {
       message.error('检查更新失败: ' + (result?.error || ''))
     }
@@ -302,7 +307,7 @@ async function checkForUpdates() {
  */
 async function downloadUpdate() {
   try {
-    const result = await window.electronAPI.updater.downloadUpdate() as any
+    const result = (await window.electronAPI.updater.downloadUpdate()) as any
     if (!result?.success) {
       message.error('下载更新失败: ' + (result?.error || ''))
     }
@@ -317,7 +322,7 @@ async function downloadUpdate() {
  */
 async function installUpdate() {
   try {
-    const result = await window.electronAPI.updater.quitAndInstall() as any
+    const result = (await window.electronAPI.updater.quitAndInstall()) as any
     if (!result?.success) {
       message.error('安装更新失败: ' + (result?.error || ''))
     }
@@ -425,7 +430,7 @@ onMounted(() => {
     }
 
     .n-card-header {
-      padding: var(--spacing-xl) var(--spacing-xl) var(--spacing-lg) var(--spacing-xl);
+      padding: var(--spacing-sm);
       border-bottom: 1px solid var(--color-border-light);
 
       .n-card-header__main {
@@ -466,7 +471,7 @@ onMounted(() => {
   }
 
   :deep(.n-divider) {
-    margin: var(--spacing-xl) 0;
+    margin: 0;
     border-color: var(--color-border-light);
 
     .n-divider__title {
@@ -675,17 +680,17 @@ onMounted(() => {
 
     &.n-alert--error-type {
       background: var(--color-error-light);
-      
+
       .n-alert__icon {
         color: var(--color-error);
       }
-      
+
       .n-alert-body {
         .n-alert-body__title {
           color: var(--color-error);
           font-weight: var(--font-weight-semibold);
         }
-        
+
         .n-alert-body__content {
           color: var(--color-error);
         }
@@ -1172,7 +1177,11 @@ onMounted(() => {
           }
 
           .n-progress-graph-line-fill {
-            background: linear-gradient(90deg, var(--color-primary-dark), var(--color-primary-dark-light));
+            background: linear-gradient(
+              90deg,
+              var(--color-primary-dark),
+              var(--color-primary-dark-light)
+            );
           }
         }
       }
@@ -1193,16 +1202,16 @@ onMounted(() => {
     :deep(.n-alert) {
       &.n-alert--error-type {
         background: var(--color-error-dark-light);
-        
+
         .n-alert__icon {
           color: var(--color-error-dark);
         }
-        
+
         .n-alert-body {
           .n-alert-body__title {
             color: var(--color-error-dark);
           }
-          
+
           .n-alert-body__content {
             color: var(--color-error-dark);
           }

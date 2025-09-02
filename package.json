@@ -20,7 +20,10 @@
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "npm run build && electron-builder --mac",
-    "build:linux": "npm run build && electron-builder --linux"
+    "build:linux": "npm run build && electron-builder --linux",
+    "ext:package": "cd extensions/sample-extension && npm run package",
+    "ext:build": "cd extensions/sample-extension && npm run build",
+    "ext:clean": "cd extensions/sample-extension && npm run clean"
   },
   "dependencies": {
     "@chainsafe/libp2p-gossipsub": "^14.1.1",

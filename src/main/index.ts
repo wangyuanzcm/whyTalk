@@ -30,10 +30,10 @@ function createWindow(): BrowserWindow {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
-    // 在开发模式下打开开发者工具
-    if (is.dev) {
-      mainWindow.webContents.openDevTools()
-    }
+    // 在开发模式下打开开发者工具（已注释，可通过 F12 手动打开）
+    // if (is.dev) {
+    //   mainWindow.webContents.openDevTools()
+    // }
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -52,10 +52,27 @@ function createWindow(): BrowserWindow {
   return mainWindow
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
-app.whenReady().then(async () => {
+// 获取单实例锁定，防止多个应用实例同时运行
+const gotTheLock = app.requestSingleInstanceLock()
+
+if (!gotTheLock) {
+  // 如果没有获得锁定，说明已经有实例在运行，退出当前实例
+  app.quit()
+} else {
+  // 当有第二个实例尝试启动时，聚焦到现有窗口
+  app.on('second-instance', () => {
+    const windows = BrowserWindow.getAllWindows()
+    if (windows.length > 0) {
+      const mainWindow = windows[0]
+      if (mainWindow.isMinimized()) mainWindow.restore()
+      mainWindow.focus()
+    }
+  })
+
+  // This method will be called when Electron has finished
+  // initialization and is ready to create browser windows.
+  // Some APIs can only be used after this event occurs.
+  app.whenReady().then(async () => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
@@ -228,3 +245,5 @@ async function createTestUserIfNotExists(): Promise<void> {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
+
+} // 闭合单实例锁定的else语句

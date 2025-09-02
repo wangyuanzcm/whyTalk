@@ -357,6 +357,45 @@ export class PluginSystemManager {
       }
     })
 
+    // 插件配置相关的IPC处理器
+    ipcMain.handle('plugin:getPluginConfig', async (_event, pluginId: string) => {
+      try {
+        return await this.getPluginConfig(pluginId)
+      } catch (error) {
+        logger.error(`获取插件配置失败: ${pluginId}`, error)
+        return null
+      }
+    })
+
+    ipcMain.handle('plugin:savePluginConfig', async (_event, { pluginId, config }) => {
+      try {
+        await this.savePluginConfig(pluginId, config)
+        return { success: true }
+      } catch (error) {
+        logger.error(`保存插件配置失败: ${pluginId}`, error)
+        return { success: false, error: error instanceof Error ? error.message : String(error) }
+      }
+    })
+
+    ipcMain.handle('plugin:resetPluginConfig', async (_event, pluginId: string) => {
+      try {
+        await this.resetPluginConfig(pluginId)
+        return { success: true }
+      } catch (error) {
+        logger.error(`重置插件配置失败: ${pluginId}`, error)
+        return { success: false, error: error instanceof Error ? error.message : String(error) }
+      }
+    })
+
+    ipcMain.handle('plugin:getPluginConfigSchema', async (_event, pluginId: string) => {
+      try {
+        return await this.getPluginConfigSchema(pluginId)
+      } catch (error) {
+        logger.error(`获取插件配置架构失败: ${pluginId}`, error)
+        return null
+      }
+    })
+
     logger.info('插件系统IPC处理器设置完成')
   }
 
@@ -437,9 +476,9 @@ export class PluginSystemManager {
       }
 
       // 开发模式下打开开发者工具
-      if (is.dev) {
-        configWindow.webContents.openDevTools()
-      }
+      // if (is.dev) {
+      //   configWindow.webContents.openDevTools()
+      // }
 
       // 保存窗口引用
       this.configWindows.set(pluginId, configWindow)
@@ -467,9 +506,13 @@ export class PluginSystemManager {
             // 解析请求URL
             const url = new URL(req.url || '/', 'http://localhost')
             const pathname = url.pathname
+            
+            // 添加调试日志
+            logger.info(`扩展服务器收到请求: ${req.method} ${pathname}`)
 
             // 安全检查：只允许访问extensions目录下的文件
             if (!pathname.startsWith('/extensions/')) {
+              logger.warn(`拒绝访问非扩展路径: ${pathname}`)
               res.writeHead(404, { 'Content-Type': 'text/plain' })
               res.end('Not Found')
               return
@@ -482,6 +525,15 @@ export class PluginSystemManager {
             const isDev = process.env.NODE_ENV === 'development'
             const appPath = isDev ? process.cwd() : process.resourcesPath
             const filePath = path.join(appPath, relativePath)
+            
+            // 添加调试日志
+            logger.info(`扩展服务器路径解析:`, {
+              pathname,
+              relativePath,
+              appPath,
+              filePath,
+              isDev
+            })
 
             // 安全检查：确保文件路径在extensions目录内
             const extensionsDir = path.join(appPath, 'extensions')
@@ -489,21 +541,33 @@ export class PluginSystemManager {
             const resolvedExtensionsDir = path.resolve(extensionsDir)
 
             if (!resolvedPath.startsWith(resolvedExtensionsDir)) {
+              logger.warn(`拒绝访问扩展目录外的文件: ${resolvedPath}`)
               res.writeHead(403, { 'Content-Type': 'text/plain' })
               res.end('Forbidden')
               return
             }
 
-            // 检查文件是否存在
-            const stats = await stat(resolvedPath)
-            if (!stats.isFile()) {
+            // 检查文件是否存在且是文件
+            try {
+              const stats = await stat(resolvedPath)
+              if (!stats.isFile()) {
+                logger.warn(`路径不是文件: ${resolvedPath}`)
+                res.writeHead(404, { 'Content-Type': 'text/plain' })
+                res.end('Not Found')
+                return
+              }
+              
+              logger.info(`扩展文件存在，准备读取: ${resolvedPath}`)
+            } catch (error) {
+              logger.warn(`扩展文件不存在: ${resolvedPath}`, error)
               res.writeHead(404, { 'Content-Type': 'text/plain' })
-              res.end('Not Found')
+              res.end('File Not Found')
               return
             }
 
             // 读取文件内容
             const content = await readFile(resolvedPath)
+            logger.info(`扩展文件读取成功，大小: ${content.length} bytes`)
 
             // 设置正确的Content-Type
             const ext = path.extname(resolvedPath).toLowerCase()
@@ -578,6 +642,15 @@ export class PluginSystemManager {
     // 从扩展路径中提取扩展ID
     const extensionId = path.basename(extensionPath)
     const url = `http://localhost:${this.extensionServerPort}/extensions/${extensionId}/${relativePath}`
+    
+    // 添加调试日志
+    logger.info(`getExtensionFileUrl 调用:`)
+    logger.info(`  extensionPath: ${extensionPath}`)
+    logger.info(`  relativePath: ${relativePath}`)
+    logger.info(`  extensionId: ${extensionId}`)
+    logger.info(`  extensionServerPort: ${this.extensionServerPort}`)
+    logger.info(`  url: ${url}`)
+    
     return url
   }
 
@@ -665,9 +738,9 @@ export class PluginSystemManager {
     configWindow.loadFile(testFilePath)
 
     // 开发模式下打开开发者工具
-    if (is.dev) {
-      configWindow.webContents.openDevTools()
-    }
+    // if (is.dev) {
+    //   testConfigWindow.webContents.openDevTools()
+    // }
 
     // 保存窗口引用
     this.configWindows.set('test', configWindow)
@@ -758,7 +831,7 @@ export class PluginSystemManager {
         maximizable: config.maximizable !== false,
         alwaysOnTop: config.alwaysOnTop === true,
         webPreferences: {
-          preload: join(__dirname, '../preload/plugin-preload.js'),
+          preload: join(__dirname, '../preload/index.js'),
           sandbox: false,
           contextIsolation: true,
           nodeIntegration: false,
@@ -769,9 +842,9 @@ export class PluginSystemManager {
       // 窗口准备显示时的处理
       pluginWindow.on('ready-to-show', () => {
         pluginWindow.show()
-        if (is.dev) {
-          pluginWindow.webContents.openDevTools()
-        }
+        // if (is.dev) {
+        //   pluginWindow.webContents.openDevTools()
+        // }
       })
 
       // 加载插件页面（使用独立的插件窗口路由，不包含主布局）
@@ -793,6 +866,91 @@ export class PluginSystemManager {
         success: false,
         error: error instanceof Error ? error.message : String(error)
       }
+    }
+  }
+
+  /**
+   * 获取插件配置
+   * @param pluginId 插件ID
+   */
+  private async getPluginConfig(pluginId: string): Promise<any> {
+    try {
+      const configDir = path.join(app.getPath('userData'), 'plugin-configs')
+      const configFile = path.join(configDir, `${pluginId}-config.json`)
+
+      const configData = await readFile(configFile, 'utf-8')
+      return JSON.parse(configData)
+    } catch (error: any) {
+      // 如果文件不存在，返回空配置
+      if (error.code === 'ENOENT') {
+        logger.info(`插件 ${pluginId} 配置文件不存在，返回空配置`)
+        return {}
+      }
+
+      logger.error(`获取插件 ${pluginId} 配置失败:`, error)
+      throw error
+    }
+  }
+
+  /**
+   * 保存插件配置
+   * @param pluginId 插件ID
+   * @param config 配置数据
+   */
+  private async savePluginConfig(pluginId: string, config: any): Promise<void> {
+    try {
+      const configDir = path.join(app.getPath('userData'), 'plugin-configs')
+      await mkdir(configDir, { recursive: true })
+
+      const configFile = path.join(configDir, `${pluginId}-config.json`)
+      await writeFile(configFile, JSON.stringify(config, null, 2), 'utf-8')
+
+      logger.info(`插件 ${pluginId} 配置已保存`)
+    } catch (error) {
+      logger.error(`保存插件 ${pluginId} 配置失败:`, error)
+      throw error
+    }
+  }
+
+  /**
+   * 重置插件配置
+   * @param pluginId 插件ID
+   */
+  private async resetPluginConfig(pluginId: string): Promise<void> {
+    try {
+      const configDir = path.join(app.getPath('userData'), 'plugin-configs')
+      const configFile = path.join(configDir, `${pluginId}-config.json`)
+
+      // 删除配置文件
+      const fs = await import('fs')
+      if (fs.existsSync(configFile)) {
+        await fs.promises.unlink(configFile)
+        logger.info(`插件 ${pluginId} 配置已重置`)
+      }
+    } catch (error) {
+      logger.error(`重置插件 ${pluginId} 配置失败:`, error)
+      throw error
+    }
+  }
+
+  /**
+   * 获取插件配置架构
+   * @param pluginId 插件ID
+   */
+  private async getPluginConfigSchema(pluginId: string): Promise<any> {
+    try {
+      // 获取插件信息
+      const extension = this.vscodeStyleManager.getExtension(pluginId)
+      if (!extension) {
+        return null
+      }
+
+      // 从插件清单中获取配置架构
+      const configSchema = extension.manifest.contributes?.configuration
+      return configSchema || null
+    } catch (error) {
+      logger.error(`获取插件 ${pluginId} 配置架构失败:`, error)
+      throw error
     }
   }
 }

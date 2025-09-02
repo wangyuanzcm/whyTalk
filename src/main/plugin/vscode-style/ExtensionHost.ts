@@ -1,6 +1,8 @@
 import { EventEmitter } from 'events'
 import { ipcMain } from 'electron'
 import * as path from 'path'
+import * as fs from 'fs'
+import * as yauzl from 'yauzl'
 import type { ExtensionInstance } from './types'
 import { ContributionPointManager } from './ContributionPointManager'
 import { ActivationEventManager } from './ActivationEventManager'
@@ -225,11 +227,140 @@ export class ExtensionHost extends EventEmitter {
 
     // 如果是本地路径，直接加载
     if (path.isAbsolute(extensionPath)) {
-      return await this.extensionLoader.loadExtension(extensionPath, false)
+      let targetPath = extensionPath
+      
+      // 检查是否为zip文件
+      if (extensionPath.endsWith('.zip')) {
+        targetPath = await this.extractZipExtension(extensionPath)
+      }
+      
+      return await this.extensionLoader.loadExtension(targetPath, false)
     }
 
     // TODO: 实现从npm下载和安装扩展
     throw new Error('从npm安装扩展功能尚未实现')
+  }
+
+  /**
+   * 解压zip扩展文件
+   * @param zipPath zip文件路径
+   */
+  private async extractZipExtension(zipPath: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      // 读取zip文件中的package.json来获取扩展名称
+      yauzl.open(zipPath, { lazyEntries: true }, (err, zipfile) => {
+        if (err) {
+          reject(new Error(`Failed to open zip file: ${err.message}`))
+          return
+        }
+
+        let extensionName = ''
+        let packageJsonFound = false
+
+        zipfile.readEntry()
+        zipfile.on('entry', (entry) => {
+          if (entry.fileName === 'package.json') {
+            packageJsonFound = true
+            zipfile.openReadStream(entry, (err, readStream) => {
+              if (err) {
+                reject(new Error(`Failed to read package.json: ${err.message}`))
+                return
+              }
+
+              let packageJsonContent = ''
+              readStream.on('data', (chunk) => {
+                packageJsonContent += chunk.toString()
+              })
+
+              readStream.on('end', () => {
+                try {
+                  const packageJson = JSON.parse(packageJsonContent)
+                  extensionName = packageJson.name
+                  
+                  // 创建目标目录
+                  const targetDir = path.join(this.extensionLoader.getUserExtensionsPath(), extensionName)
+                  
+                  // 如果目录已存在，先删除
+                  if (fs.existsSync(targetDir)) {
+                    fs.rmSync(targetDir, { recursive: true, force: true })
+                  }
+                  
+                  fs.mkdirSync(targetDir, { recursive: true })
+                  
+                  // 重新打开zip文件进行解压
+                  this.extractZipToDirectory(zipPath, targetDir)
+                    .then(() => resolve(targetDir))
+                    .catch(reject)
+                } catch (parseErr) {
+                  reject(new Error(`Failed to parse package.json: ${parseErr.message}`))
+                }
+              })
+            })
+          } else {
+            zipfile.readEntry()
+          }
+        })
+
+        zipfile.on('end', () => {
+          if (!packageJsonFound) {
+            reject(new Error('package.json not found in zip file'))
+          }
+        })
+      })
+    })
+  }
+
+  /**
+   * 解压zip文件到指定目录
+   * @param zipPath zip文件路径
+   * @param targetDir 目标目录
+   */
+  private async extractZipToDirectory(zipPath: string, targetDir: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      yauzl.open(zipPath, { lazyEntries: true }, (err, zipfile) => {
+        if (err) {
+          reject(new Error(`Failed to open zip file: ${err.message}`))
+          return
+        }
+
+        zipfile.readEntry()
+        zipfile.on('entry', (entry) => {
+          const entryPath = path.join(targetDir, entry.fileName)
+          
+          if (/\/$/.test(entry.fileName)) {
+            // 目录
+            fs.mkdirSync(entryPath, { recursive: true })
+            zipfile.readEntry()
+          } else {
+            // 文件
+            // 确保父目录存在
+            fs.mkdirSync(path.dirname(entryPath), { recursive: true })
+            
+            zipfile.openReadStream(entry, (err, readStream) => {
+              if (err) {
+                reject(new Error(`Failed to read entry ${entry.fileName}: ${err.message}`))
+                return
+              }
+
+              const writeStream = fs.createWriteStream(entryPath)
+              readStream.pipe(writeStream)
+              
+              writeStream.on('close', () => {
+                zipfile.readEntry()
+              })
+              
+              writeStream.on('error', (writeErr) => {
+                reject(new Error(`Failed to write file ${entryPath}: ${writeErr.message}`))
+              })
+            })
+          }
+        })
+
+        zipfile.on('end', () => {
+          resolve()
+        })
+      })
+    })
   }
 
   /**

@@ -153,36 +153,6 @@ onMounted(() => {
       </NSpin>
     </div>
 
-    <!-- 核心菜单顺序配置 -->
-    <div class="core-menu-order-config">
-      <h4>🎯 核心菜单顺序</h4>
-      <p class="order-description">调整核心菜单项在菜单中的显示顺序</p>
-
-      <div class="order-list">
-        <div v-for="(item, index) in orderedCoreMenuItems" :key="item.id" class="order-item">
-          <div class="order-info">
-            <Drag class="drag-handle" :size="16" />
-            <span class="order-number">{{ index + 1 }}</span>
-            <span class="order-name">{{ item.name }}</span>
-            <NTag type="success" size="tiny">核心</NTag>
-          </div>
-
-          <div class="order-controls">
-            <NButton size="small" :disabled="index === 0" @click="moveCoreMenu(item.id, 'up')">
-              ↑
-            </NButton>
-            <NButton
-              size="small"
-              :disabled="index === orderedCoreMenuItems.length - 1"
-              @click="moveCoreMenu(item.id, 'down')"
-            >
-              ↓
-            </NButton>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- 插件菜单顺序配置 -->
     <div v-if="orderedEnabledPlugins.length > 0" class="menu-order-config">
       <h4>📋 插件菜单顺序</h4>
@@ -341,9 +311,11 @@ section {
       }
 
       :deep(.n-tag) {
-        border-radius: var(--border-radius-full);
+        border-radius: var(--border-radius-md);
         font-size: var(--font-size-xs);
         font-weight: var(--font-weight-medium);
+        padding: var(--spacing-xs) var(--spacing-sm);
+        text-align: center;
       }
     }
   }
@@ -424,6 +396,7 @@ section {
           font-size: var(--font-size-xs);
           font-weight: var(--font-weight-medium);
           padding: var(--spacing-xs) var(--spacing-sm);
+          text-align: center;
         }
       }
 
@@ -473,6 +446,7 @@ section {
 .core-menu-order-config,
 .menu-order-config {
   margin-bottom: var(--spacing-xxl);
+  margin-top: var(--spacing-sm);
 
   h4 {
     margin: 0 0 var(--spacing-sm) 0;
@@ -549,9 +523,11 @@ section {
       }
 
       :deep(.n-tag) {
-        border-radius: var(--border-radius-full);
+        border-radius: var(--border-radius-md);
         font-size: var(--font-size-xs);
         font-weight: var(--font-weight-medium);
+        padding: var(--spacing-xs) var(--spacing-sm);
+        text-align: center;
       }
     }
 
@@ -560,6 +536,7 @@ section {
       gap: var(--spacing-xs);
 
       :deep(.n-button) {
+        min-width: 20px;
         border-radius: var(--border-radius-md);
         font-weight: var(--font-weight-medium);
         transition: all var(--transition-base);
@@ -585,6 +562,9 @@ section {
       border-radius: var(--border-radius-md);
       font-weight: var(--font-weight-medium);
       transition: all var(--transition-base);
+      padding: var(--spacing-sm) var(--spacing-lg);
+      min-width: 80px;
+      height: 36px;
 
       &.n-button--primary-type {
         background: var(--color-primary);
@@ -666,9 +646,11 @@ section {
     }
 
     :deep(.n-tag) {
-      border-radius: var(--border-radius-full);
+      border-radius: var(--border-radius-md);
       font-size: var(--font-size-xs);
       font-weight: var(--font-weight-medium);
+      padding: var(--spacing-xs) var(--spacing-sm);
+      text-align: center;
     }
   }
 }
@@ -783,7 +765,7 @@ section {
 
       .n-button {
         flex: 1;
-        min-width: 120px;
+        padding: 0 var(--spacing-xl);
       }
     }
   }
@@ -805,6 +787,7 @@ section {
   .core-menu-order-config,
   .menu-order-config {
     margin-bottom: var(--spacing-xl);
+    margin-top: var(--spacing-sm);
 
     h4 {
       font-size: var(--font-size-md);
@@ -904,6 +887,7 @@ section {
   .core-menu-order-config,
   .menu-order-config {
     margin-bottom: var(--spacing-lg);
+    margin-top: var(--spacing-sm);
 
     h4 {
       font-size: var(--font-size-sm);
@@ -1047,6 +1031,8 @@ section {
 
   .core-menu-order-config,
   .menu-order-config {
+    margin-top: var(--spacing-sm);
+
     h4 {
       color: var(--color-primary-dark);
     }
