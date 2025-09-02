@@ -22,24 +22,26 @@ class Storage {
   }
 
   get(key: string, def: any = '') {
-    const item = this.storage.getItem(this.cacheKey(key))
-
-    if (!item) return def
+    const cacheKey = this.cacheKey(key)
+    const item = this.storage.getItem(cacheKey)
+    
+    if (!item) {
+      return def
+    }
 
     try {
       const { value, expire } = JSON.parse(item)
-
-      // 在有效期内直接返回
-      if (expire === null || expire >= Date.now()) {
-        return value
+      
+      if (expire && expire < Date.now()) {
+        this.remove(key)
+        return def
       }
-
+      
+      return value
+    } catch (error) {
       this.remove(key)
-    } catch (e) {
-      console.warn(e)
+      return def
     }
-
-    return def
   }
 
   /**

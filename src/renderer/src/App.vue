@@ -1,53 +1,44 @@
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue'
-import { loadSetting } from '@/utils/setting'
-import { isLogin } from '@/utils/auth'
-// P2P功能已被移除
+import { onMounted } from 'vue'
+import { useSettingsStore } from '@/store/modules/settings'
+import { useUserStore } from '@/store/modules/user'
+import { useThemeStore } from '@/store/modules/theme'
+import { useMenuStore } from '@/store/modules/menu'
+import { useRouter } from 'vue-router'
+import { isBrowserMode } from '@/utils/browser-mock'
 import AppProvider from '@/layout/AppProvider.vue'
 
-const isInitialized = ref(false)
+const settingsStore = useSettingsStore()
+const userStore = useUserStore()
+const themeStore = useThemeStore()
+const menuStore = useMenuStore()
+const router = useRouter()
 
-const init = async () => {
+// 应用初始化
+onMounted(async () => {
   try {
-    console.log('Starting app initialization...')
-
-    // 先加载设置
-    loadSetting()
-    console.log('Settings loaded successfully')
-
-    // 检查是否在Electron环境中
-    if (window.electron) {
-      console.log('Electron environment detected')
-
-      // 检查是否已有有效的登录状态
-      try {
-        // 如果用户已登录
-        if (isLogin()) {
-          console.log('User already logged in')
-        } else {
-          console.log('User not logged in, will redirect to login page')
-        }
-      } catch (error) {
-        console.error('Failed to initialize app:', error)
-      }
-    } else {
-      console.log('Browser environment detected, skipping P2P initialization')
+    // 检查是否在浏览器模式中
+    if (isBrowserMode()) {
+      console.log('Running in browser mode for style debugging')
+      // 在浏览器模式下，直接导航到工作台页面进行样式调试
+      router.push('/workspace')
+      return
     }
-
-    isInitialized.value = true
-    console.log('App initialization completed')
+    
+    // 检查是否在 Electron 环境中
+    if (window.electron) {
+      // 在 Electron 环境中的正常逻辑
+      router.push('/login')
+    } else {
+      // 在浏览器环境中，跳过 P2P 初始化
+      console.log('Running in browser environment, skipping P2P initialization')
+      router.push('/login')
+    }
   } catch (error) {
-    console.error('Failed to initialize app:', error)
-    // 即使初始化失败，也要标记为已初始化，避免页面空白
-    isInitialized.value = true
+    console.error('App initialization failed:', error)
+    // 即使出错也导航到登录页面
+    router.push('/login')
   }
-}
-
-onMounted(() => {
-  console.log('App mounted')
-
-  // 初始化应用
-  init()
 })
 </script>
 

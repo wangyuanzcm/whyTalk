@@ -13,7 +13,6 @@ const routes = [
     name: 'home',
     meta: { auth: true },
     component: MainLayout,
-    redirect: '/workspace',
     children: [
       {
         path: '/workspace',
@@ -62,26 +61,18 @@ const router = createRouter({
   scrollBehavior: () => ({ left: 0, top: 0 })
 })
 
-// 设置中间件，权限验证
-router.beforeEach((to) => {
-  if (to.meta?.auth && !isLogin()) {
-    return {
-      path: '/auth/login',
-      query: { redirect: to.fullPath }
-    }
+router.beforeEach(async (to, from, next) => {
+  // 权限验证
+  if (to.meta?.auth !== false && !isLogin()) {
+    return next('/auth/login')
   }
 
-  // 处理根路径重定向到用户设置的默认页面
+  // 根路径重定向
   if (to.path === '/') {
-    // 延迟导入store以避免初始化顺序问题
-    import('@/store').then(({ useSettingsStore }) => {
-      const settingsStore = useSettingsStore()
-      const defaultPage = settingsStore.defaultPage || '/workspace'
-      if (defaultPage !== '/workspace') {
-        router.replace(defaultPage)
-      }
-    })
+    return next('/workspace')
   }
+
+  next()
 })
 
 export default router

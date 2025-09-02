@@ -602,10 +602,10 @@ onMounted(() => {
   }
 
   :deep(.n-tag) {
-    border-radius: var(--border-radius-full);
+    border-radius: var(--border-radius-md);
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-medium);
-    padding: var(--spacing-xs) var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
     border: none;
 
     &.n-tag--default-type {
@@ -738,6 +738,19 @@ onMounted(() => {
       &:hover:not(:disabled) {
         background: var(--color-warning-hover);
         border-color: var(--color-warning-hover);
+        transform: translateY(-1px);
+        .card-shadow();
+      }
+    }
+
+    &.n-button--error-type {
+      background: var(--color-error);
+      color: var(--color-white);
+      border-color: var(--color-error);
+
+      &:hover:not(:disabled) {
+        background: var(--color-accent-hover);
+        border-color: var(--color-accent-hover);
         transform: translateY(-1px);
         .card-shadow();
       }

@@ -53,7 +53,7 @@ const onLogin = async () => {
   message.success('登录成功，即将进入系统')
   userStore.loadSetting()
 
-  const redirect: any = route.params?.redirect || '/'
+  const redirect: any = route.query?.redirect || '/workspace'
   router.push(redirect)
 }
 

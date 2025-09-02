@@ -6,7 +6,13 @@ import router from './router'
 import App from './App.vue'
 import * as plugins from './plugins'
 import { useThemeStore } from '@/store/modules/theme'
+import { initBrowserMode } from './utils/browser-mock'
 // P2P初始化器已被移除
+
+/**
+ * 初始化浏览器模式（如果在浏览器环境中运行）
+ */
+initBrowserMode()
 
 async function bootstrap() {
   const app = createApp(App)

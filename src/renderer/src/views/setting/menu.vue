@@ -106,39 +106,6 @@ onMounted(() => {
 
 <template>
   <section>
-    <h3 class="title">菜单配置</h3>
-    <p class="description">
-      配置左侧菜单显示的插件。核心功能（登录、工作台、设置）将始终显示，
-      而消息、通讯录等功能将通过插件实现。
-    </p>
-
-    <!-- 架构说明 -->
-    <div class="architecture-info">
-      <h4>🏗️ 新架构说明</h4>
-      <div class="architecture-grid">
-        <div class="core-features">
-          <h5>核心功能（保留）</h5>
-          <div class="feature-list">
-            <div v-for="item in coreMenuItems" :key="item.id" class="feature-item core">
-              <span class="feature-name">{{ item.name }}</span>
-              <NTag type="success" size="small">核心</NTag>
-            </div>
-          </div>
-        </div>
-
-        <div class="plugin-features">
-          <h5>插件化功能（将移除）</h5>
-          <div class="feature-list">
-            <div v-for="item in pluginizableFeatures" :key="item.id" class="feature-item plugin">
-              <span class="feature-name">{{ item.name }}</span>
-              <span class="feature-desc">{{ item.description }}</span>
-              <NTag type="warning" size="small">插件化</NTag>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- 插件菜单配置 -->
     <div class="plugin-menu-config">
       <h4>🔧 插件菜单配置</h4>
@@ -372,7 +339,7 @@ section {
         flex: 1;
         line-height: var(--line-height-normal);
       }
-      
+
       :deep(.n-tag) {
         border-radius: var(--border-radius-full);
         font-size: var(--font-size-xs);
@@ -399,13 +366,13 @@ section {
     background: var(--color-bg-secondary);
     border-radius: var(--border-radius-lg);
     border: 1px solid var(--color-border-light);
-    
+
     :deep(.n-empty) {
       .n-empty__description {
         color: var(--color-text-secondary);
       }
     }
-    
+
     :deep(.n-button) {
       border-radius: var(--border-radius-md);
       font-weight: var(--font-weight-medium);
@@ -451,11 +418,12 @@ section {
           font-size: var(--font-size-md);
           line-height: var(--line-height-tight);
         }
-        
+
         :deep(.n-tag) {
-          border-radius: var(--border-radius-full);
+          border-radius: var(--border-radius-md);
           font-size: var(--font-size-xs);
           font-weight: var(--font-weight-medium);
+          padding: var(--spacing-xs) var(--spacing-sm);
         }
       }
 
@@ -486,12 +454,12 @@ section {
         color: var(--color-text-secondary);
         font-weight: var(--font-weight-medium);
       }
-      
+
       :deep(.n-switch) {
         .n-switch__rail {
           transition: all var(--transition-base);
         }
-        
+
         &.n-switch--active {
           .n-switch__rail {
             background: var(--color-primary);
@@ -579,7 +547,7 @@ section {
         color: var(--color-text-primary);
         font-size: var(--font-size-sm);
       }
-      
+
       :deep(.n-tag) {
         border-radius: var(--border-radius-full);
         font-size: var(--font-size-xs);
@@ -590,12 +558,12 @@ section {
     .order-controls {
       .flex-row();
       gap: var(--spacing-xs);
-      
+
       :deep(.n-button) {
         border-radius: var(--border-radius-md);
         font-weight: var(--font-weight-medium);
         transition: all var(--transition-base);
-        
+
         &:hover:not(:disabled) {
           transform: translateY(-1px);
           .card-shadow();
@@ -609,30 +577,30 @@ section {
   margin-bottom: var(--spacing-xxl);
   padding: var(--spacing-lg) 0;
   border-top: 1px solid var(--color-border-light);
-  
+
   :deep(.n-space) {
     gap: var(--spacing-md);
-    
+
     .n-button {
       border-radius: var(--border-radius-md);
       font-weight: var(--font-weight-medium);
       transition: all var(--transition-base);
-      
+
       &.n-button--primary-type {
         background: var(--color-primary);
-        
+
         &:hover {
           background: var(--color-primary-hover);
           transform: translateY(-1px);
           .card-shadow();
         }
       }
-      
+
       &:not(.n-button--primary-type) {
         border: 1px solid var(--color-border-light);
         background: var(--color-bg-content);
         color: var(--color-text-primary);
-        
+
         &:hover {
           border-color: var(--color-primary-light);
           background: var(--color-bg-hover);
@@ -696,7 +664,7 @@ section {
       color: var(--color-text-primary);
       font-weight: var(--font-weight-medium);
     }
-    
+
     :deep(.n-tag) {
       border-radius: var(--border-radius-full);
       font-size: var(--font-size-xs);
@@ -760,59 +728,59 @@ section {
   section {
     padding: var(--spacing-md);
   }
-  
+
   .title {
     font-size: var(--font-size-lg);
   }
-  
+
   .architecture-info {
     padding: var(--spacing-lg);
     margin-bottom: var(--spacing-xl);
-    
+
     .architecture-grid {
       grid-template-columns: 1fr;
       gap: var(--spacing-lg);
     }
-    
+
     h4 {
       font-size: var(--font-size-md);
     }
   }
-  
+
   .plugin-item {
     .flex-column();
     align-items: stretch;
     gap: var(--spacing-md);
-    
+
     .plugin-info {
       margin-right: 0;
     }
-    
+
     .plugin-controls {
       justify-content: flex-end;
     }
   }
-  
+
   .order-item {
     .flex-column();
     align-items: stretch;
     gap: var(--spacing-sm);
-    
+
     .order-info {
       justify-content: flex-start;
     }
-    
+
     .order-controls {
       justify-content: flex-end;
     }
   }
-  
+
   .action-buttons {
     :deep(.n-space) {
       .flex-row();
       flex-wrap: wrap;
       gap: var(--spacing-md);
-      
+
       .n-button {
         flex: 1;
         min-width: 120px;
@@ -826,33 +794,33 @@ section {
   section {
     padding: var(--spacing-sm);
   }
-  
+
   .title {
     font-size: var(--font-size-md);
     text-align: center;
   }
-  
+
   .architecture-info,
   .plugin-menu-config,
   .core-menu-order-config,
   .menu-order-config {
     margin-bottom: var(--spacing-xl);
-    
+
     h4 {
       font-size: var(--font-size-md);
       margin-bottom: var(--spacing-md);
       text-align: center;
     }
   }
-  
+
   .architecture-info {
     padding: var(--spacing-md);
-    
+
     .architecture-grid {
       grid-template-columns: 1fr;
       gap: var(--spacing-md);
     }
-    
+
     .feature-item {
       .flex-column();
       align-items: flex-start;
@@ -861,60 +829,60 @@ section {
       text-align: left;
     }
   }
-  
+
   .plugin-item {
     .flex-column();
     align-items: stretch;
     gap: var(--spacing-sm);
     padding: var(--spacing-md);
-    
+
     .plugin-info {
       margin-right: 0;
     }
-    
+
     .plugin-controls {
       justify-content: center;
     }
   }
-  
+
   .order-item {
     .flex-column();
     align-items: stretch;
     gap: var(--spacing-xs);
     padding: var(--spacing-sm) var(--spacing-md);
-    
+
     .order-info {
       justify-content: flex-start;
       gap: var(--spacing-sm);
-      
+
       .order-number {
         width: 24px;
         height: 24px;
       }
     }
-    
+
     .order-controls {
       justify-content: center;
     }
   }
-  
+
   .action-buttons {
     :deep(.n-space) {
       .flex-column();
       align-items: stretch;
       gap: var(--spacing-sm);
-      
+
       .n-button {
         width: 100%;
         font-size: var(--font-size-xs);
       }
     }
   }
-  
+
   .preview-container {
     padding: var(--spacing-md);
   }
-  
+
   .preview-menu {
     max-width: 100%;
   }
@@ -925,46 +893,46 @@ section {
   section {
     padding: var(--spacing-xs);
   }
-  
+
   .title {
     font-size: var(--font-size-sm);
     text-align: center;
   }
-  
+
   .architecture-info,
   .plugin-menu-config,
   .core-menu-order-config,
   .menu-order-config {
     margin-bottom: var(--spacing-lg);
-    
+
     h4 {
       font-size: var(--font-size-sm);
       margin-bottom: var(--spacing-sm);
       text-align: center;
     }
   }
-  
+
   .architecture-info {
     padding: var(--spacing-sm);
-    
+
     .feature-item {
       padding: var(--spacing-xs);
       gap: var(--spacing-2xs);
     }
   }
-  
+
   .plugin-item {
     padding: var(--spacing-sm);
     gap: var(--spacing-xs);
   }
-  
+
   .order-item {
     padding: var(--spacing-xs) var(--spacing-sm);
     gap: var(--spacing-2xs);
-    
+
     .order-info {
       gap: var(--spacing-xs);
-      
+
       .order-number {
         width: 20px;
         height: 20px;
@@ -972,18 +940,18 @@ section {
       }
     }
   }
-  
+
   .action-buttons {
     :deep(.n-space) {
       gap: var(--spacing-xs);
-      
+
       .n-button {
         font-size: var(--font-size-2xs);
         padding: var(--spacing-xs);
       }
     }
   }
-  
+
   .preview-container {
     padding: var(--spacing-sm);
   }
@@ -994,80 +962,81 @@ section {
   section {
     background: var(--color-bg-content-dark);
   }
-  
+
   .title {
     color: var(--color-text-primary-dark);
   }
-  
+
   .description {
     color: var(--color-text-secondary-dark);
   }
-  
+
   .architecture-info {
     background: var(--color-bg-secondary-dark);
     border-left-color: var(--color-primary-dark);
-    
+
     h4 {
       color: var(--color-primary-dark);
     }
-    
+
     .feature-item {
       background: var(--color-bg-content-dark);
       border-color: var(--color-border-dark);
-      
+
       &.core {
         border-left-color: var(--color-success-dark);
       }
-      
+
       &.plugin {
         border-left-color: var(--color-warning-dark);
       }
-      
+
       .feature-name {
         color: var(--color-text-primary-dark);
       }
-      
+
       .feature-desc {
         color: var(--color-text-tertiary-dark);
       }
     }
   }
-  
+
   .plugin-menu-config {
+    margin-top: var(--spacing-sm);
     h4 {
       color: var(--color-primary-dark);
     }
-    
+
     .empty-state {
       background: var(--color-bg-secondary-dark);
       border-color: var(--color-border-dark);
     }
-    
+
     .plugin-item {
       background: var(--color-bg-content-dark);
       border-color: var(--color-border-dark);
-      
+
       &:hover {
         border-color: var(--color-primary-dark-light);
       }
-      
+
       .plugin-info {
         .plugin-header {
           .plugin-name {
             color: var(--color-text-primary-dark);
           }
         }
-        
+
         .plugin-description {
           color: var(--color-text-secondary-dark);
         }
-        
+
         .plugin-version,
         .plugin-menu-name {
           color: var(--color-text-tertiary-dark);
         }
       }
-      
+
       .plugin-controls {
         .control-label {
           color: var(--color-text-secondary-dark);
@@ -1075,71 +1044,71 @@ section {
       }
     }
   }
-  
+
   .core-menu-order-config,
   .menu-order-config {
     h4 {
       color: var(--color-primary-dark);
     }
-    
+
     .order-description {
       color: var(--color-text-secondary-dark);
     }
-    
+
     .order-item {
       background: var(--color-bg-content-dark);
       border-color: var(--color-border-dark);
-      
+
       &:hover {
         border-color: var(--color-primary-dark-light);
       }
-      
+
       .order-info {
         .drag-handle {
           color: var(--color-text-tertiary-dark);
-          
+
           &:hover {
             color: var(--color-primary-dark);
           }
         }
-        
+
         .order-number {
           background: var(--color-primary-dark);
         }
-        
+
         .order-name {
           color: var(--color-text-primary-dark);
         }
       }
     }
   }
-  
+
   .action-buttons {
     border-top-color: var(--color-border-dark);
   }
-  
+
   .menu-preview {
     h4 {
       color: var(--color-primary-dark);
     }
-    
+
     .preview-container {
       background: var(--color-bg-secondary-dark);
       border-color: var(--color-border-dark);
     }
-    
+
     .preview-item {
       background: var(--color-bg-content-dark);
       border-color: var(--color-border-dark);
-      
+
       &.core {
         border-left-color: var(--color-success-dark);
       }
-      
+
       &.plugin {
         border-left-color: var(--color-primary-dark);
       }
-      
+
       span {
         color: var(--color-text-primary-dark);
       }

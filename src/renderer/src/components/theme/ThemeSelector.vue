@@ -433,6 +433,7 @@ watch(
 
 .theme-selector {
   max-width: 900px;
+  min-width: 400px;
   max-height: 85vh;
   overflow-y: auto;
   background: var(--color-background, #fff);

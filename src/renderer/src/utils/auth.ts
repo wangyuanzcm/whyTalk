@@ -8,7 +8,7 @@ const AccessToken = 'AUTH_TOKEN'
  * @returns boolean
  */
 export function isLogin(): boolean {
-  return getToken() != ''
+  return getToken() !== ''
 }
 
 /**

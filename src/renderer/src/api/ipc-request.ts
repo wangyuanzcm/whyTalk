@@ -1,4 +1,5 @@
 import * as auth from '@/utils/auth.ts'
+import { isBrowserMode } from '@/utils/browser-mock.ts'
 
 export interface ApiResponse<T = unknown> {
   status: number // http 状态码非200则处理失败
@@ -26,6 +27,117 @@ export interface ApiOptions {
 let once = false
 
 /**
+ * 获取模拟 API 响应（浏览器模式）
+ */
+async function getMockApiResponse(url: string, params?: unknown, token?: string) {
+  // 模拟网络延迟
+  await new Promise(resolve => setTimeout(resolve, 100))
+  
+  console.log(`[Mock API] ${url}`, params)
+  
+  // 模拟认证相关接口
+  if (url === '/api/v1/auth/login') {
+    return {
+      code: 200,
+      message: '登录成功',
+      data: {
+        access_token: 'mock_access_token_123456',
+        expires_in: 7200,
+        user: {
+          id: 1,
+          mobile: '13800138000',
+          nickname: '演示用户',
+          avatar: '',
+          status: 'online'
+        }
+      }
+    }
+  }
+  
+  if (url === '/api/v1/auth/register') {
+    return {
+      code: 200,
+      message: '注册成功',
+      data: null
+    }
+  }
+  
+  if (url === '/api/v1/auth/logout') {
+    return {
+      code: 200,
+      message: '退出成功',
+      data: null
+    }
+  }
+  
+  // 模拟用户相关接口
+  if (url === '/api/v1/user/info') {
+    return {
+      code: 200,
+      message: '获取用户信息成功',
+      data: {
+        id: 1,
+        mobile: '13800138000',
+        nickname: '演示用户',
+        avatar: '',
+        status: 'online'
+      }
+    }
+  }
+  
+  if (url === '/api/v1/user/update') {
+    return {
+      code: 200,
+      message: '更新用户信息成功',
+      data: { id: 1, ...params }
+    }
+  }
+  
+  // 模拟消息相关接口
+  if (url.startsWith('/api/v1/message')) {
+    return {
+      code: 200,
+      message: '操作成功',
+      data: {
+        list: [],
+        total: 0
+      }
+    }
+  }
+  
+  // 模拟联系人相关接口
+  if (url.startsWith('/api/v1/contact')) {
+    return {
+      code: 200,
+      message: '操作成功',
+      data: {
+        list: [],
+        total: 0
+      }
+    }
+  }
+  
+  // 模拟笔记相关接口
+  if (url.startsWith('/api/v1/note')) {
+    return {
+      code: 200,
+      message: '操作成功',
+      data: {
+        list: [],
+        total: 0
+      }
+    }
+  }
+  
+  // 默认成功响应
+  return {
+    code: 200,
+    message: '操作成功',
+    data: null
+  }
+}
+
+/**
  * 通过IPC发送API请求
  */
 export async function ipcApi<T = unknown>(
@@ -38,6 +150,37 @@ export async function ipcApi<T = unknown>(
   try {
     const token = auth.getToken()
     console.log('ipcApi: Making request to', uri, 'with token:', token ? 'present' : 'missing')
+
+    // 在浏览器模式下使用模拟响应
+    if (isBrowserMode()) {
+      console.log('[Browser Mode] Using mock API response for:', uri)
+      const response = await getMockApiResponse(uri, params, token)
+      
+      const { code, message, data } = response
+      
+      // 处理认证失败
+      if (code === 401) {
+        console.warn('ipcApi: Authentication failed, clearing token')
+        auth.deleteToken()
+        return { status: 401, code, message }
+      }
+      
+      // 处理成功响应
+      if (code === 200) {
+        if (options?.successText) {
+          window['$message']?.success(options?.successText)
+        }
+        if (options?.onSuccess) options.onSuccess()
+        return { status: 200, code, message, data: data as T }
+      }
+      
+      // 处理业务错误
+      console.error('ipcApi: Business error:', message)
+      if (options?.error || options?.error == undefined) {
+        error(options?.failText || message || '请求失败')
+      }
+      return { status: 200, code, message, data: data as T }
+    }
 
     // 通过IPC发送请求
     const response = await window.electron.ipcRenderer.invoke('api-request', {
@@ -143,6 +286,34 @@ export async function uploadFile(file: File, options?: ApiOptions): Promise<ApiR
   try {
     const token = auth.getToken()
 
+    // 在浏览器模式下使用模拟响应
+    if (isBrowserMode()) {
+      console.log('[Browser Mode] Mock file upload:', file.name)
+      // 模拟上传延迟
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      const response = {
+        code: 200,
+        message: '文件上传成功',
+        data: { url: `/mock/upload/${file.name}` }
+      }
+      
+      const { code, message, data } = response
+      
+      if (code === 200) {
+        if (options?.successText) {
+          window['$message']?.success(options?.successText)
+        }
+        if (options?.onSuccess) options.onSuccess()
+        return { status: 200, code, message, data }
+      }
+      
+      if (options?.error || options?.error == undefined) {
+        error(options?.failText || message || '文件上传失败')
+      }
+      return { status: 200, code, message, data }
+    }
+
     // 将文件转换为ArrayBuffer
     const arrayBuffer = await file.arrayBuffer()
 
@@ -201,6 +372,34 @@ export async function uploadAnnex(
 
   try {
     const token = auth.getToken()
+
+    // 在浏览器模式下使用模拟响应
+    if (isBrowserMode()) {
+      console.log('[Browser Mode] Mock annex upload:', file.name, 'for article:', articleId)
+      // 模拟上传延迟
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      const response = {
+        code: 200,
+        message: '附件上传成功',
+        data: { id: Math.floor(Math.random() * 1000), url: `/mock/upload/annex/${file.name}` }
+      }
+      
+      const { code, message, data } = response
+      
+      if (code === 200) {
+        if (options?.successText) {
+          window['$message']?.success(options?.successText)
+        }
+        if (options?.onSuccess) options.onSuccess()
+        return { status: 200, code, message, data }
+      }
+      
+      if (options?.error || options?.error == undefined) {
+        error(options?.failText || message || '附件上传失败')
+      }
+      return { status: 200, code, message, data }
+    }
 
     // 将文件转换为ArrayBuffer
     const arrayBuffer = await file.arrayBuffer()
@@ -263,6 +462,34 @@ export async function uploadMultipart(
 
   try {
     const token = auth.getToken()
+
+    // 在浏览器模式下使用模拟响应
+    if (isBrowserMode()) {
+      console.log('[Browser Mode] Mock multipart upload:', uploadId, `${splitIndex}/${splitNum}`)
+      // 模拟上传延迟
+      await new Promise(resolve => setTimeout(resolve, 200))
+      
+      const response = {
+        code: 200,
+        message: '分片上传成功',
+        data: { uploaded: true, progress: Math.round((splitIndex / splitNum) * 100) }
+      }
+      
+      const { code, message, data } = response
+      
+      if (code === 200) {
+        if (options?.successText) {
+          window['$message']?.success(options?.successText)
+        }
+        if (options?.onSuccess) options.onSuccess()
+        return { status: 200, code, message, data }
+      }
+      
+      if (options?.error || options?.error == undefined) {
+        error(options?.failText || message || '分片上传失败')
+      }
+      return { status: 200, code, message, data }
+    }
 
     // 将文件片段转换为ArrayBuffer
     const arrayBuffer = await fileSlice.arrayBuffer()

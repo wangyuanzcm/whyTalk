@@ -44,18 +44,6 @@ const defaultPages = [
   {
     label: '工作台',
     value: '/workspace'
-  },
-  {
-    label: '消息',
-    value: '/message'
-  },
-  {
-    label: '通讯录',
-    value: '/contact'
-  },
-  {
-    label: '笔记',
-    value: '/note'
   }
   // 网络页面已被移除
 ]
@@ -90,7 +78,7 @@ const defaultPages = [
           </div>
         </div>
         <div class="tools">
-          <n-button type="primary" @click="showThemeSelector = true"> 主题管理 </n-button>
+          <n-button type="primary" text @click="showThemeSelector = true"> 主题管理 </n-button>
         </div>
       </div>
 
@@ -147,7 +135,7 @@ const defaultPages = [
 }
 
 .view-list {
-  .flex-row();
+  // .flex-row();
   align-items: center;
   justify-content: space-between;
   background: var(--color-bg-content);
@@ -183,11 +171,12 @@ const defaultPages = [
 
   .tools {
     flex-shrink: 0;
-    margin-left: var(--spacing-lg);
+    margin-top: var(--spacing-sm);
+    // margin-left: var(--spacing-lg);
 
     :deep(.n-radio-group) {
       .n-radio {
-        margin-right: var(--spacing-lg);
+        margin-right: var(--spacing-sm);
 
         .n-radio__label {
           font-size: var(--font-size-sm);
@@ -272,7 +261,7 @@ const defaultPages = [
   .spacing-responsive(var(--spacing-xl), var(--spacing-2xl));
 }
 
-// 平板端优化
+// 平板端优化 (768px - 1023px)
 .tablet-only() {
   .view-list {
     .flex-column();
@@ -321,139 +310,6 @@ const defaultPages = [
         &.n-button--text-type {
           font-size: var(--font-size-xs);
           padding: var(--spacing-xs) var(--spacing-sm);
-        }
-      }
-    }
-  }
-}
-
-// 移动端优化
-.mobile-only() {
-  .title {
-    font-size: var(--font-size-md);
-    margin-bottom: var(--spacing-md);
-    text-align: center;
-  }
-
-  .view-box {
-    gap: var(--spacing-md);
-  }
-
-  .view-list {
-    .flex-column();
-    align-items: stretch;
-    gap: var(--spacing-md);
-    padding: var(--spacing-md);
-    border-radius: var(--border-radius-md);
-
-    &:hover {
-      transform: none;
-    }
-
-    .content {
-      text-align: left;
-
-      .name {
-        font-size: var(--font-size-xs);
-        margin-bottom: var(--spacing-2xs);
-        font-weight: var(--font-weight-medium);
-      }
-
-      .desc {
-        font-size: var(--font-size-2xs);
-        line-height: var(--line-height-relaxed);
-      }
-    }
-
-    .tools {
-      margin-left: 0;
-      width: 100%;
-
-      :deep(.n-radio-group) {
-        .flex-column();
-        align-items: flex-start;
-        gap: var(--spacing-sm);
-
-        .n-radio {
-          margin-right: 0;
-
-          .n-radio__label {
-            font-size: var(--font-size-2xs);
-          }
-
-          .n-radio__dot {
-            transform: scale(0.8);
-          }
-        }
-      }
-
-      :deep(.n-select) {
-        width: 100% !important;
-
-        .n-base-selection {
-          .n-base-selection-label {
-            font-size: var(--font-size-2xs);
-          }
-        }
-      }
-
-      :deep(.n-button) {
-        &.n-button--text-type {
-          font-size: var(--font-size-2xs);
-          padding: var(--spacing-2xs) var(--spacing-xs);
-          align-self: flex-start;
-        }
-      }
-    }
-  }
-}
-
-// 超小屏幕优化
-.desktop-down(@breakpoint-xs) {
-  .title {
-    font-size: var(--font-size-sm);
-    margin-bottom: var(--spacing-sm);
-  }
-
-  .view-list {
-    padding: var(--spacing-sm);
-    gap: var(--spacing-sm);
-
-    .content {
-      .name {
-        font-size: var(--font-size-2xs);
-      }
-
-      .desc {
-        font-size: var(--font-size-3xs);
-      }
-    }
-
-    .tools {
-      :deep(.n-radio-group) {
-        .n-radio {
-          .n-radio__label {
-            font-size: var(--font-size-3xs);
-          }
-
-          .n-radio__dot {
-            transform: scale(0.7);
-          }
-        }
-      }
-
-      :deep(.n-select) {
-        .n-base-selection {
-          .n-base-selection-label {
-            font-size: var(--font-size-3xs);
-          }
-        }
-      }
-
-      :deep(.n-button) {
-        &.n-button--text-type {
-          font-size: var(--font-size-3xs);
-          padding: var(--spacing-3xs) var(--spacing-2xs);
         }
       }
     }

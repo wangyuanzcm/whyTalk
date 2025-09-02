@@ -652,31 +652,32 @@ onMounted(() => {
 
 .action-buttons {
   margin-bottom: var(--spacing-xl);
-  
+
   :deep(.n-space) {
     gap: var(--spacing-md);
-    
+
     .n-button {
       border-radius: var(--border-radius-md);
       font-weight: var(--font-weight-medium);
       transition: all var(--transition-base);
-      
+      padding: var(--spacing-sm);
+
       &.n-button--primary-type {
         background: var(--color-primary);
         border: none;
-        
+
         &:hover {
           background: var(--color-primary-hover);
           transform: translateY(-1px);
           .card-shadow();
         }
       }
-      
+
       &:not(.n-button--primary-type) {
         border: 1px solid var(--color-border-light);
         background: var(--color-bg-content);
         color: var(--color-text-primary);
-        
+
         &:hover {
           border-color: var(--color-primary-light);
           background: var(--color-bg-hover);
@@ -700,11 +701,14 @@ onMounted(() => {
 
 .plugin-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: var(--spacing-lg);
+  width: 100%;
 }
 
 .plugin-card {
+  min-width: 350px; /* 设置卡片最小宽度，确保内容显示完整 */
+
   border: 1px solid var(--color-border-light);
   border-radius: var(--border-radius-lg);
   transition: all var(--transition-base);
@@ -723,11 +727,11 @@ onMounted(() => {
     border-bottom: 1px solid var(--color-border-light);
     background: var(--color-bg-secondary);
   }
-  
+
   :deep(.n-card__content) {
     padding: var(--spacing-lg);
   }
-  
+
   :deep(.n-card__action) {
     padding: var(--spacing-md) var(--spacing-lg);
     background: var(--color-bg-secondary);
@@ -746,12 +750,12 @@ onMounted(() => {
       flex: 1;
       margin-right: var(--spacing-md);
     }
-    
+
     :deep(.n-tag) {
       border-radius: var(--border-radius-full);
       font-size: var(--font-size-xs);
       font-weight: var(--font-weight-medium);
-      padding: var(--spacing-xs) var(--spacing-sm);
+      padding: var(--spacing-sm) var(--spacing-md);
     }
   }
 
@@ -769,14 +773,16 @@ onMounted(() => {
 
     .plugin-info {
       .flex-row();
+      flex-wrap: wrap;
       gap: var(--spacing-lg);
       font-size: var(--font-size-xs);
       color: var(--color-text-tertiary);
       margin-bottom: var(--spacing-sm);
-      
+
       span {
         .text-ellipsis();
         flex: 1;
+        min-width: 0; /* 确保flex项目能够收缩 */
       }
     }
 
@@ -789,16 +795,30 @@ onMounted(() => {
       display: inline-block;
     }
   }
-  
+
   :deep(.n-space) {
     gap: var(--spacing-sm);
-    
+
     .n-button {
       border-radius: var(--border-radius-md);
       font-size: var(--font-size-xs);
       padding: var(--spacing-xs) var(--spacing-sm);
       transition: all var(--transition-base);
-      
+      border: 1px solid transparent;
+
+      &.n-button--error-type {
+        background: var(--color-error);
+        color: var(--color-white);
+        border-color: var(--color-error);
+
+        &:hover:not(:disabled) {
+          background: var(--color-accent-hover);
+          border-color: var(--color-accent-hover);
+          transform: translateY(-1px);
+          .card-shadow();
+        }
+      }
+
       &:hover {
         transform: translateY(-1px);
       }
@@ -813,18 +833,18 @@ onMounted(() => {
   background: var(--color-bg-secondary);
   border-radius: var(--border-radius-lg);
   border: 1px solid var(--color-border-light);
-  
+
   .empty-icon {
     font-size: var(--icon-size-xl);
     color: var(--color-text-tertiary);
     margin-bottom: var(--spacing-md);
   }
-  
+
   .empty-text {
     font-size: var(--font-size-md);
     margin-bottom: var(--spacing-sm);
   }
-  
+
   .empty-desc {
     font-size: var(--font-size-sm);
     color: var(--color-text-tertiary);
@@ -841,14 +861,14 @@ onMounted(() => {
     font-size: var(--font-size-sm);
     line-height: var(--line-height-relaxed);
   }
-  
+
   :deep(.n-upload) {
     .n-upload-trigger {
       border: 2px dashed var(--color-border-light);
       border-radius: var(--border-radius-lg);
       padding: var(--spacing-xl);
       transition: all var(--transition-base);
-      
+
       &:hover {
         border-color: var(--color-primary);
         background: var(--color-primary-light);
@@ -871,7 +891,7 @@ onMounted(() => {
       line-height: var(--line-height-normal);
     }
   }
-  
+
   :deep(.n-progress) {
     margin-bottom: var(--spacing-md);
   }
@@ -918,49 +938,49 @@ onMounted(() => {
     border-radius: var(--border-radius-lg);
     .card-shadow-modal();
   }
-  
+
   .n-card-header {
     background: var(--color-bg-header);
     border-bottom: 1px solid var(--color-border-light);
-    
+
     .n-card-header__main {
       font-weight: var(--font-weight-semibold);
       color: var(--color-text-primary);
     }
   }
-  
+
   .n-form {
     .n-form-item {
       margin-bottom: var(--spacing-lg);
-      
+
       .n-form-item-label {
         font-weight: var(--font-weight-medium);
         color: var(--color-text-primary);
       }
-      
+
       .n-input {
         border-radius: var(--border-radius-md);
         transition: all var(--transition-base);
-        
+
         &:hover {
           border-color: var(--color-primary-light);
         }
-        
+
         &:focus-within {
           border-color: var(--color-primary);
           .card-shadow();
         }
       }
-      
+
       .n-select {
         .n-base-selection {
           border-radius: var(--border-radius-md);
           transition: all var(--transition-base);
-          
+
           &:hover {
             border-color: var(--color-primary-light);
           }
-          
+
           &.n-base-selection--focus {
             border-color: var(--color-primary);
             .card-shadow();
@@ -983,8 +1003,9 @@ onMounted(() => {
 // 大屏幕优化
 .desktop-up(@breakpoint-xl) {
   .plugin-grid {
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: var(--spacing-xl);
+    width: 100%;
   }
 }
 
@@ -993,6 +1014,7 @@ onMounted(() => {
   .plugin-grid {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: var(--spacing-lg);
+    width: 100%;
   }
 }
 
@@ -1002,237 +1024,50 @@ onMounted(() => {
     font-size: var(--font-size-lg);
     margin-bottom: var(--spacing-lg);
   }
-  
+
   .action-buttons {
-    margin-bottom: var(--spacing-lg);
-    
+    margin-bottom: var(--spacing-sm);
+
     :deep(.n-space) {
       .flex-row();
       flex-wrap: wrap;
       gap: var(--spacing-md);
-      
+
       .n-button {
         flex: 1;
         min-width: 120px;
+        padding: var(--spacing-sm);
       }
     }
   }
-  
+
   .plugin-grid {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: var(--spacing-md);
+    width: 100%;
   }
-  
+
   .plugin-card {
+    min-width: 300px; /* 平板端设置卡片最小宽度 */
     .plugin-header {
       .flex-column();
       align-items: flex-start;
       gap: var(--spacing-sm);
-      
+
       .plugin-name {
         margin-right: 0;
         font-size: var(--font-size-sm);
       }
     }
-    
-    .plugin-content {
-      .plugin-description {
-        font-size: var(--font-size-xs);
-      }
-      
-      .plugin-info {
-        font-size: var(--font-size-xs);
-      }
-    }
-  }
-}
 
-// 移动端优化
-.mobile-only() {
-  .title {
-    font-size: var(--font-size-md);
-    margin-bottom: var(--spacing-md);
-    text-align: center;
-  }
-  
-  .action-buttons {
-    margin-bottom: var(--spacing-md);
-    
-    :deep(.n-space) {
-      .flex-column();
-      align-items: stretch;
-      gap: var(--spacing-sm);
-      
-      .n-button {
-        width: 100%;
-        font-size: var(--font-size-xs);
-        padding: var(--spacing-sm);
-      }
-    }
-  }
-  
-  .plugin-section {
-    margin-bottom: var(--spacing-lg);
-    
-    h4 {
-      font-size: var(--font-size-sm);
-      margin-bottom: var(--spacing-sm);
-      text-align: center;
-    }
-  }
-  
-  .plugin-grid {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-sm);
-  }
-  
-  .plugin-card {
-    :deep(.n-card-header),
-    :deep(.n-card__content),
-    :deep(.n-card__action) {
-      padding: var(--spacing-sm);
-    }
-    
-    .plugin-header {
-      .flex-column();
-      align-items: flex-start;
-      gap: var(--spacing-xs);
-      
-      .plugin-name {
-        margin-right: 0;
-        font-size: var(--font-size-xs);
-        font-weight: var(--font-weight-medium);
-      }
-    }
-    
     .plugin-content {
       .plugin-description {
-        font-size: var(--font-size-2xs);
-        line-height: var(--line-height-relaxed);
+        font-size: var(--font-size-xs);
       }
-      
-      .plugin-info {
-        .flex-column();
-        align-items: flex-start;
-        gap: var(--spacing-2xs);
-        font-size: var(--font-size-2xs);
-      }
-      
-      .plugin-type {
-        font-size: var(--font-size-3xs);
-        padding: var(--spacing-3xs) var(--spacing-2xs);
-      }
-    }
-    
-    :deep(.n-card__action) {
-      .n-space {
-        .flex-column();
-        align-items: stretch;
-        gap: var(--spacing-xs);
-        
-        .n-button {
-          width: 100%;
-          font-size: var(--font-size-2xs);
-          padding: var(--spacing-xs);
-        }
-      }
-    }
-  }
-  
-  .upload-content,
-  .install-progress,
-  .install-result {
-    padding: var(--spacing-md);
-    
-    p {
-      font-size: var(--font-size-xs);
-    }
-  }
-  
-  .empty-state {
-    padding: var(--spacing-lg);
-    
-    .empty-icon {
-      font-size: var(--font-size-xl);
-    }
-    
-    .empty-title {
-      font-size: var(--font-size-sm);
-    }
-    
-    .empty-desc {
-      font-size: var(--font-size-xs);
-    }
-  }
-}
 
-// 超小屏幕优化
-.desktop-down(@breakpoint-xs) {
-  .title {
-    font-size: var(--font-size-sm);
-    margin-bottom: var(--spacing-sm);
-  }
-  
-  .action-buttons {
-    margin-bottom: var(--spacing-sm);
-    
-    :deep(.n-space) {
-      .n-button {
-        font-size: var(--font-size-2xs);
-        padding: var(--spacing-xs);
-      }
-    }
-  }
-  
-  .plugin-section {
-    margin-bottom: var(--spacing-md);
-    
-    h4 {
-      font-size: var(--font-size-xs);
-      margin-bottom: var(--spacing-xs);
-    }
-  }
-  
-  .plugin-card {
-    :deep(.n-card-header),
-    :deep(.n-card__content),
-    :deep(.n-card__action) {
-      padding: var(--spacing-xs);
-    }
-    
-    .plugin-header {
-      .plugin-name {
-        font-size: var(--font-size-2xs);
-      }
-    }
-    
-    .plugin-content {
-      .plugin-description {
-        font-size: var(--font-size-3xs);
-      }
-      
       .plugin-info {
-        font-size: var(--font-size-3xs);
+        font-size: var(--font-size-xs);
       }
-    }
-    
-    :deep(.n-card__action) {
-      .n-space {
-        .n-button {
-          font-size: var(--font-size-3xs);
-          padding: var(--spacing-2xs);
-        }
-      }
-    }
-  }
-  
-  .upload-content,
-  .install-progress,
-  .install-result {
-    padding: var(--spacing-sm);
-    
-    p {
-      font-size: var(--font-size-2xs);
     }
   }
 }
@@ -1242,23 +1077,23 @@ onMounted(() => {
   .title {
     color: var(--color-text-primary-dark);
   }
-  
+
   .action-buttons {
     :deep(.n-space) {
       .n-button {
         &.n-button--primary-type {
           background: var(--color-primary-dark);
-          
+
           &:hover {
             background: var(--color-primary-dark-hover);
           }
         }
-        
+
         &:not(.n-button--primary-type) {
           border-color: var(--color-border-dark);
           background: var(--color-bg-content-dark);
           color: var(--color-text-primary-dark);
-          
+
           &:hover {
             border-color: var(--color-primary-dark-light);
             background: var(--color-bg-hover-dark);
@@ -1267,85 +1102,85 @@ onMounted(() => {
       }
     }
   }
-  
+
   .plugin-section {
     h4 {
       color: var(--color-text-primary-dark);
     }
   }
-  
+
   .plugin-card {
     border-color: var(--color-border-dark);
     background: var(--color-bg-content-dark);
-    
+
     &:hover {
       border-color: var(--color-primary-dark-light);
     }
-    
+
     :deep(.n-card-header) {
       border-bottom-color: var(--color-border-dark);
       background: var(--color-bg-secondary-dark);
     }
-    
+
     :deep(.n-card__action) {
       background: var(--color-bg-secondary-dark);
       border-top-color: var(--color-border-dark);
     }
-    
+
     .plugin-header {
       .plugin-name {
         color: var(--color-text-primary-dark);
       }
     }
-    
+
     .plugin-content {
       .plugin-description {
         color: var(--color-text-secondary-dark);
       }
-      
+
       .plugin-info {
         color: var(--color-text-tertiary-dark);
       }
-      
+
       .plugin-type {
         color: var(--color-text-tertiary-dark);
         background: var(--color-bg-tag-dark);
       }
     }
   }
-  
+
   .empty-state {
     color: var(--color-text-secondary-dark);
     background: var(--color-bg-secondary-dark);
     border-color: var(--color-border-dark);
-    
+
     .empty-icon {
       color: var(--color-text-tertiary-dark);
     }
-    
+
     .empty-desc {
       color: var(--color-text-tertiary-dark);
     }
   }
-  
+
   .upload-content,
   .install-progress,
   .install-result {
     p {
       color: var(--color-text-secondary-dark);
     }
-    
+
     .success-note p {
       color: var(--color-text-secondary-dark);
     }
   }
-  
+
   .install-result {
     .result-message {
       &.success {
         color: var(--color-success-dark);
       }
-      
+
       &.error {
         color: var(--color-error-dark);
       }
