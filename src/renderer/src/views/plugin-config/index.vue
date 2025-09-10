@@ -389,9 +389,7 @@ const loadPluginConfig = async () => {
 const getPluginConfigSchema = async (): Promise<ConfigItem[] | null> => {
   try {
     // 从插件获取配置架构
-    const schema = await (window as any).electron.ipcRenderer.invoke('extension:getConfigSchema', {
-      extensionId: pluginId.value
-    })
+    const schema = await (window as any).electron.ipcRenderer.invoke('extension:getConfigSchema', pluginId.value)
     return schema || null
   } catch (error) {
     console.error('获取配置架构失败:', error)
@@ -404,11 +402,15 @@ const getPluginConfigSchema = async (): Promise<ConfigItem[] | null> => {
  */
 const getPluginConfigValue = async (key: string): Promise<any> => {
   try {
-    const config = await (window as any).electron.ipcRenderer.invoke('extension:getConfiguration', {
+    const result = await (window as any).electron.ipcRenderer.invoke('extension:getConfiguration', {
       extensionId: pluginId.value,
       section: key
     })
-    return config
+    // 后端返回格式: { success: true, data: value } 或 { success: false, error: string }
+    if (result && result.success) {
+      return result.data
+    }
+    return undefined
   } catch (error) {
     console.error(`获取配置值失败: ${key}`, error)
     return undefined

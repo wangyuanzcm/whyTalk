@@ -132,7 +132,7 @@ const openPlugin = async (plugin: Plugin) => {
 }
 
 /**
- * 配置插件 - 在主窗口跳转到配置页面
+ * 配置插件 - 在独立窗口中打开配置页面
  * @param plugin 插件对象
  */
 const configurePlugin = async (plugin: Plugin) => {
@@ -140,9 +140,14 @@ const configurePlugin = async (plugin: Plugin) => {
     console.log('配置插件:', plugin.id)
     ;(window as any).$message?.info(`正在打开 ${plugin.config.name} 配置页面...`)
 
-    // 在主窗口跳转到插件配置页面
-    window.location.hash = `/plugin-config/${plugin.id}`
-    ;(window as any).$message?.success(`已跳转到 ${plugin.config.name} 配置页面`)
+    // 调用后端IPC处理器打开独立的配置窗口
+    const result = await (window as any).electron.ipcRenderer.invoke('plugin:config:open', plugin.id)
+    
+    if (result?.success) {
+      ;(window as any).$message?.success(`${plugin.config.name} 配置窗口已打开`)
+    } else {
+      throw new Error(result?.error || '打开配置窗口失败')
+    }
   } catch (error) {
     console.error('配置插件失败:', error)
     ;(window as any).$message?.error(

@@ -358,6 +358,16 @@ export class PluginSystemManager {
       }
     })
 
+    // 打开插件配置窗口
+    ipcMain.handle('plugin:config:open', async (_event, pluginId: string) => {
+      try {
+        return await this.openConfigWindow(pluginId)
+      } catch (error) {
+        logger.error('打开插件配置窗口失败:', error)
+        return { success: false, error: error instanceof Error ? error.message : String(error) }
+      }
+    })
+
     // 插件配置相关的IPC处理器
     ipcMain.handle('plugin:getPluginConfig', async (_event, pluginId: string) => {
       try {
@@ -419,77 +429,11 @@ export class PluginSystemManager {
       }
     })
 
-    // 执行扩展命令（兼容extension:前缀）
-    ipcMain.handle('extension:executeCommand', async (_, { extensionId, command, args }) => {
-      try {
-        return await this.vscodeStyleManager.executeCommand(command, ...args)
-      } catch (error) {
-        console.error(`Failed to execute command ${command}:`, error)
-        return { success: false, error: error instanceof Error ? error.message : String(error) }
-      }
-    })
+    // 注意：extension:executeCommand 已在 APIProvider.ts 中注册，避免重复注册
 
-    // 获取扩展配置（兼容extension:前缀）
-    ipcMain.handle('extension:getConfiguration', async (_, { extensionId, section }) => {
-      try {
-        // 从插件配置文件中读取配置
-        const configPath = path.join(this.userDataPath, 'plugin-configs', `${extensionId}.json`)
-        if (fs.existsSync(configPath)) {
-          const configData = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
-          if (section) {
-            return { success: true, data: configData[section] }
-          }
-          return { success: true, data: configData }
-        }
-        return { success: true, data: {} }
-      } catch (error) {
-        console.error(`Failed to get configuration for ${extensionId}:`, error)
-        return { success: false, error: error instanceof Error ? error.message : String(error) }
-      }
-    })
+    // 注意：extension:getConfiguration 和 extension:updateConfiguration 已在 APIProvider.ts 中注册，避免重复注册
 
-    // 更新扩展配置（兼容extension:前缀）
-    ipcMain.handle('extension:updateConfiguration', async (_, { extensionId, section, value }) => {
-      try {
-        const configDir = path.join(this.userDataPath, 'plugin-configs')
-        if (!fs.existsSync(configDir)) {
-          fs.mkdirSync(configDir, { recursive: true })
-        }
-        
-        const configPath = path.join(configDir, `${extensionId}.json`)
-        let configData = {}
-        
-        // 读取现有配置
-        if (fs.existsSync(configPath)) {
-          configData = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
-        }
-        
-        // 更新配置
-        if (section) {
-          configData[section] = value
-        } else {
-          configData = { ...configData, ...value }
-        }
-        
-        // 保存配置
-        fs.writeFileSync(configPath, JSON.stringify(configData, null, 2))
-        
-        return { success: true }
-      } catch (error) {
-        console.error(`Failed to update configuration for ${extensionId}:`, error)
-        return { success: false, error: error instanceof Error ? error.message : String(error) }
-      }
-    })
-
-    // 获取扩展配置架构（兼容extension:前缀）
-    ipcMain.handle('extension:getConfigSchema', async (_, extensionId: string) => {
-      try {
-        return await this.getPluginConfigSchema(extensionId)
-      } catch (error) {
-        console.error(`Failed to get config schema for ${extensionId}:`, error)
-        return null
-      }
-    })
+    // 注意：extension:getConfigSchema 已在 APIProvider.ts 中注册，避免重复注册
 
     logger.info('插件系统IPC处理器设置完成')
   }
